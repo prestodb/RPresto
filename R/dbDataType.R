@@ -1,0 +1,140 @@
+# Copyright (c) 2015-present, Facebook, Inc.
+# All rights reserved.
+#
+# This source code is licensed under the BSD-style license found in the
+# LICENSE file in the root directory of this source tree. An additional grant
+# of patent rights can be found in the PATENTS file in the same directory.
+
+#' @include PrestoDriver.R
+NULL
+
+.presto.to.R <- as.data.frame(matrix(c(
+  'boolean', 'logical',
+  'bigint', 'integer',
+  'double', 'numeric',
+  'varchar', 'character',
+  'varbinary', 'raw',
+  'json', 'character',
+  'date', 'Date',
+  'time', 'character',
+  'time with time zone', 'character',
+  'timestamp', 'POSIXct_no_time_zone',
+  'timestamp with time zone', 'POSIXct_with_time_zone',
+  'interval year to month', 'character',
+  'interval day to second', 'character',
+  'array', 'list_unnamed',
+  'map', 'list_named'
+), byrow=TRUE, ncol=2), stringsAsFactors=FALSE)
+colnames(.presto.to.R) <- c('presto.type', 'R.type')
+
+
+.R.to.presto <- as.data.frame(matrix(c(
+  'boolean', 'logical',
+  'bigint', 'integer',
+  'double', 'double',
+  'varchar', 'character',
+  'varbinary', 'raw',
+  'date', 'Date',
+  'json', NA,
+  'time', NA,
+  'time with time zone', NA,
+  'timestamp', 'POSIXct_no_time_zone',
+  'timestamp with time zone', 'POSIXct_with_time_zone',
+  'interval year to month', NA,
+  'interval day to second', NA,
+  'array', 'list_unnamed',
+  'map', 'list_named',
+  'varchar', 'factor',
+  'varchar', 'ordered',
+  'varchar', 'null'
+), byrow=TRUE, ncol=2), stringsAsFactors=FALSE)
+colnames(.R.to.presto) <- c('presto.type', 'R.type')
+
+.dbDataType <- function(dbObj, obj, ...) {
+  rs.class <- data.class(obj)
+  rs.mode <- storage.mode(obj)
+
+  if (rs.class
+      %in%
+      c('logical',
+        'character',
+        'raw',
+        'Date',
+        'factor',
+        'ordered',
+        'NULL'
+      )
+  ) {
+    rv <- with(.R.to.presto, presto.type[match(rs.class, R.type)])
+  } else if (rs.class == 'numeric') {
+    rv <- with(.R.to.presto, presto.type[match(rs.mode, R.type)])
+  } else if (rs.class == 'POSIXct') {
+    tzone <- attr(obj, 'tzone')
+    if (is.null(tzone) || tzone == '') {
+      index <- 'POSIXct_no_time_zone'
+    } else {
+      index <- 'POSIXct_with_time_zone'
+    }
+    rv <- with(.R.to.presto, presto.type[match(index, R.type)])
+  } else if (rs.class == 'list') {
+    if (length(obj) == 0) {
+      inner.type <- .dbDataType(dbObj, NULL)
+    } else {
+      inner.types <- vapply(
+        obj,
+        function(x) .dbDataType(dbObj, x),
+        ''
+      )
+      inner.type <- inner.types[1]
+      if (!all(inner.types == inner.type)) {
+        inner.type <- NA
+      }
+    }
+    if (is.na(inner.type)) {
+      rv <- 'varchar'
+    } else {
+      if (!is.null(names(obj))) {
+        rv <- paste('map<varchar, ', inner.type, '>', sep='')
+      } else {
+        rv <- paste('array<', inner.type, '>', sep='')
+      }
+    }
+  } else {
+    rv <- 'varchar'
+  }
+
+  if (is.na(rv)) {
+    rv <- 'varchar'
+  }
+  return(toupper(rv))
+}
+
+#' Return the corresponding presto data type for the given R \code{object}
+#' @param dbObj A \code{\linkS4class{PrestoDriver}} object
+#' @param obj Any R object
+#' @param ... Extra optional parameters, not currently used
+#' @return A \code{character} value corresponding to the Presto type for
+#'         \code{obj}
+#' @rdname dbDataType
+#' @details The default value for unknown classes is \sQuote{VARCHAR}.
+#'
+#' \sQuote{ARRAY}s and \sQuote{MAP}s are supported with some caveats.
+#' Unnamed lists will be treated as \sQuote{ARRAY}s and named lists
+#' will be a \sQuote{MAP}.
+#' All items are expected to be of the same corresponding Presto type,
+#' otherwise the default \sQuote{VARCHAR} value is returned.
+#' The key type for \sQuote{MAP}s is always \sQuote{VARCHAR}.
+#' The \sQuote{value} type for empty lists is always a \sQuote{VARCHAR}.  
+#' 
+#' @examples
+#' drv <- RPresto::Presto()
+#' dbDataType(drv, list())
+#' dbDataType(drv, 1)
+#' dbDataType(drv, NULL)
+#' dbDataType(drv, list(list(list(a=Sys.Date()))))
+#' dbDataType(drv, as.POSIXct('2015-03-01 00:00:00', tz='UTC'))
+#' dbDataType(drv, Sys.time())
+#' # Data types for ARRAY or MAP values can be tricky
+#' all.equal('VARCHAR', dbDataType(drv, list(1, 2, 3L)))
+#' @export
+setMethod('dbDataType', 'PrestoDriver', .dbDataType)

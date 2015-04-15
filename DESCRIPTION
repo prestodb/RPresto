@@ -1,0 +1,50 @@
+Package: RPresto
+Title: DBI connector to Presto
+Version: 1.0.0
+Authors@R: c(
+    person('Onur Ismail', 'Filiz', , 'onur@fb.com', role=c('aut', 'cre')),
+    person('Sergey', 'Goder', , 'sgoder@fb.com', role='aut'),
+    person('John Myles', 'White', , 'johnmyleswhite@fb.com', role='ctb')
+    )
+Description: A DBI-compliant interface to Presto.
+Depends:
+    R (>= 3.1.1),
+    methods
+Imports:
+    DBI (>= 0.3.0),
+    httr (>= 0.6),
+    RCurl,
+    jsonlite
+Suggests:
+    testthat
+License: file LICENSE
+URL: https://github.com/facebook/RPresto
+BugReports: https://github.com/facebook/RPresto/issues
+LazyData: true
+Collate:
+    'PrestoDriver.R'
+    'Presto.R'
+    'PrestoConnection.R'
+    'utility_functions.R'
+    'PrestoCursor.R'
+    'PrestoResult.R'
+    'dbHasCompleted.R'
+    'dbClearResult.R'
+    'dbConnect.R'
+    'dbDataType.R'
+    'dbDisconnect.R'
+    'dbSendQuery.R'
+    'json.tabular.to.data.frame.R'
+    'extract.data.R'
+    'dbFetch.R'
+    'dbGetQuery.R'
+    'dbListTables.R'
+    'dbExistsTable.R'
+    'dbGetInfo.R'
+    'dbGetRowCount.R'
+    'dbGetStatement.R'
+    'dbIsValid.R'
+    'dbListFields.R'
+    'dbUnloadDriver.R'
+    'fetch.R'
+    'help.R'

@@ -1,0 +1,68 @@
+# Copyright (c) 2015-present, Facebook, Inc.
+# All rights reserved.
+#
+# This source code is licensed under the BSD-style license found in the
+# LICENSE file in the root directory of this source tree. An additional grant
+# of patent rights can be found in the PATENTS file in the same directory.
+
+context('integration')
+
+source('utilities.R')
+
+test_that("Connections handle port argument correctly", {
+  dcf <- read.dcf("credentials.dcf")
+  creds <- list(
+    host=as.vector(dcf[1, "host"]),
+    port=as.integer(as.vector(dcf[1, "port"])),
+    catalog=as.vector(dcf[1, "catalog"]),
+    schema=as.vector(dcf[1, "schema"])
+  )
+
+  test_port <- function(port) {
+    dbConnect(RPresto::Presto(),
+      schema=creds$schema,
+      catalog=creds$catalog,
+      host=creds$host,
+      port=port,
+      user=Sys.getenv('USER')
+    )
+  }
+
+  expect_that(test_port(NULL),
+              throws_error("Please specify a port as an integer"))
+  expect_that(test_port('NOT A NUMBER'),
+              throws_error("Please specify a port as an integer"))
+})
+
+test_that('Integration tests work', {
+  conn <- setup_live_connection()
+  
+  expect_that(conn, is_a("PrestoConnection"))
+
+  sql <- paste('SELECT * FROM', iris.sql(), 'LIMIT 5')
+
+  rs <- dbSendQuery(conn, sql)
+  expect_that(rs, is_a("PrestoResult"))
+
+  rows <- 0
+  while (rows == 0) {
+    df <- dbFetch(rs)
+    rows <- NROW(df)
+  }
+  expect_that(df, is_a("data.frame"))
+  expect_that(nrow(df), equals(5))
+  expect_that(ncol(df), equals(5))
+
+  expect_that(dbClearResult(rs), is_true())
+
+  df <- dbGetQuery(conn, sql)
+  expect_that(df, is_a("data.frame"))
+  expect_that(nrow(df), equals(5))
+  expect_that(ncol(df), equals(5))
+
+  tbls <- dbListTables(conn)
+  expect_that(tbls, is_a("character"))
+  expect_that(length(tbls), is_more_than(0))
+
+  expect_that(dbDisconnect(conn), is_true())
+})

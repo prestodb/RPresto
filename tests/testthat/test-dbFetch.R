@@ -1,0 +1,242 @@
+# Copyright (c) 2015-present, Facebook, Inc.
+# All rights reserved.
+#
+# This source code is licensed under the BSD-style license found in the
+# LICENSE file in the root directory of this source tree. An additional grant
+# of patent rights can be found in the PATENTS file in the same directory.
+
+context('dbFetch')
+
+source('utilities.R')
+
+test_that('dbFetch works with live database', {
+  conn <- setup_live_connection()
+
+  result <- dbSendQuery(conn, 'SELECT 1 AS n')
+  expect_error(
+    dbFetch(result, 1),
+    '.*fetching custom number of rows.*is not supported.*'
+  )
+  expect_equal(dbFetch(result, -1), data.frame(n=1))
+  expect_true(dbHasCompleted(result))
+
+  result <- dbSendQuery(conn, 'SELECT 2 AS n')
+  expect_true(dbClearResult(result))
+  expect_error(
+    dbFetch(result, -1),
+    '.*Result object is not valid.*'
+  )
+
+  result <- dbSendQuery(conn, 'SELECT 3 AS n LIMIT 0')
+  expect_equal(dbFetch(result, -1), data.frame())
+})
+
+test_that('dbFetch works with mock', {
+  conn <- setup_mock_connection()
+  with_mock(
+    `httr::POST`=mock_httr_replies(
+      mock_httr_response(
+        'http://localhost:8000/v1/statement',
+        status_code=200,
+        state='QUEUED',
+        request_body='SELECT n FROM (VALUES (1), (2)) AS t (n)',
+        next_uri='http://localhost:8000/query_1/1'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/v1/statement',
+        status_code=200,
+        state='RUNNING',
+        request_body='SELECT 2',
+        next_uri='http://localhost:8000/query_2/1'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/v1/statement',
+        status_code=200,
+        state='RUNNING',
+        request_body='SELECT 3',
+        next_uri='http://localhost:8000/query_3/1'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/v1/statement',
+        status_code=200,
+        state='FINISHED',
+        request_body='SELECT 4 LIMIT 0',
+        next_uri='http://localhost:8000/query_4/1'
+      )
+    ),
+    `httr::GET`=mock_httr_replies(
+      mock_httr_response(
+        'http://localhost:8000/query_1/1',
+        status_code=200,
+        data=data.frame(n=1, stringsAsFactors=FALSE),
+        state='FINISHED',
+        next_uri='http://localhost:8000/query_1/2'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/query_1/2',
+        status_code=200,
+        data=data.frame(n=2, stringsAsFactors=FALSE),
+        state='FINISHED'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/query_2/1',
+        status_code=400,
+        data='Broken URL',
+        state='FAILED'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/query_3/1',
+        status_code=200,
+        data='Failed URL',
+        state='FAILED'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/query_4/1',
+        status_code=200,
+        state='FINISHED'
+      )
+    ),
+    `httr::DELETE`=mock_httr_replies(
+      mock_httr_response(
+        url='http://localhost:8000/query_1/2',
+        status_code=200,
+        state=''
+      )
+    ),
+    {
+      result <- dbSendQuery(conn, "SELECT n FROM (VALUES (1), (2)) AS t (n)")
+      expect_error(
+        dbFetch(result, 1),
+        '.*fetching custom number of rows.*is not supported.*'
+      )
+      expect_equal(dbFetch(result), data.frame(n=1L))
+      expect_true(dbClearResult(result))
+      expect_error(
+        dbFetch(result),
+        '.*Result object is not valid.*'
+      )
+
+      result <- dbSendQuery(conn, "SELECT n FROM (VALUES (1), (2)) AS t (n)")
+      expect_equal(dbGetRowCount(result), 0)
+      expect_equal(dbFetch(result), data.frame(n=1L))
+      expect_equal(dbGetRowCount(result), 1)
+      expect_equal(dbFetch(result), data.frame(n=2L))
+      expect_equal(dbGetRowCount(result), 2)
+      expect_true(dbHasCompleted(result))
+
+      result <- dbSendQuery(conn, "SELECT n FROM (VALUES (1), (2)) AS t (n)")
+      expect_equal(dbFetch(result, -1), data.frame(n=c(1L, 2L)))
+      expect_equal(dbGetRowCount(result), 2)
+
+      result <- dbSendQuery(conn, 'SELECT 2')
+      expect_error(
+        dbFetch(result), 
+        '^Error in check\\.status\\.code\\(get.response\\)'
+      )
+
+      result <- dbSendQuery(conn, 'SELECT 3')
+      expect_error(
+        dbFetch(result), 
+        '^Error in stop.with.error.message\\(content\\)'
+      )
+
+      result <- dbSendQuery(conn, 'SELECT 4 LIMIT 0')
+      expect_equal(rv <- dbFetch(result, -1), data.frame())
+    }
+  )
+  with_mock(
+    `httr::POST`=mock_httr_replies(
+      mock_httr_response(
+        'http://localhost:8000/v1/statement',
+        status_code=200,
+        state='RUNNING',
+        request_body='SELECT 3',
+        next_uri='http://localhost:8000/query_3/1'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/v1/statement',
+        status_code=200,
+        state='RUNNING',
+        request_body='SELECT 4',
+        next_uri='http://localhost:8000/query_4/1'
+      )
+    ),
+    `httr::GET`=function(url, ...) {
+      if (url == 'http://localhost:8000/query_3/1') {
+        stop('Error')
+      }
+      if (request.count == 0) {
+        request.count <<- 1
+        stop('First request is an error')
+      }
+      return(mock_httr_replies(
+        mock_httr_response(
+          'http://localhost:8000/query_4/1',
+          status_code=200,
+          state='FINISHED',
+          data=data.frame(n=4)
+        )
+      )(url))
+    },
+    `httr::handle_reset`=function(...) return(),
+    {
+      result <- dbSendQuery(conn, 'SELECT 3')
+      expect_error(
+        suppressMessages(dbFetch(result)),
+        paste0(
+          'Cannot fetch .*, error: ',
+          'There was a problem with the request and we have exhausted our ',
+          'retry limit'
+        )
+      )
+
+      assign('request.count', 0, envir=environment(httr::GET))
+      result <- dbSendQuery(conn, 'SELECT 4')
+      expect_message(
+        v <- dbFetch(result),
+        'First request is an error'
+      )
+      expect_equal(v, data.frame(n=4))
+    }
+  )
+})
+
+test_that('dbFetch rbind works correctly', {
+
+  conn <- setup_mock_connection()
+
+  with_mock(
+    `httr::POST`=mock_httr_replies(
+      mock_httr_response(
+        'http://localhost:8000/v1/statement',
+        status_code=200,
+        state='FINISHED',
+        request_body='SELECT * FROM all_types',
+        next_uri='http://localhost:8000/query_1/1'
+      )
+    ),
+    `httr::GET`=mock_httr_replies(
+      mock_httr_response(
+        'http://localhost:8000/query_1/1',
+        status_code=200,
+        next_uri='http://localhost:8000/query_1/2',
+        data=data.frame.with.all.classes(1),
+        state='FINISHED'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/query_1/2',
+        status_code=200,
+        data=data.frame.with.all.classes(2),
+        state='FINISHED'
+      )
+    ),
+    {
+      result <- dbSendQuery(conn, 'SELECT * FROM all_types')
+      
+      expect_equal_data_frame(
+        dbFetch(result, -1),
+        data.frame.with.all.classes()
+      )
+    }
+  )
+})
