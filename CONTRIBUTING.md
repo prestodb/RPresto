@@ -10,7 +10,7 @@ welcome your pull requests.
 
 ## Our Development Process
 
-We develop our code using the (https://github.com/hadley/devtools)[devtools]
+We develop our code using the [devtools](https://github.com/hadley/devtools)
 package. You can use the 'devtools::check' function to build and verify that
 your changes are working as intended.
 
