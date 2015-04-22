@@ -46,6 +46,8 @@ use [jsonlite](https://github.com/jeroenooms/jsonlite) to reshape the
 data into a `data.frame`. Note that as of now, only read operations are
 supported.
 
+RPresto has been tested on Presto 0.100.
+
 ## License
 RPresto is BSD-licensed. We also provide an additional patent grant.
 
