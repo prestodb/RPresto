@@ -18,8 +18,8 @@ Imports:
 Suggests:
     testthat
 License: file LICENSE
-URL: https://github.com/facebook/RPresto
-BugReports: https://github.com/facebook/RPresto/issues
+URL: https://github.com/prestodb/RPresto
+BugReports: https://github.com/prestodb/RPresto/issues
 LazyData: true
 Collate:
     'PrestoDriver.R'
