@@ -10,19 +10,11 @@ context('integration')
 source('utilities.R')
 
 test_that("Connections handle port argument correctly", {
-  dcf <- read.dcf("credentials.dcf")
-  creds <- list(
-    host=as.vector(dcf[1, "host"]),
-    port=as.integer(as.vector(dcf[1, "port"])),
-    catalog=as.vector(dcf[1, "catalog"]),
-    schema=as.vector(dcf[1, "schema"])
-  )
-
   test_port <- function(port) {
     dbConnect(RPresto::Presto(),
-      schema=creds$schema,
-      catalog=creds$catalog,
-      host=creds$host,
+      schema='test_schema',
+      catalog='test_catalog',
+      host='localhost',
       port=port,
       user=Sys.getenv('USER')
     )
