@@ -228,6 +228,36 @@ setup_live_connection <- function() {
   return(conn)
 }
 
+setup_dplyr_connection <- function() {
+  skip_on_cran()
+  if (!file.exists('credentials.dcf')) {
+    skip(paste0('credential file missing, please create a file ',
+         system.file('tests', 'testthat', 'credentials.dcf', package='RPresto'),
+         ' with fields "host", "port", "catalog", "schema" to do live testing'
+    ))
+  }
+  dcf <- read.dcf("credentials.dcf")
+  credentials <- list(
+    host=as.vector(dcf[1, "host"]),
+    port=as.integer(as.vector(dcf[1, "port"])),
+    catalog=as.vector(dcf[1, "catalog"]),
+    schema=as.vector(dcf[1, "schema"]),
+    iris_table_name=as.vector(dcf[1, "iris_table_name"])
+  )
+
+  db <- src_presto(
+    RPresto::Presto(),
+    schema=credentials$schema,
+    catalog=credentials$catalog,
+    host=credentials$host,
+    port=credentials$port,
+    user=Sys.getenv('USER'),
+    parameters=list()
+  )
+  return(list(db=db, iris_table_name=credentials[['iris_table_name']]))
+}
+
+
 setup_mock_connection <- function() {
   mock.conn <- dbConnect(
     RPresto::Presto(),

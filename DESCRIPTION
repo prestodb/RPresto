@@ -1,6 +1,6 @@
 Package: RPresto
 Title: DBI connector to Presto
-Version: 1.0.0
+Version: 1.1.0
 Authors@R: c(
     person('Onur Ismail', 'Filiz', , 'onur@fb.com', role=c('aut', 'cre')),
     person('Sergey', 'Goder', , 'sgoder@fb.com', role='aut'),
@@ -16,7 +16,8 @@ Imports:
     RCurl,
     jsonlite
 Suggests:
-    testthat
+    testthat,
+    dplyr (>= 0.4.1)
 License: BSD_3_clause + file LICENSE
 URL: https://github.com/prestodb/RPresto
 BugReports: https://github.com/prestodb/RPresto/issues
@@ -28,6 +29,10 @@ Collate:
     'utility_functions.R'
     'PrestoCursor.R'
     'PrestoResult.R'
+    'copy.to.src.presto.R'
+    'db.data.type.PrestoConnection.R'
+    'db.explain.PrestoConnection.R'
+    'db.query.rows.PrestoConnection.R'
     'dbHasCompleted.R'
     'dbClearResult.R'
     'dbConnect.R'
@@ -48,3 +53,7 @@ Collate:
     'dbUnloadDriver.R'
     'fetch.R'
     'help.R'
+    'src.desc.src.presto.R'
+    'src.presto.R'
+    'src.translate.env.src.presto.R'
+    'tbl.src.presto.R'
