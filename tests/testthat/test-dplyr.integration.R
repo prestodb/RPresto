@@ -29,7 +29,7 @@ test_that('dplyr integration works', {
 
   iris_presto_summary <- iris_presto %>%
     group_by(species) %>%
-    summarise(mean_sepal_length = mean(sepal_length)) %>%
+    summarise(mean_sepal_length = mean(as(sepal_length, 0.0))) %>%
     arrange(species) %>%
     rename(Species = species) %>%
     collect %>%
