@@ -202,34 +202,7 @@ mock_httr_replies <- function(...) {
   return(f)
 }
 
-setup_live_connection <- function() {
-  skip_on_cran()
-  if (!file.exists('credentials.dcf')) {
-    skip(paste0('credential file missing, please create a file ',
-         system.file('tests', 'testthat', 'credentials.dcf', package='RPresto'),
-         ' with fields "host", "port", "catalog", "schema" to do live testing'
-    ))
-  }
-  dcf <- read.dcf("credentials.dcf")
-  credentials <- list(
-    host=as.vector(dcf[1, "host"]),
-    port=as.integer(as.vector(dcf[1, "port"])),
-    catalog=as.vector(dcf[1, "catalog"]),
-    schema=as.vector(dcf[1, "schema"])
-  )
-
-  conn <- dbConnect(RPresto::Presto(),
-    schema=credentials$schema,
-    catalog=credentials$catalog,
-    host=credentials$host,
-    port=credentials$port,
-    user=Sys.getenv('USER')
-  )
-  return(conn)
-}
-
-setup_dplyr_connection <- function() {
-  skip_on_cran()
+read_credentials <- function() {
   if (!file.exists('credentials.dcf')) {
     skip(paste0('credential file missing, please create a file ',
          system.file('tests', 'testthat', 'credentials.dcf', package='RPresto'),
@@ -244,7 +217,30 @@ setup_dplyr_connection <- function() {
     schema=as.vector(dcf[1, "schema"]),
     iris_table_name=as.vector(dcf[1, "iris_table_name"])
   )
+  return(credentials)
+}
 
+setup_live_connection <- function() {
+  skip_on_cran()
+  credentials <- read_credentials()
+  conn <- dbConnect(RPresto::Presto(),
+    schema=credentials$schema,
+    catalog=credentials$catalog,
+    host=credentials$host,
+    port=credentials$port,
+    user=Sys.getenv('USER')
+  )
+  return(conn)
+}
+
+setup_live_dplyr_connection <- function() {
+  skip_on_cran()
+
+  if(!require('dplyr', quietly=TRUE)) {
+    skip("Skipping dplyr tests because we can't load dplyr")
+  }
+
+  credentials <- read_credentials()
   db <- src_presto(
     RPresto::Presto(),
     schema=credentials$schema,
@@ -257,7 +253,6 @@ setup_dplyr_connection <- function() {
   return(list(db=db, iris_table_name=credentials[['iris_table_name']]))
 }
 
-
 setup_mock_connection <- function() {
   mock.conn <- dbConnect(
     RPresto::Presto(),
@@ -268,4 +263,21 @@ setup_mock_connection <- function() {
     user=Sys.getenv('USER')
   )
   return(mock.conn)
+}
+
+setup_mock_dplyr_connection <- function() {
+  if(!require('dplyr', quietly=TRUE)) {
+    skip("Skipping dplyr tests because we can't load dplyr")
+  }
+
+  db <- src_presto(
+    RPresto::Presto(),
+    schema='test',
+    catalog='catalog',
+    host='http://localhost',
+    port=8000,
+    user=Sys.getenv('USER'),
+    parameters=list()
+  )
+  return(list(db=db, iris_table_name='iris_table'))
 }

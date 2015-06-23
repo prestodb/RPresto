@@ -14,7 +14,7 @@ test_that('dplyr integration works', {
     skip("Skipping dplyr tests because we can't load dplyr")
   }
 
-  parts <- setup_dplyr_connection()
+  parts <- setup_live_dplyr_connection()
   db <- parts[['db']]
   tablename <- parts[['iris_table_name']]
 

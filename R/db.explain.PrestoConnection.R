@@ -6,7 +6,7 @@
 # of patent rights can be found in the PATENTS file in the same directory.
 
 #' @export
-db_explain.PrestoConnection <- function(con, sql, format = "text", ...) {
+db_explain.PrestoConnection <- function(con, sql, ...) {
   explain.sql <- dplyr::build_sql("EXPLAIN ", sql)
   explanation <- DBI::dbGetQuery(con, explain.sql)
   return(paste(explanation[[1]], collapse = "\n"))
