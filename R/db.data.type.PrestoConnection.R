@@ -7,5 +7,5 @@
 
 #' @export
 db_data_type.PrestoConnection <- function(con, fields, ...) {
-  return(sapply(fields, function(field) dbDataType(con, field)))
+  return(sapply(fields, function(field) dbDataType(Presto(), field)))
 }

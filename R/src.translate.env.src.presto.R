@@ -12,7 +12,7 @@ src_translate_env.src_presto <- function(x) {
     dplyr::sql_translator(.parent = dplyr::base_scalar,
       ifelse = dplyr::sql_prefix("if"),
       as = function(column, type) {
-        sql_type <- db_data_type(con, type)
+        sql_type <- toupper(dbDataType(Presto(), type))
         dplyr::build_sql('CAST(', column, ' AS ', dplyr::ident(sql_type), ')')
       },
       tolower = dplyr::sql_prefix("lower"),
