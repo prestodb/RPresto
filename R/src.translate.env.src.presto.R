@@ -7,7 +7,6 @@
 
 #' @export
 src_translate_env.src_presto <- function(x) {
-  con <- x[['con']]
   return(dplyr::sql_variant(
     dplyr::sql_translator(.parent = dplyr::base_scalar,
       ifelse = dplyr::sql_prefix("if"),
