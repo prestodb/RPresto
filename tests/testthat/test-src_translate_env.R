@@ -29,6 +29,7 @@ test_that('as() works', {
   )
 
   # Hacky dummy table so that we can test substitution
+  s <- setup_live_dplyr_connection()[['db']]
   t <- tbl(s, from=sql('SELECT 1'), vars=list(as.name('a')))
 
   l <- list(a=1L)
@@ -46,7 +47,7 @@ test_that('as() works', {
   p <- as.POSIXct('2001-02-03 04:05:06', tz='Europe/Istanbul')
   query <- as.character(
     (
-      t 
+      t
       %>% transmute(
         b=as(a, r),
         c=as(a, p),
