@@ -38,6 +38,29 @@ iris <- dbGetQuery(con, paste("SELECT * FROM", iris.sql()))
 dbDisconnect(con)
 ```
 
+We also include [dplyr](https://github.com/hadley/dplyr) integration.
+
+```R
+library(dplyr)
+
+db <- src_presto(
+  host='http://localhost',
+  port=7777,
+  user=Sys.getenv('USER'),
+  schema='<schema>',
+  catalog='<catalog>'
+)
+
+# Assuming you have a table like iris in the database
+iris <- tbl(db, 'iris')
+
+iris %>%
+  group_by(species) %>%
+  summarise(mean_sepal_length = mean(as(sepal_length, 0.0))) %>%
+  arrange(species) %>%
+  collect()
+```
+
 ## How RPresto works
 
 Presto exposes its interface via a REST based API<sup>1</sup>. We utilize the
