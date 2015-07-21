@@ -26,4 +26,18 @@ test_that('check.status.code works', {
       status_code=200
   )[['response']]
   expect_equal(check.status.code(response), invisible())
+
+  response <- structure(
+    list(
+      url='dummy_url',
+      status_code=403,
+      headers=list('content-type'='application/json'),
+      content=charToRaw('')
+    ),
+    class='response'
+  )
+  expect_error(
+    check.status.code(response),
+    'client error: \\(403\\) Forbidden'
+  )
 })
