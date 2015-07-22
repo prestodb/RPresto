@@ -8,7 +8,7 @@ Authors@R: c(
     )
 Description: A DBI-compliant interface to Presto.
 Depends:
-    R (>= 3.1.1),
+    R (>= 3.1.0),
     methods
 Imports:
     DBI (>= 0.3.0),
