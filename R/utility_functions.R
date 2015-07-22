@@ -9,6 +9,9 @@ check.status.code <- function(response) {
   status <- httr::status_code(response)
   if (status >= 400 && status < 500) {
     text.content <- httr::content(response, as = "text", encoding='UTF-8')
+    if (is.null(text.content) || !nzchar(text.content)) {
+      httr::stop_for_status(status)
+    }
     stop(text.content)
   }
 }
