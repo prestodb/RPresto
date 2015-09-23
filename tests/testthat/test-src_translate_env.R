@@ -69,3 +69,26 @@ test_that('as() works', {
     0
   )
 })
+
+test_that('subscript works', {
+  v <- src_translate_env(setup_mock_dplyr_connection()[['db']])
+  expect_equal(
+    translate_sql(x[0L], variant=v),
+    sql('"x"[0]')
+  )
+
+  expect_equal(
+    translate_sql(m['item'], variant=v),
+    sql('"m"[\'item\']')
+  )
+
+  expect_equal(
+    translate_sql(x[[0L]], variant=v),
+    sql('"x"[0]')
+  )
+
+  expect_equal(
+    translate_sql(m[['item']], variant=v),
+    sql('"m"[\'item\']')
+  )
+})

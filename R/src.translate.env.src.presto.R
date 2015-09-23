@@ -5,6 +5,10 @@
 # LICENSE file in the root directory of this source tree. An additional grant
 # of patent rights can be found in the PATENTS file in the same directory.
 
+.subscript <- function(struct, index) {
+  dplyr::build_sql(struct, '[', index, ']')
+}
+
 #' @export
 src_translate_env.src_presto <- function(x) {
   return(dplyr::sql_variant(
@@ -14,6 +18,9 @@ src_translate_env.src_presto <- function(x) {
         sql_type <- toupper(dbDataType(Presto(), type))
         dplyr::build_sql('CAST(', column, ' AS ', dplyr::ident(sql_type), ')')
       },
+      `[` = .subscript,
+      `[[` = .subscript,
+      length = dplyr::sql_prefix("cardinality"),
       tolower = dplyr::sql_prefix("lower"),
       toupper = dplyr::sql_prefix("upper"),
       pmax = dplyr::sql_prefix("greatest"),
