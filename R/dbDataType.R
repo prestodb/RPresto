@@ -28,6 +28,7 @@ NULL
 colnames(.presto.to.R) <- c('presto.type', 'R.type')
 
 
+
 .R.to.presto <- as.data.frame(matrix(c(
   'boolean', 'logical',
   'bigint', 'integer',
@@ -46,28 +47,42 @@ colnames(.presto.to.R) <- c('presto.type', 'R.type')
   'map', 'list_named',
   'varchar', 'factor',
   'varchar', 'ordered',
-  'varchar', 'null'
+  'varchar', 'NULL'
 ), byrow=TRUE, ncol=2), stringsAsFactors=FALSE)
 colnames(.R.to.presto) <- c('presto.type', 'R.type')
+
+.R.to.presto.env <- new.env(hash=TRUE, size=NROW(.R.to.presto))
+for (i in 1:NROW(.R.to.presto)) {
+  assign(
+    .R.to.presto[i, 'R.type'],
+    value=.R.to.presto[i, 'presto.type'],
+    envir=.R.to.presto.env
+  )
+}
+
+.non.complex.types <- c(
+  'logical',
+  'character',
+  'raw',
+  'Date',
+  'factor',
+  'ordered',
+  'NULL'
+)
+.non.complex.types.env <- new.env(hash=TRUE, size=length(.non.complex.types))
+for (i in seq_along(.non.complex.types)) {
+  assign(.non.complex.types[i], TRUE, envir=.non.complex.types.env)
+}
+
 
 .dbDataType <- function(dbObj, obj, ...) {
   rs.class <- data.class(obj)
   rs.mode <- storage.mode(obj)
 
-  if (rs.class
-      %in%
-      c('logical',
-        'character',
-        'raw',
-        'Date',
-        'factor',
-        'ordered',
-        'NULL'
-      )
-  ) {
-    rv <- with(.R.to.presto, presto.type[match(rs.class, R.type)])
+  if (!is.null(.non.complex.types.env[[rs.class]])) {
+    rv <- .R.to.presto.env[[rs.class]]
   } else if (rs.class == 'numeric') {
-    rv <- with(.R.to.presto, presto.type[match(rs.mode, R.type)])
+    rv <- .R.to.presto.env[[rs.mode]]
   } else if (rs.class == 'POSIXct') {
     tzone <- attr(obj, 'tzone')
     if (is.null(tzone) || tzone == '') {
@@ -75,7 +90,7 @@ colnames(.R.to.presto) <- c('presto.type', 'R.type')
     } else {
       index <- 'POSIXct_with_time_zone'
     }
-    rv <- with(.R.to.presto, presto.type[match(index, R.type)])
+    rv <- .R.to.presto.env[[index]]
   } else if (rs.class == 'list') {
     if (length(obj) == 0) {
       inner.type <- .dbDataType(dbObj, NULL)
@@ -124,8 +139,8 @@ colnames(.R.to.presto) <- c('presto.type', 'R.type')
 #' All items are expected to be of the same corresponding Presto type,
 #' otherwise the default \sQuote{VARCHAR} value is returned.
 #' The key type for \sQuote{MAP}s is always \sQuote{VARCHAR}.
-#' The \sQuote{value} type for empty lists is always a \sQuote{VARCHAR}.  
-#' 
+#' The \sQuote{value} type for empty lists is always a \sQuote{VARCHAR}.
+#'
 #' @examples
 #' drv <- RPresto::Presto()
 #' dbDataType(drv, list())
