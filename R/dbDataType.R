@@ -53,6 +53,9 @@ colnames(.R.to.presto) <- c('presto.type', 'R.type')
 
 .R.to.presto.env <- new.env(hash=TRUE, size=NROW(.R.to.presto))
 for (i in 1:NROW(.R.to.presto)) {
+  if (is.na(.R.to.presto[i, 'R.type'])) {
+    next
+  }
   assign(
     .R.to.presto[i, 'R.type'],
     value=.R.to.presto[i, 'presto.type'],
