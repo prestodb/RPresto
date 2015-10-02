@@ -62,7 +62,7 @@ test_that('as() works', {
         'CAST\\("a" AS "VARBINARY"\\) AS "b", ' ,
         'CAST\\("a" AS "TIMESTAMP WITH TIME ZONE"\\) AS "c", ',
         'CAST\\("a" AS "BOOLEAN"\\) AS "d"\n',
-        'FROM \\(SELECT 1\\) AS "_W\\d+"$'),
+        'FROM \\(SELECT 1\\) AS "(_W|zzz)\\d+"$'),
       query
       )
     ),
