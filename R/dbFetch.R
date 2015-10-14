@@ -73,7 +73,11 @@ NULL
     # Preserve attributes for empty data frames
     return(rv[[1]])
   } else {
-    return(do.call('rbind', rv))
+    if (requireNamespace('dplyr', quietly=TRUE)) {
+      return(as.data.frame(dplyr::bind_rows(rv)))
+    } else {
+      return(do.call('rbind', rv))
+    }
   }
 }
 
