@@ -62,16 +62,19 @@ NULL
 }
 
 .fetch.all <- function(result) {
-  rv <- data.frame()
+  rv <- list()
+  chunk.count <- 1
   while (!dbHasCompleted(result)) {
     chunk <- dbFetch(result)
-    if (!NROW(rv)) {
-      rv <- chunk
-    } else if (NROW(chunk)) {
-      rv <- rbind(rv, chunk)
-    }
+    rv[[chunk.count]] <- chunk
+    chunk.count <- chunk.count + 1
   }
-  return(rv)
+  if (length(rv) == 1) {
+    # Preserve attributes for empty data frames
+    return(rv[[1]])
+  } else {
+    return(do.call('rbind', rv))
+  }
 }
 
 .fetch.with.count <- function(res, n, ...) {
