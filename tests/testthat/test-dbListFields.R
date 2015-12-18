@@ -21,7 +21,7 @@ test_that('dbListFields works with live database', {
   result <- dbSendQuery(conn, 'SELECT * FROM __non_existent_table__')
   expect_error(
     dbListFields(result),
-    'Query failed: Table .*__non_existent_table__ does not exist'
+    'Query failed: (line [0-9:]+ )?Table .*__non_existent_table__ does not exist'
   )
   expect_true(dbClearResult(result))
 })
