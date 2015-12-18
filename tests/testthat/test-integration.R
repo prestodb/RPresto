@@ -28,7 +28,7 @@ test_that("Connections handle port argument correctly", {
 
 test_that('Integration tests work', {
   conn <- setup_live_connection()
-  
+
   expect_that(conn, is_a("PrestoConnection"))
 
   sql <- paste('SELECT * FROM', iris.sql(), 'LIMIT 5')
