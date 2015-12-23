@@ -212,3 +212,33 @@ test_that('NAs are handled correctly', {
   expect_equal_data_frame(r, e.reversed)
 })
 
+test_that('Inf, -Inf and NaN are handled correctly', {
+  expect_equal_data_frame(
+    .json.tabular.to.data.frame(
+      list(list(A='Infinity', B='-Infinity', C='NaN')),
+      c('numeric', 'numeric', 'numeric')
+    ),
+    data.frame(A=Inf, B=-Inf, C=NaN)
+  )
+
+  expect_equal_data_frame(
+    .json.tabular.to.data.frame(
+      list(list(A='Infinity', B='-Infinity', C='NaN')),
+      c('character', 'character', 'character')
+    ),
+    data.frame(A='Infinity', B='-Infinity', C='NaN')
+  )
+
+  expect_equal_data_frame(
+    .json.tabular.to.data.frame(
+      list(
+        list(A=1.0, B=1.0, C=1.0),
+        list(A='Infinity', B='-Infinity', C='NaN'),
+        list(A=1.0, B=1.0, C=1.0)
+      ),
+      c('numeric', 'numeric', 'numeric')
+    ),
+    data.frame(A=c(1.0, Inf, 1.0), B=c(1.0, -Inf, 1.0), C=c(1.0, NaN, 1.0))
+  )
+
+})

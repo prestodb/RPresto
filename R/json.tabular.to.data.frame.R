@@ -128,6 +128,13 @@ NULL
     }
   }
 
+  for (j in which(column.types %in% 'numeric')) {
+    rv[[j]] <- replace(rv[[j]], rv[[j]] == 'Infinity', Inf)
+    rv[[j]] <- replace(rv[[j]], rv[[j]] == '-Infinity', -Inf)
+    rv[[j]] <- replace(rv[[j]], rv[[j]] == 'NaN', NaN)
+    rv[[j]] <- as.numeric(rv[[j]])
+  }
+
   for (j in which(column.types %in% 'Date')) {
     rv[[j]] <- as.Date(rv[[j]])
   }
