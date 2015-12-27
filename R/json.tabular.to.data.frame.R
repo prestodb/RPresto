@@ -44,7 +44,7 @@ NULL
 #' @seealso The corresponding unit tests for a full list of capabilities and
 #'  data types supported
 #' @keywords internal
-.json.tabular.to.data.frame <- function(data, column.types) {
+.json.tabular.to.data.frame <- function(data, column.types, timezone) {
   rv <- NULL
   if (data.class(data) != 'list') {
     stop('Unexpected data class: ', data.class(data))
@@ -140,7 +140,7 @@ NULL
   }
 
   for (j in which(column.types %in% 'POSIXct_no_time_zone')) {
-    rv[[j]] <- as.POSIXct(rv[[j]])
+    rv[[j]] <- as.POSIXct(rv[[j]], tz=timezone)
   }
 
   for (j in which(column.types %in% 'POSIXct_with_time_zone')) {

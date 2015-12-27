@@ -14,6 +14,7 @@ NULL
     "X-Presto-Catalog"= conn@catalog,
     "X-Presto-Schema"= conn@schema,
     "X-Presto-Source"= getPackageName(),
+    "X-Presto-Time-Zone" = conn@session.timezone,
     "User-Agent"= getPackageName(),
     "X-Presto-Session"=paste(
       names(conn@parameters),
@@ -43,6 +44,7 @@ NULL
       rv <- new('PrestoResult',
         post.response=post.response,
         statement=statement,
+        session.timezone=conn@session.timezone,
         cursor=cursor
       )
     }

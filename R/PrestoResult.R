@@ -20,6 +20,7 @@ setClass('PrestoResult',
   slots=c(
     'post.response'='ANY',
     'statement'='character',
+    'session.timezone'='character',
     'cursor'='PrestoCursor'
   )
 )
@@ -31,7 +32,7 @@ setMethod('show',
   function(object) {
     r <- object@post.response
     content <- response.to.content(r)
-    stats <- object@cursor$stats
+    stats <- object@cursor$stats()
 
     cat(
       '<PrestoResult: ', content[['id']], '>\n',
@@ -48,7 +49,9 @@ setMethod('show',
           stats[['totalSplits']]
         ),
         collapse=' / '
-      ), '\n'
+      ), '\n',
+      'Session Time Zone: ', object@session.timezone, '\n',
+      sep=''
     )
   }
 )

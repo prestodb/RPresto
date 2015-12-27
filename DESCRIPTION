@@ -35,6 +35,8 @@ Collate:
     'db.query.rows.PrestoConnection.R'
     'dbHasCompleted.R'
     'dbClearResult.R'
+    'verified.timezone.R'
+    'infer.timezone.R'
     'dbConnect.R'
     'dbDataType.R'
     'dbDisconnect.R'
