@@ -55,7 +55,7 @@ NULL
       res@cursor$stats(content[['stats']])
       stop.with.error.message(content)
     }
-    df <- .extract.data(content)
+    df <- .extract.data(content, timezone=res@session.timezone)
     res@cursor$updateCursor(content, NROW(df))
   }
   return(df)

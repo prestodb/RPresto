@@ -8,7 +8,7 @@
 #' @include json.tabular.to.data.frame.R dbDataType.R
 NULL
 
-.extract.data <- function(response.content) {
+.extract.data <- function(response.content, timezone) {
   if (is.null(response.content[['data']])) {
     return(data.frame())
   }
@@ -25,7 +25,10 @@ NULL
     ''
   )
   r.types <- with(.presto.to.R, R.type[match(presto.types, presto.type)])
-  rv <- .json.tabular.to.data.frame(response.content[['data']], r.types)
+  rv <- .json.tabular.to.data.frame(
+    response.content[['data']],
+    r.types,
+    timezone=timezone)
   colnames(rv) <- column.info[['name']]
   return(rv)
 }

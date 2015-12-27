@@ -24,7 +24,7 @@ with_locale(test.locale(), test_that)('extract.data works', {
     )[['response']]
   )
   expect_equal_data_frame(
-    .extract.data(content),
+    .extract.data(content, timezone=test.timezone()),
     data.frame.with.all.classes()
   )
 })

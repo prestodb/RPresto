@@ -72,7 +72,7 @@ test_that("Queries return the correct map types", {
 })
 
 test_that("all data types work", {
-  conn <- setup_live_connection()
+  conn <- setup_live_connection(session.timezone=test.timezone())
   e <- data_frame(
     type_boolean=TRUE,
     type_bigint=1L,
@@ -83,7 +83,8 @@ test_that("all data types work", {
     type_date=as.Date('2015-03-01'),
     type_time='01:02:03.456',
     type_time_with_timezone='01:02:03.456 UTC',
-    type_timestamp=as.POSIXct('2001-08-22 03:04:05.321'),
+    type_timestamp
+      =as.POSIXct('2001-08-22 03:04:05.321', tz=test.timezone()),
     type_timestamp_with_timezone
       =as.POSIXct('2001-08-22 03:04:05.321', tz='UTC'),
     type_interval_year_to_month='1-1',
@@ -92,6 +93,7 @@ test_that("all data types work", {
     type_map_varchar_bigint=NA
   )
   attr(e[['type_timestamp_with_timezone']], 'tzone') <- 'UTC'
+  attr(e[['type_timestamp']], 'tzone') <- test.timezone()
   e[['type_varbinary']] <- list(charToRaw('a'))
   e[['type_array_bigint']] <- list(list(1, 2, 3))
   e[['type_map_varchar_bigint']] <- list(list(a=0))
@@ -135,6 +137,7 @@ test_that("all data types work", {
     type_map_varchar_bigint=NA
   )
   attr(e[['type_timestamp_with_timezone']], 'tzone') <- NA_character_
+  attr(e[['type_timestamp']], 'tzone') <- test.timezone()
   e[['type_varbinary']] <- list(NA)
   e[['type_array_bigint']] <- list(NA)
   e[['type_map_varchar_bigint']] <- list(NA)

@@ -17,7 +17,36 @@ setClass('PrestoConnection',
     'user'='character',
     'host'='character',
     'port'='integer',
+    'session.timezone'='character',
     'Id'='character',
     'parameters'='list'
   )
+)
+
+#' @rdname PrestoConnection-class
+#' @export
+setMethod('show',
+  'PrestoConnection',
+  function(object) {
+    cat(
+      '<PrestoConnection: ', object@host, ':', object@port, '>\n',
+      'Catalog: ', object@catalog, '\n',
+      'Schema: ', object@schema, '\n',
+      'User: ', object@user, '\n',
+      'Session Time Zone: ', object@session.timezone, '\n',
+      sep=''
+    )
+    parameters <- object@parameters
+    if (!is.null(parameters) && length(parameters)) {
+      cat(
+        'Parameters:\n',
+        paste(
+          '\t', names(parameters), ': ', unlist(parameters), '\n',
+          sep='',
+          collapse=''
+        ),
+        sep=''
+      )
+    }
+  }
 )

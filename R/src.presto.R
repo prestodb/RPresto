@@ -14,6 +14,7 @@
 #' @param user User name to use in the connection
 #' @param host Host name to connect to the database
 #' @param port Port number to use with the host name
+#' @param session.timezone Time zone for the connection
 #' @param parameters Additional parameters to pass to the connection
 #' @param ... Other arguments passed on to the underlying
 #'   database connector \code{dbConnect}
@@ -30,6 +31,7 @@ src_presto <- function(
     user=NULL,
     host= NULL,
     port=NULL,
+    session.timezone=NULL,
     parameters=NULL,
     ...
   ) {

@@ -37,17 +37,7 @@ expect_equal_data_frame <- function(r, e, ...) {
   }
 }
 
-test.locale <- function() { return('tr_TR.iso8859-9') }
-
-with_locale <- function(locale, f) {
-  wrapped <- function(...) {
-    old.locale <- Sys.getlocale('LC_CTYPE')
-    Sys.setlocale('LC_CTYPE', locale)
-    on.exit(Sys.setlocale('LC_CTYPE', old.locale), add=TRUE)
-    f(...)
-  }
-  return(wrapped)
-}
+test.timezone <- function() { return('Asia/Kathmandu') }
 
 data.frame.with.all.classes <- function(row.indices) {
   old.locale <- Sys.getlocale('LC_CTYPE')
@@ -61,7 +51,10 @@ data.frame.with.all.classes <- function(row.indices) {
     c('', 'z'),
     rep(NA, 2),
     as.Date(c('2015-03-01', '2015-03-02')),
-    as.POSIXct(c('2015-03-01 12:00:00', '2015-03-02 12:00:00.321')),
+    as.POSIXct(
+      c('2015-03-01 12:00:00', '2015-03-02 12:00:00.321'),
+      tz=test.timezone()
+    ),
     as.POSIXct(
       c('2015-03-01 12:00:00', '2015-03-02 12:00:00.321'),
       tz='UTC'
@@ -80,6 +73,7 @@ data.frame.with.all.classes <- function(row.indices) {
   column.names[length(column.names) - 2] <- '<odd_name>'
   colnames(e) <- column.names
   attr(e[['POSIXct_with_time_zone']], 'tzone') <- 'UTC'
+  attr(e[['POSIXct_no_time_zone']], 'tzone') <- test.timezone()
   e[['raw']] <- list(charToRaw('a'), charToRaw('bc'))
   e[['list_unnamed']] <- list(list(1, 2), list())
   e[['list_named']] <- list(
@@ -241,20 +235,27 @@ read_credentials <- function() {
   return(credentials)
 }
 
-setup_live_connection <- function() {
+setup_live_connection <- function(session.timezone) {
   skip_on_cran()
   credentials <- read_credentials()
-  conn <- dbConnect(RPresto::Presto(),
+  if (missing(session.timezone)) {
+    wrapper <- function(expr) suppressWarnings(expr)
+    session.timezone <- NULL
+  } else {
+    wrapper <- function(expr) expr
+  }
+  conn <- wrapper(dbConnect(RPresto::Presto(),
     schema=credentials$schema,
     catalog=credentials$catalog,
     host=credentials$host,
     port=credentials$port,
+    session.timezone=session.timezone,
     user=Sys.getenv('USER')
-  )
+  ))
   return(conn)
 }
 
-setup_live_dplyr_connection <- function() {
+setup_live_dplyr_connection <- function(session.timezone) {
   skip_on_cran()
 
   if(!require('dplyr', quietly=TRUE)) {
@@ -262,7 +263,13 @@ setup_live_dplyr_connection <- function() {
   }
 
   credentials <- read_credentials()
-  db <- src_presto(
+  if (missing(session.timezone)) {
+    wrapper <- function(expr) suppressWarnings(expr)
+    session.timezone <- NULL
+  } else {
+    wrapper <- function(expr) expr
+  }
+  db <- wrapper(src_presto(
     RPresto::Presto(),
     schema=credentials$schema,
     catalog=credentials$catalog,
@@ -270,17 +277,17 @@ setup_live_dplyr_connection <- function() {
     port=credentials$port,
     user=Sys.getenv('USER'),
     parameters=list()
-  )
+  ))
   return(list(db=db, iris_table_name=credentials[['iris_table_name']]))
 }
 
 setup_mock_connection <- function() {
-  mock.conn <- dbConnect(
-    RPresto::Presto(),
+  mock.conn <- new('PrestoConnection',
     schema='test',
     catalog='catalog',
     host='http://localhost',
-    port=8000,
+    port=8000L,
+    session.timezone=test.timezone(),
     user=Sys.getenv('USER')
   )
   return(mock.conn)
@@ -290,15 +297,13 @@ setup_mock_dplyr_connection <- function() {
   if(!require('dplyr', quietly=TRUE)) {
     skip("Skipping dplyr tests because we can't load dplyr")
   }
-
-  db <- src_presto(
-    RPresto::Presto(),
-    schema='test',
-    catalog='catalog',
-    host='http://localhost',
-    port=8000,
-    user=Sys.getenv('USER'),
-    parameters=list()
+  conn <- setup_mock_connection()
+  db <- dplyr::src_sql(
+    "presto",
+    conn,
+    info=DBI::dbGetInfo(conn),
+    disco=function(x) return(TRUE)
   )
+
   return(list(db=db, iris_table_name='iris_table'))
 }
