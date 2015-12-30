@@ -9,7 +9,8 @@ context('src_translate_env')
 
 source('utilities.R')
 
-test_that('as() works', {
+with_locale(test.locale(), test_that)('as() works', {
+
   v <- src_translate_env(setup_mock_dplyr_connection()[['db']])
   expect_equal(
     translate_sql(as(x, 0.0), variant=v),
@@ -30,7 +31,7 @@ test_that('as() works', {
 
   # Hacky dummy table so that we can test substitution
   s <- setup_live_dplyr_connection()[['db']]
-  t <- tbl(s, from=sql('SELECT 1'), vars=list(as.name('a')))
+  t <- tbl(s, from=sql('SELECT 1'), vars=list(as.name('x')))
 
   l <- list(a=1L)
   expect_equal(

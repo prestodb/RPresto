@@ -37,7 +37,23 @@ expect_equal_data_frame <- function(r, e, ...) {
   }
 }
 
+test.locale <- function() { return('tr_TR.iso8859-9') }
+
+with_locale <- function(locale, f) {
+  wrapped <- function(...) {
+    old.locale <- Sys.getlocale('LC_CTYPE')
+    Sys.setlocale('LC_CTYPE', locale)
+    on.exit(Sys.setlocale('LC_CTYPE', old.locale), add=TRUE)
+    f(...)
+  }
+  return(wrapped)
+}
+
 data.frame.with.all.classes <- function(row.indices) {
+  old.locale <- Sys.getlocale('LC_CTYPE')
+  Sys.setlocale('LC_CTYPE', test.locale())
+  on.exit(Sys.setlocale('LC_CTYPE', old.locale), add=TRUE)
+
   e <- data.frame(
     c(TRUE, FALSE),
     c(1L, 2L),
@@ -50,7 +66,9 @@ data.frame.with.all.classes <- function(row.indices) {
       c('2015-03-01 12:00:00', '2015-03-02 12:00:00.321'),
       tz='UTC'
     ),
-    c('ıİ', 'ö'),
+    # The first element is 'ıİÖğ' in iso8859-9 encoding,
+    # and the second 'Face with tears of joy' in UTF-8
+    c('\xFD\xDD\xD6\xF0', '\u1F602'),
     rep(NA, 2),
     rep(NA, 2),
     stringsAsFactors=FALSE
@@ -125,7 +143,10 @@ mock_httr_response <- function(
     on.exit(options(old.digits.secs), add=TRUE)
     content[['columns']] <- list()
     for (i in seq_along(presto.types)) {
-      presto.type <- tolower(presto.types[[i]])
+      presto.type <- stringi::stri_trans_tolower(
+        presto.types[[i]],
+        'en_US.UTF-8'
+      )
       content[['columns']][[i]] <- list(
         name=jsonlite::unbox(colnames(data)[i]),
         type=jsonlite::unbox(presto.type),

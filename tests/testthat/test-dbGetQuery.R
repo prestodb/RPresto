@@ -9,20 +9,38 @@ context('dbGetQuery')
 
 source('utilities.R')
 
-test_that('dbGetQuery works with live database', {
+with_locale(test.locale(), test_that)('dbGetQuery works with live database', {
   conn <- setup_live_connection()
-  expect_equal(
+  expect_equal_data_frame(
     dbGetQuery(conn, 'SELECT n FROM (VALUES (1), (2)) AS t (n)'),
     data.frame(n=c(1,2))
   )
 
-  expect_equal(
-    dbGetQuery(conn, "SELECT t FROM (VALUES ('çğıöşü'), ('ÇĞİÖŞÜ')) AS a (t)"),
-    data.frame(t=c('çğıöşü', 'ÇĞİÖŞÜ'), stringsAsFactors=FALSE)
+  # Unicode expression of c('çğıöşü', 'ÇĞİÖŞÜ')
+  # Written explicitly to ensure we have a utf-8 vector
+  utf8.tr.characters <- c(
+    '\u00E7\u011F\u0131\u00F6\u015F\u00FC',
+    '\u00C7\u011E\u0130\u00D6\u015E\u00DC'
   )
+  # The characters above in iso8859-9 - the test locale
+  lowercase <- "\xE7\xF0\xFD\xF6\xFE\xFC"
+  uppercase <- "\xC7\xD0\xDD\xD6\xDE\xDC"
+  query <- sprintf(
+    "SELECT t FROM (VALUES ('%s'), ('%s')) AS a (t)",
+    lowercase,
+    uppercase
+  )
+  expect_equal(Encoding(query), 'unknown')
+
+  r <- dbGetQuery(conn, query)
+  expect_equal(Encoding(r[['t']]), c('UTF-8', 'UTF-8'))
+
+  e <- data.frame(t=utf8.tr.characters, stringsAsFactors=FALSE)
+  expect_equal_data_frame(r, e)
 })
 
-test_that('dbGetQuery works with mock', {
+with_locale(test.locale(), test_that)('dbGetQuery works with mock', {
+
   conn <- setup_mock_connection()
   with_mock(
     `httr::POST`=mock_httr_replies(
@@ -70,11 +88,11 @@ test_that('dbGetQuery works with mock', {
       )
     ),
     {
-      expect_equal(
+      expect_equal_data_frame(
         dbGetQuery(conn, 'SELECT n FROM two_rows'),
         data.frame(n=c(1,2))
       )
-      expect_equal(
+      expect_equal_data_frame(
         dbGetQuery(conn, "SELECT t FROM encoding_test"),
         data.frame(t=c('çğıöşü', 'ÇĞİÖŞÜ'), stringsAsFactors=FALSE)
       )
