@@ -124,7 +124,10 @@ for (i in seq_along(.non.complex.types)) {
   if (is.na(rv)) {
     rv <- 'varchar'
   }
-  return(toupper(rv))
+  # We need to explicitly specify the locale for the upper transformation.
+  # For certain locales like tr_TR, the uppercase for 'i' is 'İ'
+  # so toupper('bigint') does not give the expected result
+  return(stringi::stri_trans_toupper(rv, 'en_US.UTF-8'))
 }
 
 #' Return the corresponding presto data type for the given R \code{object}

@@ -14,7 +14,8 @@ Imports:
     DBI (>= 0.3.0),
     httr (>= 0.6),
     RCurl,
-    jsonlite
+    jsonlite,
+    stringi
 Suggests:
     testthat,
     dplyr (>= 0.4.1)

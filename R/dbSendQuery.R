@@ -30,7 +30,7 @@ NULL
   headers <- .request.headers(conn)
   while (status == 503) {
     wait()
-    post.response <- httr::POST(url, body=statement, headers)
+    post.response <- httr::POST(url, body=enc2utf8(statement), headers)
     status <- httr::status_code(post.response)
   }
   check.status.code(post.response)

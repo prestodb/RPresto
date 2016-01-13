@@ -9,9 +9,8 @@ context('response.to.content')
 
 source('utilities.R')
 
-response.to.content <- RPresto:::response.to.content
-
-test_that('response.to.content works', {
+with_locale(test.locale(), test_that)('response.to.content works', {
+  response.to.content <- RPresto:::response.to.content
 
   response <- mock_httr_response(
       'dummy_url',
@@ -21,7 +20,7 @@ test_that('response.to.content works', {
       data=data.frame(
         l=TRUE,
         m=NA_integer_,
-        n='öğışüçÖĞİŞÜÇ',
+        n={ x <- 'öğışüçÖĞİŞÜÇ'; Encoding(x) <- 'UTF-8'; x },
         stringsAsFactors=FALSE
       )
   )[['response']]
@@ -61,7 +60,11 @@ test_that('response.to.content works', {
         )
       ),
       data=list(
-        list(TRUE, "NA", 'öğışüçÖĞİŞÜÇ')
+        list(
+          TRUE,
+          "NA",
+          { x <- 'öğışüçÖĞİŞÜÇ'; Encoding(x) <- 'UTF-8'; x }
+        )
       )
     )
   )

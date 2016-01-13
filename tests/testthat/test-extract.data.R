@@ -11,7 +11,8 @@ source('utilities.R')
 
 .extract.data <- RPresto:::.extract.data
 
-test_that('extract.data works', {
+with_locale(test.locale(), test_that)('extract.data works', {
+
   expect_equal(.extract.data(list()), data.frame())
 
   content <- RPresto:::response.to.content(

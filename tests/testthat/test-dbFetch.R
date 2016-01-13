@@ -201,8 +201,7 @@ test_that('dbFetch works with mock', {
   )
 })
 
-test_that('dbFetch rbind works correctly', {
-
+with_locale(test.locale(), test_that)('dbFetch rbind works correctly', {
   conn <- setup_mock_connection()
 
   with_mock(
