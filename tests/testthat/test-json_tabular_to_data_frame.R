@@ -238,7 +238,7 @@ test_that('Inf, -Inf and NaN are handled correctly', {
       list(list(A='Infinity', B='-Infinity', C='NaN')),
       c('character', 'character', 'character')
     ),
-    data.frame(A='Infinity', B='-Infinity', C='NaN')
+    data.frame(A='Infinity', B='-Infinity', C='NaN', stringsAsFactors=FALSE)
   )
 
   expect_equal_data_frame(
