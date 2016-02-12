@@ -38,6 +38,6 @@ test_that('check.status.code works', {
   )
   expect_error(
     check.status.code(response),
-    'client error: \\(403\\) Forbidden'
+    '403'
   )
 })
