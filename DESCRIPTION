@@ -14,7 +14,8 @@ Imports:
     DBI (>= 0.3.0),
     httr (>= 0.6),
     RCurl,
-    jsonlite
+    jsonlite,
+    stringi
 Suggests:
     testthat,
     dplyr (>= 0.4.1)
@@ -35,8 +36,6 @@ Collate:
     'db.query.rows.PrestoConnection.R'
     'dbHasCompleted.R'
     'dbClearResult.R'
-    'verified.timezone.R'
-    'infer.timezone.R'
     'dbConnect.R'
     'dbDataType.R'
     'dbDisconnect.R'

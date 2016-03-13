@@ -9,9 +9,12 @@ context('get.state')
 
 source('utilities.R')
 
-get.state <- RPresto:::get.state
 
-test_that('get.state works', {
+with_locale(test.locale(), test_that)(
+  'get.state works', {
+
+  get.state <- RPresto:::get.state
+
   content <- RPresto:::response.to.content(
     mock_httr_response(
       'dummy_url',

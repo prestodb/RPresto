@@ -7,8 +7,10 @@
 
 context('dbDataType')
 
-drv <- RPresto::Presto()
-test_that('presto simple types are correct', {
+with_locale(test.locale(), test_that)('presto simple types are correct', {
+
+    drv <- RPresto::Presto()
+
     expect_equal(dbDataType(drv, NULL), 'VARCHAR')
     expect_equal(dbDataType(drv, TRUE), 'BOOLEAN')
     expect_equal(dbDataType(drv, 1L), 'BIGINT')
@@ -33,6 +35,8 @@ test_that('presto simple types are correct', {
 })
 
 test_that('conversion to array is correct', {
+    drv <- RPresto::Presto()
+
     expect_equal(dbDataType(drv, list()), 'ARRAY<VARCHAR>')
     expect_equal(dbDataType(drv, list(list())), 'ARRAY<ARRAY<VARCHAR>>')
     expect_equal(dbDataType(drv,
@@ -54,6 +58,8 @@ test_that('conversion to array is correct', {
 })
 
 test_that('conversion to map is correct', {
+    drv <- RPresto::Presto()
+
     l <- structure(list(), names=character(0))
     expect_equal(dbDataType(drv, l), 'MAP<VARCHAR, VARCHAR>')
     expect_equal(

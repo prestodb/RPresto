@@ -23,7 +23,7 @@
 #' \dontrun{
 #' # To connect to a database
 #' my_db <- src_presto(catalog = "hive", schema = "web", user = "onur",
-#'   host = "localhost", port = 8888)
+#'   host = "localhost", port = 8888, session.timezone='Asia/Kathmandu')
 #' }
 src_presto <- function(
     catalog=NULL,
@@ -47,6 +47,7 @@ src_presto <- function(
     user=user %||% character(0),
     host=host %||% character(0),
     port=port %||% character(0),
+    session.timezone=session.timezone %||% character(0),
     parameters=parameters %||% list(),
     ...
   )

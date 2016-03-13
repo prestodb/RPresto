@@ -48,7 +48,10 @@ test_that('edge cases are handled correctly', {
       numeric=0.0,
       character='',
       Date=as.Date('2014-03-01'),
-      POSIXct_no_time_zone=as.POSIXct('2015-03-01 12:00:00', test.timezone()),
+      POSIXct_no_time_zone=as.POSIXct(
+        '2015-03-01 12:00:00',
+        tz=test.timezone()
+      ),
       POSIXct_with_time_zone=as.POSIXct('2015-03-01 12:00:00', tz='UTC'),
       stringsAsFactors=FALSE)
     e[['list_unnamed']] <- list(list(1))
@@ -78,7 +81,8 @@ test_that('edge cases are handled correctly', {
     expect_equal_data_frame(r, data.frame(rep(NA, 3))[, FALSE, drop=FALSE])
 })
 
-test_that('regular data is converted correctly', {
+with_locale(test.locale(), test_that)('regular data is converted correctly', {
+
   input <- list(
     list(
       TRUE,
@@ -89,7 +93,7 @@ test_that('regular data is converted correctly', {
       '2015-03-01',
       '2015-03-01 12:00:00',
       '2015-03-01 12:00:00 UTC',
-      'ıİ',
+      iconv('\xFD\xDD\xD6\xF0', localeToCharset(test.locale()), 'UTF-8'),
       list(1, 2),
       list(a=1, b=2)
     ),
@@ -102,7 +106,7 @@ test_that('regular data is converted correctly', {
       '2015-03-02',
       '2015-03-02 12:00:00.321',
       '2015-03-02 12:00:00.321 UTC',
-      'ö',
+      { x <- '\xE1\xBD\xA0\x32'; Encoding(x) <- 'UTF-8'; x},
       list(),
       structure(list(), names=character(0))
     )
@@ -123,6 +127,16 @@ test_that('regular data is converted correctly', {
   colnames(r) <- column.names
 
   expect_equal_data_frame(r, e, label='unnamed items')
+
+  Sys.setlocale('LC_CTYPE', 'fr_FR.iso8859-15@euro')
+  # This will fail because data.frame.with.all.classes() returns
+  # the first item of '<odd_name>' without an explicit encoding.
+  # However the data given to json.tabular.to.data.frame is reencoded
+  # to utf-8 from the test encoding which is not iso8859-15.
+  # Therefore, the comparison is effectively between:
+  # iconv('\xFD...', 'iso8859-15', 'utf8')
+  # iconv('\xFD...', '<test_encoding>', 'utf8')
+  expect_false(isTRUE(all.equal(r, e)))
 
   input.with.names <- lapply(input,
     function(x) { names(x) <- column.names; return(x) }
