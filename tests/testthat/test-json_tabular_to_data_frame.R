@@ -48,7 +48,10 @@ test_that('edge cases are handled correctly', {
       numeric=0.0,
       character='',
       Date=as.Date('2014-03-01'),
-      POSIXct_no_time_zone=as.POSIXct('2015-03-01 12:00:00', test.timezone()),
+      POSIXct_no_time_zone=as.POSIXct(
+        '2015-03-01 12:00:00',
+        tz=test.timezone()
+      ),
       POSIXct_with_time_zone=as.POSIXct('2015-03-01 12:00:00', tz='UTC'),
       stringsAsFactors=FALSE)
     e[['list_unnamed']] <- list(list(1))

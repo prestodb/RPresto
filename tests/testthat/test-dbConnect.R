@@ -32,57 +32,33 @@ test_that('dbConnect constructs PrestoConnection correctly', {
     label='invalid port'
   )
 
-  with_mock(
-    `httr::POST`=mock_httr_replies(
-      mock_httr_response(
-        'http://localhost:8000/v1/statement',
-        status_code=200,
-        state='QUEUED',
-        request_body='SELECT CURRENT_TIMEZONE() AS connection_timezone',
-        next_uri='http://localhost:8000/query_1/1'
-      )
+  expect_is(
+    dbConnect(
+      RPresto::Presto(),
+      catalog='jmx',
+      schema='test',
+      host='http://localhost',
+      port=8000,
+      session.timezone=test.timezone(),
+      user=Sys.getenv('USER')
     ),
-    `httr::GET`=mock_httr_replies(
-      mock_httr_response(
-        'http://localhost:8000/query_1/1',
-        status_code=200,
-        data=data.frame(
-          connection_timezone=test.timezone(),
-          stringsAsFactors=FALSE
-        ),
-        state='FINISHED'
-      )
-    ),
-    {
-      expect_is(
-        dbConnect(
-          RPresto::Presto(),
-          catalog='jmx',
-          schema='test',
-          host='http://localhost',
-          port=8000,
-          session.timezone=test.timezone(),
-          user=Sys.getenv('USER')
-        ),
-        'PrestoConnection'
-      )
+    'PrestoConnection'
+  )
 
-      expect_is(
-        dbConnect(
-          RPresto::Presto(),
-          catalog='jmx',
-          schema='test',
-          host='http://localhost',
-          port=8000,
-          session.timezone=test.timezone(),
-          user=Sys.getenv('USER'),
-          parameters=list(
-            experimental_big_query='true'
-          )
-        ),
-        'PrestoConnection',
-        label='extra parameters'
+  expect_is(
+    dbConnect(
+      RPresto::Presto(),
+      catalog='jmx',
+      schema='test',
+      host='http://localhost',
+      port=8000,
+      session.timezone=test.timezone(),
+      user=Sys.getenv('USER'),
+      parameters=list(
+        experimental_big_query='true'
       )
-    }
+    ),
+    'PrestoConnection',
+    label='extra parameters'
   )
 })

@@ -230,19 +230,16 @@ setup_live_connection <- function(session.timezone) {
   skip_on_cran()
   credentials <- read_credentials()
   if (missing(session.timezone)) {
-    wrapper <- function(expr) suppressWarnings(expr)
-    session.timezone <- NULL
-  } else {
-    wrapper <- function(expr) expr
+    session.timezone <- ''
   }
-  conn <- wrapper(dbConnect(RPresto::Presto(),
+  conn <- dbConnect(RPresto::Presto(),
     schema=credentials$schema,
     catalog=credentials$catalog,
     host=credentials$host,
     port=credentials$port,
     session.timezone=session.timezone,
     user=Sys.getenv('USER')
-  ))
+  )
   return(conn)
 }
 
@@ -255,29 +252,28 @@ setup_live_dplyr_connection <- function(session.timezone) {
 
   credentials <- read_credentials()
   if (missing(session.timezone)) {
-    wrapper <- function(expr) suppressWarnings(expr)
-    session.timezone <- NULL
-  } else {
-    wrapper <- function(expr) expr
+    session.timezone <- ''
   }
-  db <- wrapper(src_presto(
+  db <- src_presto(
     RPresto::Presto(),
     schema=credentials$schema,
     catalog=credentials$catalog,
     host=credentials$host,
     port=credentials$port,
     user=Sys.getenv('USER'),
+    session.timezone=session.timezone,
     parameters=list()
-  ))
+  )
   return(list(db=db, iris_table_name=credentials[['iris_table_name']]))
 }
 
 setup_mock_connection <- function() {
-  mock.conn <- new('PrestoConnection',
+  mock.conn <- dbConnect(
+    RPresto::Presto(),
     schema='test',
     catalog='catalog',
     host='http://localhost',
-    port=8000L,
+    port=8000,
     session.timezone=test.timezone(),
     user=Sys.getenv('USER')
   )
@@ -288,12 +284,15 @@ setup_mock_dplyr_connection <- function() {
   if(!require('dplyr', quietly=TRUE)) {
     skip("Skipping dplyr tests because we can't load dplyr")
   }
-  conn <- setup_mock_connection()
-  db <- dplyr::src_sql(
-    "presto",
-    conn,
-    info=DBI::dbGetInfo(conn),
-    disco=function(x) return(TRUE)
+  db <- src_presto(
+    RPresto::Presto(),
+    schema='test',
+    catalog='catalog',
+    host='http://localhost',
+    port=8000,
+    user=Sys.getenv('USER'),
+    session.timezone=test.timezone(),
+    parameters=list()
   )
 
   return(list(db=db, iris_table_name='iris_table'))
