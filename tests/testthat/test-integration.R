@@ -36,10 +36,16 @@ test_that('Integration tests work', {
   rs <- dbSendQuery(conn, sql)
   expect_that(rs, is_a("PrestoResult"))
 
-  rows <- 0
-  while (rows == 0) {
-    df <- dbFetch(rs)
-    rows <- NROW(df)
+  df <- NULL
+  while (!dbHasCompleted(rs)) {
+    chunk <- dbFetch(rs)
+    if (NROW(chunk)) {
+      df <- if (is.null(df)) {
+          chunk
+        } else {
+          rbind(df, chunk)
+        }
+    }
   }
   expect_that(df, is_a("data.frame"))
   expect_that(nrow(df), equals(5))
