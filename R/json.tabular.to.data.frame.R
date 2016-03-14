@@ -139,6 +139,20 @@ NULL
     rv[[j]] <- as.Date(rv[[j]])
   }
 
+  broken.integer.columns <- character(0)
+  for (j in which(column.types %in% 'integer')) {
+    if (!is.integer(rv[[j]])) {
+      broken.integer.columns <- c(broken.integer.columns, j)
+    }
+  }
+  if (length(broken.integer.columns) > 0) {
+    warning('integer columns [', paste(broken.integer.columns, collapse=', '),
+      '] are cast to double since R does not have full support for ',
+      '64-bit integers. This might result in precision loss. ',
+      'Cast them to VARCHAR\'s in presto if you need exact values.')
+  }
+
+
   for (j in which(column.types %in% 'POSIXct_no_time_zone')) {
     rv[[j]] <- as.POSIXct(rv[[j]], tz=timezone)
   }
