@@ -11,45 +11,46 @@ source('utilities.R')
 
 with_locale(test.locale(), test_that)('as() works', {
 
-  v <- src_translate_env(setup_mock_dplyr_connection()[['db']])
+  conn <- setup_mock_dplyr_connection()[['db']]
+  v <- dplyr::src_translate_env(conn)
   expect_equal(
-    translate_sql(as(x, 0.0), variant=v),
-    sql('CAST("x" AS "DOUBLE")')
+    dplyr::translate_sql(as(x, 0.0), variant=v),
+    dplyr::sql('CAST("x" AS "DOUBLE")')
   )
 
   expect_equal(
-    translate_sql_q(list(substitute(as(x, l), list(l=list()))), variant=v),
-    sql('CAST("x" AS "ARRAY<VARCHAR>")')
+    dplyr::translate_sql_q(list(substitute(as(x, l), list(l=list()))), variant=v),
+    dplyr::sql('CAST("x" AS "ARRAY<VARCHAR>")')
   )
 
 
   substituted.expression <- substitute(as(x, l), list(l=Sys.Date()))
   expect_equal(
-    translate_sql_q(list(substituted.expression), variant=v),
-    sql('CAST("x" AS "DATE")')
+    dplyr::translate_sql_q(list(substituted.expression), variant=v),
+    dplyr::sql('CAST("x" AS "DATE")')
   )
 
   # Hacky dummy table so that we can test substitution
   s <- setup_live_dplyr_connection()[['db']]
-  t <- tbl(s, from=sql('SELECT 1'), vars=list(as.name('x')))
+  t <- dplyr::tbl(s, from=dplyr::sql('SELECT 1'), vars=list(as.name('x')))
 
   l <- list(a=1L)
   expect_equal(
-    translate_sql(as(x, l), tbl=t),
-    sql('CAST("x" AS "MAP<VARCHAR, BIGINT>")')
+    dplyr::translate_sql(as(x, l), tbl=t),
+    dplyr::sql('CAST("x" AS "MAP<VARCHAR, BIGINT>")')
   )
 
   expect_equal(
-    translate_sql(as(x, local(list(a=Sys.time()))), tbl=t),
-    sql('CAST("x" AS "MAP<VARCHAR, TIMESTAMP>")')
+    dplyr::translate_sql(as(x, local(list(a=Sys.time()))), tbl=t),
+    dplyr::sql('CAST("x" AS "MAP<VARCHAR, TIMESTAMP>")')
   )
 
   r <- as.raw(0)
   p <- as.POSIXct('2001-02-03 04:05:06', tz='Europe/Istanbul')
   query <- as.character(
     (
-      t
-      %>% transmute(
+      dplyr::transmute(
+        t,
         b=as(a, r),
         c=as(a, p),
         d=as(a, TRUE)

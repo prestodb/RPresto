@@ -280,7 +280,7 @@ setup_live_connection <- function(session.timezone) {
 setup_live_dplyr_connection <- function(session.timezone) {
   skip_on_cran()
 
-  if(!require('dplyr', quietly=TRUE)) {
+  if(!requireNamespace('dplyr', quietly=TRUE)) {
     skip("Skipping dplyr tests because we can't load dplyr")
   }
 
@@ -315,7 +315,7 @@ setup_mock_connection <- function() {
 }
 
 setup_mock_dplyr_connection <- function() {
-  if(!require('dplyr', quietly=TRUE)) {
+  if(!requireNamespace('dplyr', quietly=TRUE)) {
     skip("Skipping dplyr tests because we can't load dplyr")
   }
   db <- src_presto(

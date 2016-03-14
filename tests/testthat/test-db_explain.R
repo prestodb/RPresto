@@ -12,11 +12,11 @@ source('utilities.R')
 test_that('db_explain works with live database', {
   s <- setup_live_dplyr_connection()[['db']]
 
-  explanation <- db_explain(s[['con']], sql('SHOW TABLES'))
+  explanation <- dplyr::db_explain(s[['con']], dplyr::sql('SHOW TABLES'))
   expect_is(explanation[[1]], 'character')
 
   expect_error(
-    db_explain(s[['con']], sql('INVALID')),
+    dplyr::db_explain(s[['con']], dplyr::sql('INVALID')),
     "Query.*failed:.*no viable alternative at input 'INVALID'"
   )
 })
@@ -42,7 +42,7 @@ test_that('db_explain works with mock', {
       )
     ),
     {
-      result <- db_explain(s[['con']], sql('SHOW TABLES'))
+      result <- dplyr::db_explain(s[['con']], dplyr::sql('SHOW TABLES'))
       expect_equal(result, 'explanation')
     }
   )
