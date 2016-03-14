@@ -28,7 +28,8 @@ test_that('dbFetch works with live database', {
   )
 
   result <- dbSendQuery(conn, 'SELECT 3 AS n LIMIT 0')
-  expect_equal(dbFetch(result, -1), data.frame())
+  rv <- dbFetch(result, -1)
+  expect_equal(rv, data.frame(n=1L)[FALSE, , drop=FALSE])
 })
 
 test_that('dbFetch works with mock', {
@@ -93,6 +94,7 @@ test_that('dbFetch works with mock', {
       mock_httr_response(
         'http://localhost:8000/query_4/1',
         status_code=200,
+        data=data.frame('_col0'=4)[FALSE, , drop=FALSE],
         state='FINISHED'
       )
     ),
@@ -141,7 +143,9 @@ test_that('dbFetch works with mock', {
       )
 
       result <- dbSendQuery(conn, 'SELECT 4 LIMIT 0')
-      expect_equal(rv <- dbFetch(result, -1), data.frame())
+      rv <- dbFetch(result, -1)
+      ev <- data.frame('_col0'=1L)[FALSE, , drop=FALSE]
+      expect_equal_data_frame(rv, ev)
     }
   )
   with_mock(
@@ -231,10 +235,99 @@ with_locale(test.locale(), test_that)('dbFetch rbind works correctly', {
     ),
     {
       result <- dbSendQuery(conn, 'SELECT * FROM all_types')
-      
+
       expect_equal_data_frame(
         dbFetch(result, -1),
         data.frame.with.all.classes()
+      )
+    }
+  )
+})
+
+test_that('dbFetch rbind works with zero row chunks', {
+  conn <- setup_mock_connection()
+  data <- data.frame(
+    integer=c(1L, 2L),
+    double=c(3.0, 4),
+    logical=c(TRUE, NA)
+  )
+  with_mock(
+    `httr::POST`=mock_httr_replies(
+      mock_httr_response(
+        'http://localhost:8000/v1/statement',
+        status_code=200,
+        state='FINISHED',
+        request_body='SELECT integer, double, logical FROM all_types',
+        next_uri='http://localhost:8000/query_1/1'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/v1/statement',
+        status_code=200,
+        state='PAUSED',
+        request_body='SELECT double FROM all_types',
+        next_uri='http://localhost:8000/query_2/1'
+      )
+    ),
+    `httr::GET`=mock_httr_replies(
+      mock_httr_response(
+        'http://localhost:8000/query_1/1',
+        status_code=200,
+        next_uri='http://localhost:8000/query_1/2',
+        data=data[1, , drop=FALSE],
+        state='FINISHED'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/query_1/2',
+        status_code=200,
+        next_uri='http://localhost:8000/query_1/3',
+        data=data[FALSE, , drop=FALSE],
+        state='FINISHED'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/query_1/3',
+        status_code=200,
+        data=data[2, , drop=FALSE],
+        state='FINISHED'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/query_2/1',
+        status_code=200,
+        next_uri='http://localhost:8000/query_2/2',
+        data=data[1, 'double', drop=FALSE],
+        state='FINISHED'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/query_2/2',
+        status_code=200,
+        next_uri='http://localhost:8000/query_2/3',
+        data=data[FALSE, 'double', drop=FALSE],
+        state='RUNNING'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/query_2/3',
+        status_code=200,
+        data=data[2, 'double', drop=FALSE],
+        state='FINISHED'
+      )
+    ),
+    {
+      result <- dbSendQuery(
+        conn,
+        'SELECT integer, double, logical FROM all_types'
+      )
+
+      expect_equal_data_frame(
+        dbFetch(result, -1),
+        data,
+        label='multiple columns'
+      )
+
+      result <- dbSendQuery(conn, 'SELECT double FROM all_types')
+
+      expect_equal_data_frame(
+        dbFetch(result, -1),
+        data[, 'double', drop=FALSE],
+        label='single column'
       )
     }
   )
