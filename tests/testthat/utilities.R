@@ -39,6 +39,19 @@ expect_equal_data_frame <- function(r, e, ...) {
 
 test.timezone <- function() { return('Asia/Kathmandu') }
 
+test.locale <- function() { return('tr_TR.iso8859-9') }
+
+with_locale <- function(locale, f) {
+  wrapped <- function(...) {
+    old.locale <- Sys.getlocale('LC_CTYPE')
+    Sys.setlocale('LC_CTYPE', locale)
+    on.exit(Sys.setlocale('LC_CTYPE', old.locale), add=TRUE)
+    f(...)
+  }
+  return(wrapped)
+}
+
+
 data.frame.with.all.classes <- function(row.indices) {
   old.locale <- Sys.getlocale('LC_CTYPE')
   Sys.setlocale('LC_CTYPE', test.locale())
