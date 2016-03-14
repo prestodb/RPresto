@@ -11,6 +11,7 @@ NULL
 #' An S4 class to represent a Presto Result
 #' @slot post.response The initial response from the HTTP API
 #' @slot statement The SQL statement sent to the database
+#' @slot session.timezone Session time zone used for the connection
 #' @slot cursor An internal implementation detail for keeping track of
 #'  what stage a request is in
 #' @keywords internal
