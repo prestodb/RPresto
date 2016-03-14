@@ -128,15 +128,24 @@ with_locale(test.locale(), test_that)('regular data is converted correctly', {
 
   expect_equal_data_frame(r, e, label='unnamed items')
 
-  Sys.setlocale('LC_CTYPE', 'fr_FR.iso8859-15@euro')
-  # This will fail because data.frame.with.all.classes() returns
-  # the first item of '<odd_name>' without an explicit encoding.
-  # However the data given to json.tabular.to.data.frame is reencoded
-  # to utf-8 from the test encoding which is not iso8859-15.
-  # Therefore, the comparison is effectively between:
-  # iconv('\xFD...', 'iso8859-15', 'utf8')
-  # iconv('\xFD...', '<test_encoding>', 'utf8')
-  expect_false(isTRUE(all.equal(r, e)))
+  old.locale <- Sys.getlocale('LC_CTYPE')
+  tryCatch({
+      Sys.setlocale('LC_CTYPE', 'fr_FR.iso8859-15@euro')
+    },
+    warning=function(cond) {
+      Sys.setlocale('LC_CTYPE', 'fr_FR.iso8859-15')
+    }
+  )
+  if (Sys.getlocale('LC_CTYPE') != old.locale) {
+    # This will fail because data.frame.with.all.classes() returns
+    # the first item of '<odd_name>' without an explicit encoding.
+    # However the data given to json.tabular.to.data.frame is reencoded
+    # to utf-8 from the test encoding which is not iso8859-15.
+    # Therefore, the comparison is effectively between:
+    # iconv('\xFD...', 'iso8859-15', 'utf8')
+    # iconv('\xFD...', '<test_encoding>', 'utf8')
+    expect_false(isTRUE(all.equal(r, e)))
+  }
 
   input.with.names <- lapply(input,
     function(x) { names(x) <- column.names; return(x) }
