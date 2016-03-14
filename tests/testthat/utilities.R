@@ -52,6 +52,8 @@ with_locale <- function(locale, f) {
 }
 
 
+# Note that you need to wrap your test_that call with with_locale if you
+# use the data returned here for comparison
 data.frame.with.all.classes <- function(row.indices) {
   old.locale <- Sys.getlocale('LC_CTYPE')
   Sys.setlocale('LC_CTYPE', test.locale())
@@ -138,7 +140,7 @@ data.to.list <- function(data) {
         literalArguments=list()
       )
     )
-    if (presto.type == 'timestamp with time zone') {
+    if (presto.type == 'timestamp with time zone' && NROW(data)) {
       # toJSON ignores the timezone attribute
       data[[i]] <- paste(data[[i]], attr(data[[i]], 'tzone'))
     } else if (presto.type %in% c('array', 'map')) {

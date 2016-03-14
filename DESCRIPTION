@@ -18,7 +18,7 @@ Imports:
     stringi
 Suggests:
     testthat,
-    dplyr (>= 0.4.1)
+    dplyr (>= 0.4.3)
 License: BSD_3_clause + file LICENSE
 URL: https://github.com/prestodb/RPresto
 BugReports: https://github.com/prestodb/RPresto/issues

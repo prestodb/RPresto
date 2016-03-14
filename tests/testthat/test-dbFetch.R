@@ -244,13 +244,19 @@ with_locale(test.locale(), test_that)('dbFetch rbind works correctly', {
   )
 })
 
-test_that('dbFetch rbind works with zero row chunks', {
+with_locale(test.locale(), test_that)('dbFetch rbind works with zero row chunks', {
   conn <- setup_mock_connection()
   data <- data.frame(
     integer=c(1L, 2L),
     double=c(3.0, 4),
     logical=c(TRUE, NA)
   )
+  full.data <- data.frame.with.all.classes()
+  full.data <- full.data[
+    ,
+    -match(c('raw', 'list_unnamed', 'list_named'), colnames(full.data)),
+    drop=FALSE
+  ]
   with_mock(
     `httr::POST`=mock_httr_replies(
       mock_httr_response(
@@ -266,6 +272,13 @@ test_that('dbFetch rbind works with zero row chunks', {
         state='PAUSED',
         request_body='SELECT double FROM all_types',
         next_uri='http://localhost:8000/query_2/1'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/v1/statement',
+        status_code=200,
+        state='PAUSED',
+        request_body='SELECT * FROM all_types',
+        next_uri='http://localhost:8000/query_3/1'
       )
     ),
     `httr::GET`=mock_httr_replies(
@@ -308,6 +321,19 @@ test_that('dbFetch rbind works with zero row chunks', {
         status_code=200,
         data=data[2, 'double', drop=FALSE],
         state='FINISHED'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/query_3/1',
+        status_code=200,
+        next_uri='http://localhost:8000/query_3/2',
+        data=full.data[FALSE, , drop=FALSE],
+        state='FINISHED'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/query_3/2',
+        status_code=200,
+        data=full.data,
+        state='FINISHED'
       )
     ),
     {
@@ -328,6 +354,14 @@ test_that('dbFetch rbind works with zero row chunks', {
         dbFetch(result, -1),
         data[, 'double', drop=FALSE],
         label='single column'
+      )
+
+      result <- dbSendQuery(conn, 'SELECT * FROM all_types')
+
+      expect_equal_data_frame(
+        dbFetch(result, -1),
+        full.data,
+        label='zero chunk first'
       )
     }
   )
