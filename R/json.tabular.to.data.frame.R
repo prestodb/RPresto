@@ -152,7 +152,6 @@ NULL
       'Cast them to VARCHAR\'s in presto if you need exact values.')
   }
 
-
   for (j in which(column.types %in% 'POSIXct_no_time_zone')) {
     rv[[j]] <- as.POSIXct(rv[[j]], tz=timezone)
   }
@@ -178,7 +177,12 @@ NULL
   # Unfortunately, even with rv[[j]][[i]] indexing, R makes a copy of
   # the data.frame and as such is *very* slow.
   attr(rv, 'class') <- 'data.frame'
-  attr(rv, 'row.names') <- c(NA, -1 * row.count)
+  if (row.count > 0) {
+    row.names <- c(NA, -1 * row.count)
+  } else {
+    row.names <- integer(0)
+  }
+  attr(rv, 'row.names') <- row.names
   colnames(rv) <- column.names
   return(rv)
 }

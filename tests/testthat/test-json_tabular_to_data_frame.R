@@ -141,6 +141,7 @@ with_locale(test.locale(), test_that)('regular data is converted correctly', {
   input.with.names <- lapply(input,
     function(x) { names(x) <- column.names; return(x) }
   )
+  Sys.setlocale('LC_CTYPE', test.locale())
   r <- .json.tabular.to.data.frame(
     input.with.names,
     column.classes,

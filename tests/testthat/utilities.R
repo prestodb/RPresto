@@ -39,6 +39,19 @@ expect_equal_data_frame <- function(r, e, ...) {
 
 test.timezone <- function() { return('Asia/Kathmandu') }
 
+test.locale <- function() { return('tr_TR.iso8859-9') }
+
+with_locale <- function(locale, f) {
+  wrapped <- function(...) {
+    old.locale <- Sys.getlocale('LC_CTYPE')
+    Sys.setlocale('LC_CTYPE', locale)
+    on.exit(Sys.setlocale('LC_CTYPE', old.locale), add=TRUE)
+    f(...)
+  }
+  return(wrapped)
+}
+
+
 data.frame.with.all.classes <- function(row.indices) {
   old.locale <- Sys.getlocale('LC_CTYPE')
   Sys.setlocale('LC_CTYPE', test.locale())
@@ -87,6 +100,58 @@ data.frame.with.all.classes <- function(row.indices) {
   return(e)
 }
 
+data.to.list <- function(data) {
+  # Change POSIXct representation, otherwise microseconds
+  # are chopped off in toJSON
+  old.digits.secs <- options('digits.secs'=3)
+  on.exit(options(old.digits.secs), add=TRUE)
+
+  presto.types <- lapply(data, function(l) {
+    drv <- RPresto::Presto()
+    if (is.list(l)) {
+      rs.class <- data.class(l[[1]])
+      if (rs.class == 'raw') {
+        rv <- 'varbinary'
+      } else if (rs.class == 'list') {
+        rv <- ifelse(is.null(names(l[[1]])), 'array', 'map')
+      } else {
+        stop('Unsupported mock data type: ', rs.class)
+      }
+    } else {
+      rv <- dbDataType(RPresto::Presto(), l)
+    }
+    return(rv)
+  })
+
+  column.data <- list()
+  for (i in seq_along(presto.types)) {
+    presto.type <- stringi::stri_trans_tolower(
+      presto.types[[i]],
+      'en_US.UTF-8'
+    )
+    column.data[[i]] <- list(
+      name=jsonlite::unbox(colnames(data)[i]),
+      type=jsonlite::unbox(presto.type),
+      typeSignature=list(
+        rawType=jsonlite::unbox(presto.type),
+        typeArguments=list(),
+        literalArguments=list()
+      )
+    )
+    if (presto.type == 'timestamp with time zone') {
+      # toJSON ignores the timezone attribute
+      data[[i]] <- paste(data[[i]], attr(data[[i]], 'tzone'))
+    } else if (presto.type %in% c('array', 'map')) {
+      # Lists need to be unboxed
+      data[[i]] <- lapply( # Apply to each row
+        data[[i]],
+        function(l) lapply(l, jsonlite::unbox) # Apply to each item
+      )
+    }
+  }
+  return(list(column.data=column.data, data=data))
+}
+
 mock_httr_response <- function(
   url,
   status_code,
@@ -114,55 +179,15 @@ mock_httr_response <- function(
   }
 
   if (!missing(data)) {
-    presto.types <- lapply(data, function(l) {
-      drv <- RPresto::Presto()
-      if (is.list(l)) {
-        rs.class <- data.class(l[[1]])
-        if (rs.class == 'raw') {
-          rv <- 'varbinary'
-        } else if (rs.class == 'list') {
-          rv <- ifelse(is.null(names(l[[1]])), 'array', 'map')
-        } else {
-          stop('Unsupported mock data type: ', rs.class)
-        }
-      } else {
-        rv <- dbDataType(RPresto::Presto(), l)
-      }
-      return(rv)
-    })
-
-    # Change POSIXct representation, otherwise microseconds
-    # are chopped off in toJSON
-    old.digits.secs <- options('digits.secs'=3)
-    on.exit(options(old.digits.secs), add=TRUE)
-    content[['columns']] <- list()
-    for (i in seq_along(presto.types)) {
-      presto.type <- stringi::stri_trans_tolower(
-        presto.types[[i]],
-        'en_US.UTF-8'
-      )
-      content[['columns']][[i]] <- list(
-        name=jsonlite::unbox(colnames(data)[i]),
-        type=jsonlite::unbox(presto.type),
-        typeSignature=list(
-          rawType=jsonlite::unbox(presto.type),
-          typeArguments=list(),
-          literalArguments=list()
-        )
-      )
-      if (presto.type == 'timestamp with time zone') {
-        # toJSON ignores the timezone attribute
-        data[[i]] <- paste(data[[i]], attr(data[[i]], 'tzone'))
-      } else if (presto.type %in% c('array', 'map')) {
-        # Lists need to be unboxed
-        data[[i]] <- lapply( # Apply to each row
-          data[[i]],
-          function(l) lapply(l, jsonlite::unbox) # Apply to each item
-        )
-      }
-    }
-    content[['data']] <- data
+    content.info <- data.to.list(data)
+    content[['columns']] <- content.info[['column.data']]
+    content[['data']] <- content.info[['data']]
   }
+
+  # Change POSIXct representation, otherwise microseconds
+  # are chopped off in toJSON
+  old.digits.secs <- options('digits.secs'=3)
+  on.exit(options(old.digits.secs), add=TRUE)
 
   rv <- list(
     url=url,

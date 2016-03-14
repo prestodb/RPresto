@@ -9,8 +9,9 @@
 NULL
 
 .extract.data <- function(response.content, timezone) {
-  if (is.null(response.content[['data']])) {
-    return(data.frame())
+  data.list <- response.content[['data']]
+  if (is.null(data.list)) {
+    data.list <- list()
   }
   column.info <- .json.tabular.to.data.frame(
     response.content[['columns']],
@@ -25,10 +26,9 @@ NULL
     ''
   )
   r.types <- with(.presto.to.R, R.type[match(presto.types, presto.type)])
-  rv <- .json.tabular.to.data.frame(
-    response.content[['data']],
-    r.types,
-    timezone=timezone)
-  colnames(rv) <- column.info[['name']]
+  rv <- .json.tabular.to.data.frame(data.list, r.types, timezone=timezone)
+  if (!is.null(column.info[['name']])) {
+    colnames(rv) <- column.info[['name']]
+  }
   return(rv)
 }
