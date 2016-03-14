@@ -92,7 +92,7 @@ with_locale(test.locale(), test_that)('regular data is converted correctly', {
       'YQ==', # a
       '2015-03-01',
       '2015-03-01 12:00:00',
-      '2015-03-01 12:00:00 UTC',
+      '2015-03-01 12:00:00 Europe/Paris',
       iconv('\xFD\xDD\xD6\xF0', localeToCharset(test.locale()), 'UTF-8'),
       list(1, 2),
       list(a=1, b=2)
@@ -105,7 +105,7 @@ with_locale(test.locale(), test_that)('regular data is converted correctly', {
       'YmM=', # bc
       '2015-03-02',
       '2015-03-02 12:00:00.321',
-      '2015-03-02 12:00:00.321 UTC',
+      '2015-03-02 12:00:00.321 Europe/Paris',
       { x <- '\xE1\xBD\xA0\x32'; Encoding(x) <- 'UTF-8'; x},
       list(),
       structure(list(), names=character(0))
@@ -208,7 +208,7 @@ test_that('NAs are handled correctly', {
       raw=NULL,
       Date='2015-03-01',
       POSIXct_no_time_zone=NULL,
-      POSIXct_with_time_zone='2015-04-01 01:02:03.456 UTC',
+      POSIXct_with_time_zone='2015-04-01 01:02:03.456 Europe/Paris',
       list_unnamed=NULL,
       list_named=list(A=1)
     ),
@@ -237,7 +237,7 @@ test_that('NAs are handled correctly', {
       =as.POSIXct(c(NA, '2015-04-01 01:02:03.456'), tz=test.timezone()),
     POSIXct_with_time_zone=as.POSIXct(
       c('2015-04-01 01:02:03.456', NA),
-      tz='UTC'
+      tz='Europe/Paris'
     ),
     list_unnamed=NA,
     list_named=NA,

@@ -72,7 +72,7 @@ data.frame.with.all.classes <- function(row.indices) {
     ),
     as.POSIXct(
       c('2015-03-01 12:00:00', '2015-03-02 12:00:00.321'),
-      tz='UTC'
+      tz='Europe/Paris'
     ),
     # The first element is 'ıİÖğ' in iso8859-9 encoding,
     # and the second 'Face with tears of joy' in UTF-8
@@ -87,7 +87,7 @@ data.frame.with.all.classes <- function(row.indices) {
   column.names <- column.classes
   column.names[length(column.names) - 2] <- '<odd_name>'
   colnames(e) <- column.names
-  attr(e[['POSIXct_with_time_zone']], 'tzone') <- 'UTC'
+  attr(e[['POSIXct_with_time_zone']], 'tzone') <- 'Europe/Paris'
   attr(e[['POSIXct_no_time_zone']], 'tzone') <- test.timezone()
   e[['raw']] <- list(charToRaw('a'), charToRaw('bc'))
   e[['list_unnamed']] <- list(list(1, 2), list())
