@@ -17,6 +17,8 @@ devtools::install_github('prestodb/RPresto')
 The standard DBI approach works with RPresto:
 
 ```R
+library('DBI')
+
 con <- dbConnect(
   RPresto::Presto(),
   host='http://localhost',
@@ -27,10 +29,24 @@ con <- dbConnect(
 )
 
 res <- dbSendQuery(con, 'SELECT 1')
-# n != -1 for dbFetch is not supported
-data <- dbFetch(res)
+# dbFetch without arguments only returns the current chunk, so we need to
+# loop until the query completes.
+while (!dbHasCompleted(res)) {
+    chunk <- dbFetch(res)
+    print(chunk)
+}
 
-# For iris.sql()
+res <- dbSendQuery(con, 'SELECT CAST(NULL AS VARCHAR)')
+# Due to the unpredictability of chunk sizes with presto, we do not support
+# custom number of rows
+# testthat::expect_error(dbFetch(res, 5))
+
+# To get all rows using dbFetch, pass in a -1 argument
+print(dbFetch(res, -1))
+
+# An alternative is to use dbGetQuery directly
+
+# `source` for iris.sql()
 source(system.file('tests', 'testthat', 'utilities.R', package='RPresto'))
 
 iris <- dbGetQuery(con, paste("SELECT * FROM", iris.sql()))
