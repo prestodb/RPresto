@@ -64,8 +64,10 @@ src_presto <- function(
 }
 
 .db.disconnector <- function(con) {
-  message('Auto-disconnecting presto connection')
-  return(DBI::dbDisconnect(con))
+  reg.finalizer(environment(), function(...) {
+    return(DBI::dbDisconnect(con))
+  })
+  environment()
 }
 
 "%||%" <- function(x, y) if (is.null(x)) return(y) else return(x)
