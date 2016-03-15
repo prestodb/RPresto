@@ -22,7 +22,8 @@ response.to.content <- function (response)  {
 }
 
 wait <- function () {
-  Sys.sleep(runif(n = 1, min = 50, max = 100) / 1000)  # sleep 50 - 100 ms
+  # sleep 50 - 100 ms
+  Sys.sleep(stats::runif(n = 1, min = 50, max = 100) / 1000)
 }
 
 get.state <- function (content) {

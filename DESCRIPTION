@@ -1,12 +1,12 @@
 Package: RPresto
-Title: DBI connector to Presto
+Title: DBI Connector to Presto
 Version: 1.2.0
 Authors@R: c(
     person('Onur Ismail', 'Filiz', , 'onur@fb.com', role=c('aut', 'cre')),
     person('Sergey', 'Goder', , 'sgoder@fb.com', role='aut'),
     person('John Myles', 'White', , 'johnmyleswhite@fb.com', role='ctb')
     )
-Description: A DBI-compliant interface to Presto.
+Description: A DBI compliant interface to Presto.
 Depends:
     R (>= 3.1.0),
     methods
@@ -15,13 +15,15 @@ Imports:
     httr (>= 0.6),
     RCurl,
     jsonlite,
-    stringi
+    stringi,
+    stats
 Suggests:
     testthat,
     dplyr (>= 0.4.3)
 License: BSD_3_clause + file LICENSE
 URL: https://github.com/prestodb/RPresto
 BugReports: https://github.com/prestodb/RPresto/issues
+Encoding: UTF-8
 LazyData: true
 Collate:
     'PrestoDriver.R'

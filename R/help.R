@@ -5,10 +5,6 @@
 # LICENSE file in the root directory of this source tree. An additional grant
 # of patent rights can be found in the PATENTS file in the same directory.
 
-#' @importFrom methods setClass setGeneric setMethod setRefClass
-#' @import DBI
-NULL
-
 #' RPresto
 #'
 #' A DBI-compliant interface to Presto.

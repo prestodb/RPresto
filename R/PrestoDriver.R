@@ -10,6 +10,9 @@
 #'
 #' @keywords internal
 #' @export
+#' @importFrom methods setClass setGeneric setMethod setRefClass
+#' @importFrom methods show getPackageName new
+#' @import DBI
 setClass('PrestoDriver',
   contains='DBIDriver'
 )

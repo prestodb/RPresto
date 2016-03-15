@@ -130,7 +130,11 @@ with_locale(test.locale(), test_that)('regular data is converted correctly', {
 
   old.locale <- Sys.getlocale('LC_CTYPE')
   tryCatch({
-      Sys.setlocale('LC_CTYPE', 'fr_FR.iso8859-15@euro')
+      if (.Platform[['OS.type']] == 'windows') {
+        Sys.setlocale('LC_CTYPE', 'French_France.1252')
+      } else {
+        Sys.setlocale('LC_CTYPE', 'fr_FR.iso8859-15@euro')
+      }
     },
     warning=function(cond) {
       Sys.setlocale('LC_CTYPE', 'fr_FR.iso8859-15')

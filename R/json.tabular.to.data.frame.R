@@ -157,7 +157,7 @@ NULL
   }
 
   for (j in which(column.types %in% 'POSIXct_with_time_zone')) {
-    timezones <- na.omit(sub('^.+ ([^ ]+)$', "\\1", rv[[j]], perl=TRUE))
+    timezones <- stats::na.omit(sub('^.+ ([^ ]+)$', "\\1", rv[[j]], perl=TRUE))
     if (length(unique(timezones)) > 1) {
       warning('Multiple timezones for column ', j, ', ',
         'using ', timezones[1])
