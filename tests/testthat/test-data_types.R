@@ -136,7 +136,7 @@ test_that("all data types work", {
     type_array_bigint=NA,
     type_map_varchar_bigint=NA
   )
-  attr(e[['type_timestamp_with_timezone']], 'tzone') <- NA_character_
+  attr(e[['type_timestamp_with_timezone']], 'tzone') <- NULL
   attr(e[['type_timestamp']], 'tzone') <- test.timezone()
   e[['type_varbinary']] <- list(NA)
   e[['type_array_bigint']] <- list(NA)

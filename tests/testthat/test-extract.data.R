@@ -48,7 +48,7 @@ with_locale(test.locale(), test_that)('extract.data works', {
   # We need to remove the timezone from the column since without any
   # data json.tabular.to.data.frame has no way of finding it
   ev <- data.frame.with.all.classes()[FALSE, ]
-  attr(ev[['POSIXct_with_time_zone']], 'tzone') <- NA_character_
+  attr(ev[['POSIXct_with_time_zone']], 'tzone') <- NULL
 
   expect_equal_data_frame(
     .extract.data(content, timezone=test.timezone()),

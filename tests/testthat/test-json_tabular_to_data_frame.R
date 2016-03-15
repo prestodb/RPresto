@@ -56,7 +56,7 @@ test_that('edge cases are handled correctly', {
     e[['list_unnamed']] <- list(list(1))
     e[['list_named']] <- list(list(a=1))
     e[['raw']] <- list(charToRaw('abc'))
-    attr(e[['POSIXct_with_time_zone']], 'tzone') <- NA_character_
+    attr(e[['POSIXct_with_time_zone']], 'tzone') <- NULL
 
     column.types <- c(
         'logical', 'integer', 'numeric', 'character', 'Date',
@@ -167,7 +167,7 @@ test_that('NAs are handled correctly', {
   )
 
   e <- data.frame(A=as.Date(NA), B=3L, C=as.POSIXct(NA))
-  attr(e[['C']], 'tzone') <- NA_character_
+  attr(e[['C']], 'tzone') <- NULL
   expect_equal_data_frame(
     .json.tabular.to.data.frame(
       list(list(A=NULL, B=3L, C=NULL)),
@@ -196,7 +196,7 @@ test_that('NAs are handled correctly', {
   e[['list_unnamed']] <- list(NA)
   e[['list_named']] <- list(NA)
   attr(e[['POSIXct_no_time_zone']], 'tzone') <- test.timezone()
-  attr(e[['POSIXct_with_time_zone']], 'tzone') <- NA_character_
+  attr(e[['POSIXct_with_time_zone']], 'tzone') <- NULL
 
   expect_equal_data_frame(r, e)
 
