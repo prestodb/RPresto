@@ -9,9 +9,9 @@ context('.extract.data')
 
 source('utilities.R')
 
-.extract.data <- RPresto:::.extract.data
 
 with_locale(test.locale(), test_that)('extract.data works', {
+  .extract.data <- RPresto:::.extract.data
 
   response <- mock_httr_response(
       'dummy_url',

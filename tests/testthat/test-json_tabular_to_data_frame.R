@@ -9,9 +9,8 @@ context('.json.tabular.to.data.frame')
 
 source('utilities.R')
 
-.json.tabular.to.data.frame <- RPresto:::.json.tabular.to.data.frame
-
 test_that('edge cases are handled correctly', {
+    .json.tabular.to.data.frame <- RPresto:::.json.tabular.to.data.frame
     expect_equal_data_frame(
       .json.tabular.to.data.frame(list(), character(0)),
       data.frame()
@@ -82,6 +81,7 @@ test_that('edge cases are handled correctly', {
 })
 
 with_locale(test.locale(), test_that)('regular data is converted correctly', {
+  .json.tabular.to.data.frame <- RPresto:::.json.tabular.to.data.frame
 
   input <- list(
     list(
@@ -160,6 +160,7 @@ with_locale(test.locale(), test_that)('regular data is converted correctly', {
 })
 
 test_that('NAs are handled correctly', {
+  .json.tabular.to.data.frame <- RPresto:::.json.tabular.to.data.frame
   expect_equal_data_frame(
     .json.tabular.to.data.frame(list(list(A=NULL)), 'logical'),
     data.frame(A=NA)
@@ -265,6 +266,7 @@ test_that('NAs are handled correctly', {
 })
 
 test_that('Inf, -Inf and NaN are handled correctly', {
+  .json.tabular.to.data.frame <- RPresto:::.json.tabular.to.data.frame
   expect_equal_data_frame(
     .json.tabular.to.data.frame(
       list(list(A='Infinity', B='-Infinity', C='NaN')),
