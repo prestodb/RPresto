@@ -1,6 +1,6 @@
 # Test environments
 
-- OS X 10.10.5 Yosemite, R 3.1.2
+- OS X 10.10.5 Yosemite, R 3.1.2 and 3.2.4
 - CentOS 6.7, R 3.2.2
 - win-builder (devel and release)
 - WinXP, R 3.2.4

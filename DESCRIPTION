@@ -6,6 +6,7 @@ Authors@R: c(
     person('Sergey', 'Goder', , 'sgoder@fb.com', role='aut'),
     person('John Myles', 'White', , 'johnmyleswhite@fb.com', role='ctb')
     )
+Copyright: Facebook, Inc. 2015-present.
 Description: A DBI compliant interface to Presto.
 Depends:
     R (>= 3.1.0),
