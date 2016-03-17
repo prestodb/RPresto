@@ -1,3 +1,11 @@
+## Resubmission
+
+This is a resubmission. In this version:
+
+- I used the CRAN template for the License.
+- In the description, I added an explanation of Presto and provided the
+  link to its website.
+
 # Test environments
 
 - OS X 10.10.5 Yosemite, R 3.1.2 and 3.2.4
