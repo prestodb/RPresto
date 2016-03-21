@@ -69,3 +69,13 @@ with_locale(test.locale(), test_that)('extract.data works', {
     data.frame.with.all.classes()
   )
 })
+
+test_that('extract.data works without column information', {
+  # Sometimes Presto does not return any column information for a chunk,
+  # see https://github.com/prestodb/RPresto/issues/49
+  .extract.data <- RPresto:::.extract.data
+  expect_equal_data_frame(
+    .extract.data(NULL, timezone=test.timezone()),
+    data.frame()
+  )
+})

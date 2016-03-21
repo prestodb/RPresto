@@ -13,8 +13,12 @@ NULL
   if (is.null(data.list)) {
     data.list <- list()
   }
+  column.list <- response.content[['columns']]
+  if (is.null(column.list)) {
+    column.list <- list()
+  }
   column.info <- .json.tabular.to.data.frame(
-    response.content[['columns']],
+    column.list,
     # name, type, typeSignature
     c('character', 'character', 'list_named')
   )

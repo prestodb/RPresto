@@ -279,6 +279,13 @@ with_locale(test.locale(), test_that)('dbFetch rbind works with zero row chunks'
         state='PAUSED',
         request_body='SELECT * FROM all_types',
         next_uri='http://localhost:8000/query_3/1'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/v1/statement',
+        status_code=200,
+        state='QUEUED',
+        request_body='SELECT * FROM all_types_with_queue',
+        next_uri='http://localhost:8000/query_4/1'
       )
     ),
     `httr::GET`=mock_httr_replies(
@@ -334,6 +341,57 @@ with_locale(test.locale(), test_that)('dbFetch rbind works with zero row chunks'
         status_code=200,
         data=full.data,
         state='FINISHED'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/query_4/1',
+        status_code=200,
+        next_uri='http://localhost:8000/query_4/2',
+        state='QUEUED'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/query_4/2',
+        status_code=200,
+        next_uri='http://localhost:8000/query_4/3',
+        state='QUEUED'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/query_4/3',
+        next_uri='http://localhost:8000/query_4/4',
+        status_code=200,
+        data=full.data[1, , drop=FALSE],
+        state='FINISHED'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/query_4/4',
+        status_code=200,
+        next_uri='http://localhost:8000/query_4/5',
+        state='QUEUED'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/query_4/5',
+        next_uri='http://localhost:8000/query_4/6',
+        status_code=200,
+        data=full.data[FALSE, , drop=FALSE],
+        state='FINISHED'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/query_4/6',
+        next_uri='http://localhost:8000/query_4/7',
+        status_code=200,
+        data=full.data[2, , drop=FALSE],
+        state='FINISHED'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/query_4/7',
+        next_uri='http://localhost:8000/query_4/8',
+        status_code=200,
+        data=full.data[FALSE, , drop=FALSE],
+        state='FINISHED'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/query_4/8',
+        status_code=200,
+        state='FINISHED'
       )
     ),
     {
@@ -362,6 +420,13 @@ with_locale(test.locale(), test_that)('dbFetch rbind works with zero row chunks'
         dbFetch(result, -1),
         full.data,
         label='zero chunk first'
+      )
+
+      result <- dbSendQuery(conn, 'SELECT * FROM all_types_with_queue')
+      expect_equal_data_frame(
+        dbFetch(result, -1),
+        full.data,
+        label='with empty chunks'
       )
     }
   )
