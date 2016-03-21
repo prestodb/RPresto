@@ -1,3 +1,5 @@
+# RPresto 1.2.0.9000
+
 # RPresto 1.2.0
 
 - Add a `session.timezone` parameter to `dbConnect` and `src_presto` which
