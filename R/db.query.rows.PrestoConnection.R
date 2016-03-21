@@ -5,6 +5,10 @@
 # LICENSE file in the root directory of this source tree. An additional grant
 # of patent rights can be found in the PATENTS file in the same directory.
 
+#' S3 implementation of \code{\link[dplyr]{db_query_rows}} for Presto.
+#'
+#' @rdname dplyr_function_implementations
+#' @keywords internal
 #' @export
 db_query_rows.PrestoConnection <- function(con, sql) {
   # We shouldn't be doing a COUNT(*) over arbitrary tables because Hive tables

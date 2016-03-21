@@ -157,15 +157,27 @@ NULL
   }
 
   for (j in which(column.types %in% 'POSIXct_with_time_zone')) {
-    timezones <- na.omit(sub('^.+ ([^ ]+)$', "\\1", rv[[j]], perl=TRUE))
+    timezones <- stats::na.omit(sub('^.+ ([^ ]+)$', "\\1", rv[[j]], perl=TRUE))
     if (length(unique(timezones)) > 1) {
       warning('Multiple timezones for column ', j, ', ',
         'using ', timezones[1])
     }
-    rv[[j]] <- as.POSIXct(
-      sub('^(.+) [^ ]+$', "\\1", rv[[j]], perl=TRUE),
-      tz=timezones[1]
-    )
+    if (length(timezones) > 0) {
+      rv[[j]] <- as.POSIXct(
+        sub('^(.+) [^ ]+$', "\\1", rv[[j]], perl=TRUE),
+        tz=timezones[1]
+      )
+    } else {
+      rv[[j]] <- as.POSIXct(rv[[j]])
+      # We have to special case zero and all-NA rows for the following
+      # scenario. Assume we have two chunks with 0 and 1 row respectively.
+      # rbind will take the timezone from the latter for the resulting
+      # data.frame so we will get the expected result. However,
+      # dplyr::bind_rows will set it to UTC if the timezones differ. Since
+      # we initialize to UTC above, this will lose the correct timezone for
+      # the column. See the 'zero chunk first' test in test-dbFetch.
+      attr(rv[[j]], 'tzone') <- NULL
+    }
   }
 
   if (is.null(column.names)) {

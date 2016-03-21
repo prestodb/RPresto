@@ -39,7 +39,12 @@ expect_equal_data_frame <- function(r, e, ...) {
 
 test.timezone <- function() { return('Asia/Kathmandu') }
 
-test.locale <- function() { return('tr_TR.iso8859-9') }
+test.locale <- function() {
+  if (.Platform[['OS.type']] == 'windows') {
+    return('Turkish_Turkey.1254')
+  }
+  return('tr_TR.iso8859-9')
+}
 
 with_locale <- function(locale, f) {
   wrapped <- function(...) {
@@ -52,6 +57,8 @@ with_locale <- function(locale, f) {
 }
 
 
+# Note that you need to wrap your test_that call with with_locale if you
+# use the data returned here for comparison
 data.frame.with.all.classes <- function(row.indices) {
   old.locale <- Sys.getlocale('LC_CTYPE')
   Sys.setlocale('LC_CTYPE', test.locale())
@@ -70,7 +77,7 @@ data.frame.with.all.classes <- function(row.indices) {
     ),
     as.POSIXct(
       c('2015-03-01 12:00:00', '2015-03-02 12:00:00.321'),
-      tz='UTC'
+      tz='Europe/Paris'
     ),
     # The first element is 'ıİÖğ' in iso8859-9 encoding,
     # and the second 'Face with tears of joy' in UTF-8
@@ -85,7 +92,7 @@ data.frame.with.all.classes <- function(row.indices) {
   column.names <- column.classes
   column.names[length(column.names) - 2] <- '<odd_name>'
   colnames(e) <- column.names
-  attr(e[['POSIXct_with_time_zone']], 'tzone') <- 'UTC'
+  attr(e[['POSIXct_with_time_zone']], 'tzone') <- 'Europe/Paris'
   attr(e[['POSIXct_no_time_zone']], 'tzone') <- test.timezone()
   e[['raw']] <- list(charToRaw('a'), charToRaw('bc'))
   e[['list_unnamed']] <- list(list(1, 2), list())
@@ -138,7 +145,7 @@ data.to.list <- function(data) {
         literalArguments=list()
       )
     )
-    if (presto.type == 'timestamp with time zone') {
+    if (presto.type == 'timestamp with time zone' && NROW(data)) {
       # toJSON ignores the timezone attribute
       data[[i]] <- paste(data[[i]], attr(data[[i]], 'tzone'))
     } else if (presto.type %in% c('array', 'map')) {
@@ -280,7 +287,7 @@ setup_live_connection <- function(session.timezone) {
 setup_live_dplyr_connection <- function(session.timezone) {
   skip_on_cran()
 
-  if(!require('dplyr', quietly=TRUE)) {
+  if(!requireNamespace('dplyr', quietly=TRUE)) {
     skip("Skipping dplyr tests because we can't load dplyr")
   }
 
@@ -315,7 +322,7 @@ setup_mock_connection <- function() {
 }
 
 setup_mock_dplyr_connection <- function() {
-  if(!require('dplyr', quietly=TRUE)) {
+  if(!requireNamespace('dplyr', quietly=TRUE)) {
     skip("Skipping dplyr tests because we can't load dplyr")
   }
   db <- src_presto(

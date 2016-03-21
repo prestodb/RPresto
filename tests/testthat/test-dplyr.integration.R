@@ -10,10 +10,6 @@ context('dplyr')
 source('utilities.R')
 
 test_that('dplyr integration works', {
-  if(!require('dplyr', quietly=TRUE)) {
-    skip("Skipping dplyr tests because we can't load dplyr")
-  }
-
   parts <- setup_live_dplyr_connection()
   db <- parts[['db']]
   tablename <- parts[['iris_table_name']]
@@ -22,25 +18,39 @@ test_that('dplyr integration works', {
 
   iris_presto <- dplyr::tbl(db, tablename)
 
-  expect_that(iris_presto %>% head(5) %>% nrow, equals(5))
+  expect_that(nrow(head(iris_presto, 5)), equals(5))
   expect_that(ncol(iris_presto), equals(5))
 
   expect_that(iris_presto, is_a('tbl_presto'))
 
-  iris_presto_summary <- iris_presto %>%
-    group_by(species) %>%
-    summarise(mean_sepal_length = mean(as(sepal_length, 0.0))) %>%
-    arrange(species) %>%
-    rename(Species = species) %>%
-    collect %>%
-    as.data.frame
+  iris_presto_summary <- as.data.frame(dplyr::collect(
+    dplyr::rename(
+      dplyr::arrange(
+        dplyr::summarise(
+          dplyr::group_by(iris_presto, species),
+          mean_sepal_length = mean(as(sepal_length, 0.0))
+        ),
+        Species
+      ),
+      Species=species
+    )
+  ))
 
-  iris_summary <- iris %>%
-    mutate(Species = as.character(Species)) %>%
-    group_by(Species) %>%
-    summarise(mean_sepal_length = mean(Sepal.Length)) %>%
-    arrange(Species) %>%
-    as.data.frame
+  iris_summary <- as.data.frame(
+    dplyr::arrange(
+      dplyr::summarise(
+        dplyr::group_by(
+          dplyr::mutate(
+            iris,
+            Species=as.character(Species)
+          ),
+          Species
+        ),
+        mean_sepal_length=mean(Sepal.Length)
+      ),
+      Species
+    )
+  )
 
   expect_equal_data_frame(iris_presto_summary, iris_summary)
 })

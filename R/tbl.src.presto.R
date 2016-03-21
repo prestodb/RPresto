@@ -14,9 +14,7 @@
 #'
 #' @param src A presto src created with \code{src_presto}.
 #' @param from Either a string giving the name of table in database, or
-#'   \code{\link{sql}} described a derived table or compound join.
-#' @param ... Included for compatibility with the generic, but otherwise
-#'   ignored.
+#'   \code{\link[dplyr]{sql}} described a derived table or compound join.
 #' @export
 #' @examples
 #' \dontrun{
@@ -27,5 +25,5 @@
 #' @export
 #' @rdname src_presto
 tbl.src_presto <- function(src, from, ...) {
-  return(tbl_sql("presto", src = src, from = from, ...))
+  return(dplyr::tbl_sql("presto", src = src, from = from, ...))
 }

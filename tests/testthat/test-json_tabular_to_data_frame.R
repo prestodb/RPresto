@@ -9,9 +9,8 @@ context('.json.tabular.to.data.frame')
 
 source('utilities.R')
 
-.json.tabular.to.data.frame <- RPresto:::.json.tabular.to.data.frame
-
 test_that('edge cases are handled correctly', {
+    .json.tabular.to.data.frame <- RPresto:::.json.tabular.to.data.frame
     expect_equal_data_frame(
       .json.tabular.to.data.frame(list(), character(0)),
       data.frame()
@@ -57,7 +56,7 @@ test_that('edge cases are handled correctly', {
     e[['list_unnamed']] <- list(list(1))
     e[['list_named']] <- list(list(a=1))
     e[['raw']] <- list(charToRaw('abc'))
-    attr(e[['POSIXct_with_time_zone']], 'tzone') <- NA_character_
+    attr(e[['POSIXct_with_time_zone']], 'tzone') <- NULL
 
     column.types <- c(
         'logical', 'integer', 'numeric', 'character', 'Date',
@@ -82,6 +81,7 @@ test_that('edge cases are handled correctly', {
 })
 
 with_locale(test.locale(), test_that)('regular data is converted correctly', {
+  .json.tabular.to.data.frame <- RPresto:::.json.tabular.to.data.frame
 
   input <- list(
     list(
@@ -92,7 +92,7 @@ with_locale(test.locale(), test_that)('regular data is converted correctly', {
       'YQ==', # a
       '2015-03-01',
       '2015-03-01 12:00:00',
-      '2015-03-01 12:00:00 UTC',
+      '2015-03-01 12:00:00 Europe/Paris',
       iconv('\xFD\xDD\xD6\xF0', localeToCharset(test.locale()), 'UTF-8'),
       list(1, 2),
       list(a=1, b=2)
@@ -105,7 +105,7 @@ with_locale(test.locale(), test_that)('regular data is converted correctly', {
       'YmM=', # bc
       '2015-03-02',
       '2015-03-02 12:00:00.321',
-      '2015-03-02 12:00:00.321 UTC',
+      '2015-03-02 12:00:00.321 Europe/Paris',
       { x <- '\xE1\xBD\xA0\x32'; Encoding(x) <- 'UTF-8'; x},
       list(),
       structure(list(), names=character(0))
@@ -128,15 +128,28 @@ with_locale(test.locale(), test_that)('regular data is converted correctly', {
 
   expect_equal_data_frame(r, e, label='unnamed items')
 
-  Sys.setlocale('LC_CTYPE', 'fr_FR.iso8859-15@euro')
-  # This will fail because data.frame.with.all.classes() returns
-  # the first item of '<odd_name>' without an explicit encoding.
-  # However the data given to json.tabular.to.data.frame is reencoded
-  # to utf-8 from the test encoding which is not iso8859-15.
-  # Therefore, the comparison is effectively between:
-  # iconv('\xFD...', 'iso8859-15', 'utf8')
-  # iconv('\xFD...', '<test_encoding>', 'utf8')
-  expect_false(isTRUE(all.equal(r, e)))
+  old.locale <- Sys.getlocale('LC_CTYPE')
+  tryCatch({
+      if (.Platform[['OS.type']] == 'windows') {
+        Sys.setlocale('LC_CTYPE', 'French_France.1252')
+      } else {
+        Sys.setlocale('LC_CTYPE', 'fr_FR.iso8859-15@euro')
+      }
+    },
+    warning=function(cond) {
+      Sys.setlocale('LC_CTYPE', 'fr_FR.iso8859-15')
+    }
+  )
+  if (Sys.getlocale('LC_CTYPE') != old.locale) {
+    # This will fail because data.frame.with.all.classes() returns
+    # the first item of '<odd_name>' without an explicit encoding.
+    # However the data given to json.tabular.to.data.frame is reencoded
+    # to utf-8 from the test encoding which is not iso8859-15.
+    # Therefore, the comparison is effectively between:
+    # iconv('\xFD...', 'iso8859-15', 'utf8')
+    # iconv('\xFD...', '<test_encoding>', 'utf8')
+    expect_false(isTRUE(all.equal(r, e)))
+  }
 
   input.with.names <- lapply(input,
     function(x) { names(x) <- column.names; return(x) }
@@ -151,13 +164,14 @@ with_locale(test.locale(), test_that)('regular data is converted correctly', {
 })
 
 test_that('NAs are handled correctly', {
+  .json.tabular.to.data.frame <- RPresto:::.json.tabular.to.data.frame
   expect_equal_data_frame(
     .json.tabular.to.data.frame(list(list(A=NULL)), 'logical'),
     data.frame(A=NA)
   )
 
   e <- data.frame(A=as.Date(NA), B=3L, C=as.POSIXct(NA))
-  attr(e[['C']], 'tzone') <- NA_character_
+  attr(e[['C']], 'tzone') <- NULL
   expect_equal_data_frame(
     .json.tabular.to.data.frame(
       list(list(A=NULL, B=3L, C=NULL)),
@@ -186,7 +200,7 @@ test_that('NAs are handled correctly', {
   e[['list_unnamed']] <- list(NA)
   e[['list_named']] <- list(NA)
   attr(e[['POSIXct_no_time_zone']], 'tzone') <- test.timezone()
-  attr(e[['POSIXct_with_time_zone']], 'tzone') <- NA_character_
+  attr(e[['POSIXct_with_time_zone']], 'tzone') <- NULL
 
   expect_equal_data_frame(r, e)
 
@@ -199,7 +213,7 @@ test_that('NAs are handled correctly', {
       raw=NULL,
       Date='2015-03-01',
       POSIXct_no_time_zone=NULL,
-      POSIXct_with_time_zone='2015-04-01 01:02:03.456 UTC',
+      POSIXct_with_time_zone='2015-04-01 01:02:03.456 Europe/Paris',
       list_unnamed=NULL,
       list_named=list(A=1)
     ),
@@ -228,7 +242,7 @@ test_that('NAs are handled correctly', {
       =as.POSIXct(c(NA, '2015-04-01 01:02:03.456'), tz=test.timezone()),
     POSIXct_with_time_zone=as.POSIXct(
       c('2015-04-01 01:02:03.456', NA),
-      tz='UTC'
+      tz='Europe/Paris'
     ),
     list_unnamed=NA,
     list_named=NA,
@@ -256,6 +270,7 @@ test_that('NAs are handled correctly', {
 })
 
 test_that('Inf, -Inf and NaN are handled correctly', {
+  .json.tabular.to.data.frame <- RPresto:::.json.tabular.to.data.frame
   expect_equal_data_frame(
     .json.tabular.to.data.frame(
       list(list(A='Infinity', B='-Infinity', C='NaN')),

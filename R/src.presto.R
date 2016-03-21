@@ -16,8 +16,9 @@
 #' @param port Port number to use with the host name
 #' @param session.timezone Time zone for the connection
 #' @param parameters Additional parameters to pass to the connection
-#' @param ... Other arguments passed on to the underlying
-#'   database connector \code{dbConnect}
+#' @param ... For \code{src_presto} other arguments passed on to the underlying
+#'   database connector \code{dbConnect}. For \code{tbl.src_presto}, it is
+#'   included for compatibility with the generic, but otherwise ignored.
 #' @export
 #' @examples
 #' \dontrun{
@@ -63,8 +64,10 @@ src_presto <- function(
 }
 
 .db.disconnector <- function(con) {
-  message('Auto-disconnecting presto connection')
-  return(DBI::dbDisconnect(con))
+  reg.finalizer(environment(), function(...) {
+    return(DBI::dbDisconnect(con))
+  })
+  environment()
 }
 
 "%||%" <- function(x, y) if (is.null(x)) return(y) else return(x)
