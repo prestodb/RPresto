@@ -11,7 +11,11 @@ NULL
 
 .fetch.uri.with.retries <- function(uri, num.retry=3) {
   get.response <- tryCatch({
-      httr::GET(uri)
+      response <- httr::GET(uri)
+      if (httr::status_code(response) >= 400) {
+        httr::stop_for_status(response)
+      }
+      response
     },
     error=function (e) {
       if (num.retry == 0) {

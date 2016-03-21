@@ -12,7 +12,7 @@ check.status.code <- function(response) {
     if (is.null(text.content) || !nzchar(text.content)) {
       httr::stop_for_status(status)
     }
-    stop(text.content)
+    stop('Received error response (HTTP ', status, '): ', text.content)
   }
 }
 

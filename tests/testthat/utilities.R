@@ -174,7 +174,9 @@ mock_httr_response <- function(
   } else {
     content <- list()
   }
-  content[['stats']] <- list(state=jsonlite::unbox(state))
+  if (!missing(state)) {
+    content[['stats']] <- list(state=jsonlite::unbox(state))
+  }
   content[['id']] <- jsonlite::unbox(gsub('[:/]', '_', url))
 
   if (!missing(next_uri)) {

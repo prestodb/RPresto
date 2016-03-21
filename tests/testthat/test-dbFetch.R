@@ -105,6 +105,7 @@ test_that('dbFetch works with mock', {
         state=''
       )
     ),
+    `httr::handle_reset`=function(...) return(),
     {
       result <- dbSendQuery(conn, "SELECT n FROM (VALUES (1), (2)) AS t (n)")
       expect_error(
@@ -133,7 +134,9 @@ test_that('dbFetch works with mock', {
       result <- dbSendQuery(conn, 'SELECT 2')
       expect_error(
         dbFetch(result), 
-        '^Error in check\\.status\\.code\\(get.response\\)'
+        paste0('^Error in ".fetch.single.uri".*Cannot fetch .*, error: ',
+            'There was a problem with the request and we have exhausted ',
+            'our retry limit')
       )
 
       result <- dbSendQuery(conn, 'SELECT 3')
