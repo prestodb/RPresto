@@ -32,6 +32,49 @@ test_that('dbSendQuery works with live database', {
   expect_true(dbClearResult(result))
 })
 
+test_that('dbSendQuery works with mock - status code 404', {
+  conn <- setup_mock_connection()
+  with_mock(
+    `httr::POST`=function(url, body, ...) {
+      response_404 <- mock_httr_response(
+        url,
+        status_code=404,
+        request_body='SELECT 1 AS n',
+        state='RETRYING'
+      )[['response']]
+
+      if (grepl('^http://broken_host', url)) {
+        return(response_404)
+      }
+      if (url == 'http://localhost:8000/v1/statement'
+          && request.count < 2) {
+        request.count <<- request.count + 1
+        return(response_404)
+      }
+      return(mock_httr_response(
+          'http://localhost:8000/v1/statement',
+          status_code=200,
+          state='RUNNING',
+          request_body='SELECT 1 AS n',
+          next_uri='http://localhost:8000/query_1/1'
+        )[['response']]
+      )
+    },
+    {
+      assign('request.count', 0, envir=environment(httr::POST))
+      result <- dbSendQuery(conn, 'SELECT 1 AS n')
+      expect_true(dbIsValid(result))
+
+      broken_conn <- conn
+      broken_conn@host <- 'http://broken_host'
+      expect_error(
+        dbSendQuery(broken_conn, 'SELECT 1 AS n'),
+        'Received error response \\(HTTP 404\\).*'
+      )
+    }
+  )
+})
+
 test_that('dbSendQuery works with mock - status code 503', {
   conn <- setup_mock_connection()
   with_mock(

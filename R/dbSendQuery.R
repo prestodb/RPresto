@@ -28,11 +28,15 @@ NULL
 .dbSendQuery <- function(conn, statement, ...) {
   url <- paste0(conn@host, ':', conn@port, '/v1/statement')
   status <- 503
+  retries <- 3
   headers <- .request.headers(conn)
-  while (status == 503) {
+  while (status == 503 || (retries > 0 && status >= 400)) {
     wait()
     post.response <- httr::POST(url, body=enc2utf8(statement), headers)
     status <- httr::status_code(post.response)
+    if (status >= 400 && status != 503) {
+      retries <- retries - 1
+    }
   }
   check.status.code(post.response)
   content <- response.to.content(post.response)
