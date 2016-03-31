@@ -27,14 +27,14 @@ NULL
 
 .dbSendQuery <- function(conn, statement, ...) {
   url <- paste0(conn@host, ':', conn@port, '/v1/statement')
-  status <- 503
+  status <- 503L
   retries <- 3
   headers <- .request.headers(conn)
-  while (status == 503 || (retries > 0 && status >= 400)) {
+  while (status == 503L || (retries > 0 && httr::http_error(status))) {
     wait()
     post.response <- httr::POST(url, body=enc2utf8(statement), headers)
-    status <- httr::status_code(post.response)
-    if (status >= 400 && status != 503) {
+    status <- as.integer(httr::status_code(post.response))
+    if (httr::http_error(status) && status != 503L) {
       retries <- retries - 1
     }
   }
