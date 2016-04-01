@@ -30,11 +30,11 @@ NULL
   status <- 503L
   retries <- 3
   headers <- .request.headers(conn)
-  while (status == 503L || (retries > 0 && httr::http_error(status))) {
+  while (status == 503L || (retries > 0 && status >= 400L)) {
     wait()
     post.response <- httr::POST(url, body=enc2utf8(statement), headers)
     status <- as.integer(httr::status_code(post.response))
-    if (httr::http_error(status) && status != 503L) {
+    if (status >= 400L && status != 503L) {
       retries <- retries - 1
     }
   }

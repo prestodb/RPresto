@@ -173,7 +173,7 @@ test_that('dbIsValid works with mock - retries and failures', {
       expect_true(dbIsValid(result))
       expect_message(
         v <- dbFetch(result),
-        'GET call failed with error: "Not Found \\(HTTP 404\\).", retrying.*'
+        'GET call failed with error: .*\\((HTTP )*404\\).*, retrying.*'
       )
       expect_equal(v, data.frame(z="text", stringsAsFactors=FALSE))
       expect_true(dbIsValid(result))
