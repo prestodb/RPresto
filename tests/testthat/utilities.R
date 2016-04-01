@@ -47,15 +47,34 @@ test.locale <- function() {
 }
 
 with_locale <- function(locale, f) {
-  wrapped <- function(...) {
+  wrapped <- function(desc, ...) {
     old.locale <- Sys.getlocale('LC_CTYPE')
-    Sys.setlocale('LC_CTYPE', locale)
+    tryCatch({
+        Sys.setlocale('LC_CTYPE', locale)
+      },
+      warning=function(w) {
+        warning.message <- conditionMessage(w)
+        if (!grepl(
+          'OS reports request to set locale to .* cannot be honored',
+          warning.message
+        )) {
+          warning(w)
+        }
+      }
+    )
+
     on.exit(Sys.setlocale('LC_CTYPE', old.locale), add=TRUE)
-    f(...)
+    new.locale <- Sys.getlocale('LC_CTYPE')
+    if (new.locale != locale) {
+      return(test_that(desc=desc, {
+        skip(paste0('Cannot set locale to ', locale,
+          'it is set at: ', new.locale))
+      }))
+    }
+    return(f(desc=desc, ...))
   }
   return(wrapped)
 }
-
 
 # Note that you need to wrap your test_that call with with_locale if you
 # use the data returned here for comparison
@@ -174,7 +193,9 @@ mock_httr_response <- function(
   } else {
     content <- list()
   }
-  content[['stats']] <- list(state=jsonlite::unbox(state))
+  if (!missing(state)) {
+    content[['stats']] <- list(state=jsonlite::unbox(state))
+  }
   content[['id']] <- jsonlite::unbox(gsub('[:/]', '_', url))
 
   if (!missing(next_uri)) {

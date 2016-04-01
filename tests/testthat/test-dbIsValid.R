@@ -90,24 +90,62 @@ test_that('dbIsValid works with mock - retries and failures', {
         state='RUNNING',
         request_body='SELECT 2 AS n',
         next_uri='http://localhost:8000/query_2/1'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/v1/statement',
+        status_code=200,
+        state='RUNNING',
+        request_body='SELECT "text" AS z',
+        next_uri='http://localhost:8000/query_3/1'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/v1/statement',
+        status_code=200,
+        state='QUEUED',
+        request_body='SELECT x FROM respond_with_404',
+        next_uri='http://localhost:8000/query_4/1'
       )
     ),
     `httr::GET`=function(url, ...) {
       if (url == 'http://localhost:8000/query_1/1') {
         stop('Error')
       }
-      if (request.count == 0) {
-        request.count <<- 1
-        stop('First request is an error')
+      if (url == 'http://localhost:8000/query_2/1') {
+        if (request.count == 0) {
+          request.count <<- 1
+          stop('First request is an error')
+        }
+        return(mock_httr_replies(
+          mock_httr_response(
+            url,
+            status_code=200,
+            state='FINISHED',
+            data=data.frame(n=2)
+          )
+        )(url))
       }
-      return(mock_httr_replies(
-        mock_httr_response(
-          'http://localhost:8000/query_2/1',
-          status_code=200,
-          state='FINISHED',
-          data=data.frame(n=2)
-        )
-      )(url))
+      if (url == 'http://localhost:8000/query_3/1') {
+        if (request.count == 0) {
+          request.count <<- 1
+          return(mock_httr_replies(
+            mock_httr_response(url, status_code=404)
+          )(url))
+        }
+        return(mock_httr_replies(
+          mock_httr_response(
+            url,
+            status_code=200,
+            state='FINISHED',
+            data=data.frame(z='text')
+          )
+        )(url))
+      }
+      if (url == 'http://localhost:8000/query_4/1') {
+        return(mock_httr_replies(
+          mock_httr_response(url, status_code=404)
+        )(url))
+      }
+      stop('Unhandled url in httr::GET mock: ', url)
     },
     `httr::handle_reset`=function(...) return(),
     {
@@ -129,6 +167,24 @@ test_that('dbIsValid works with mock - retries and failures', {
       expect_equal(v, data.frame(n=2))
       expect_true(dbIsValid(result))
       expect_true(dbHasCompleted(result))
+
+      assign('request.count', 0, envir=environment(httr::GET))
+      result <- dbSendQuery(conn, 'SELECT "text" AS z')
+      expect_true(dbIsValid(result))
+      expect_message(
+        v <- dbFetch(result),
+        'GET call failed with error: "Not Found \\(HTTP 404\\).", retrying.*'
+      )
+      expect_equal(v, data.frame(z="text", stringsAsFactors=FALSE))
+      expect_true(dbIsValid(result))
+      expect_true(dbHasCompleted(result))
+
+      result <- dbSendQuery(conn, 'SELECT x FROM respond_with_404')
+      expect_true(dbIsValid(result))
+      expect_error(
+        dbFetch(result),
+        'There was a problem with the request'
+      )
     }
   )
 })
