@@ -134,7 +134,7 @@ test_that('dbFetch works with mock', {
       result <- dbSendQuery(conn, 'SELECT 2')
       expect_error(
         dbFetch(result), 
-        paste0('^Error in ".fetch.single.uri".*Cannot fetch .*, error: ',
+        paste0('Cannot fetch .*, error: ',
             'There was a problem with the request and we have exhausted ',
             'our retry limit')
       )
@@ -142,7 +142,7 @@ test_that('dbFetch works with mock', {
       result <- dbSendQuery(conn, 'SELECT 3')
       expect_error(
         dbFetch(result), 
-        '^Error in stop.with.error.message\\(content\\)'
+        '.*Query .*localhost.8000.query.3.1 failed.*'
       )
 
       result <- dbSendQuery(conn, 'SELECT 4 LIMIT 0')

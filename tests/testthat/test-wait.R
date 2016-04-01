@@ -12,6 +12,6 @@ source('utilities.R')
 wait <- RPresto:::wait
 
 test_that('wait works', {
-  expect_more_than(system.time(wait())['elapsed'], 50/1000)
+  expect_gt(system.time(wait())['elapsed'], 50/1000)
 })
 

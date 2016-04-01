@@ -12,7 +12,7 @@ source('utilities.R')
 test_that('dbListTables works with live database', {
   conn <- setup_live_connection()
 
-  expect_more_than(length(dbListTables(conn)), 0)
+  expect_gt(length(dbListTables(conn)), 0)
   expect_equal(
     dbListTables(conn, pattern='__non_existent_table__'),
     character(0)
