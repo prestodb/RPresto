@@ -40,6 +40,8 @@ S3 implementation of \code{sql_translate_env} for Presto.
 
 S3 implementation of \code{src_translate_env} for Presto.
 
+S3 implementation of \code{sql_translate_env} for Presto.
+
 S3 implementation of \code{\link[dplyr]{src_desc}} for Presto.
 }
 \keyword{internal}
