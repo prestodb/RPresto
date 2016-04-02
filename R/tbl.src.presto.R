@@ -25,5 +25,9 @@
 #' @export
 #' @rdname src_presto
 tbl.src_presto <- function(src, from, ...) {
-  return(dplyr::tbl_sql("presto", src = src, from = from, ...))
+  rv <- dplyr::tbl_sql("presto", src = src, from = from, ...)
+  if (!inherits(rv, 'tbl_presto')) {
+    class(rv) <- c('tbl_presto', class(rv))
+  }
+  return(rv)
 }
