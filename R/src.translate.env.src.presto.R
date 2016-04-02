@@ -5,7 +5,7 @@
 # LICENSE file in the root directory of this source tree. An additional grant
 # of patent rights can be found in the PATENTS file in the same directory.
 
-#' S3 implementation of \code{\link[dplyr]{src_translate_env}} for Presto.
+#' S3 implementation of \code{src_translate_env} for Presto.
 #'
 #' @rdname dplyr_function_implementations
 #' @keywords internal

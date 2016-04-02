@@ -60,8 +60,9 @@ Collate:
     'dbUnloadDriver.R'
     'fetch.R'
     'help.R'
+    'src.translate.env.src.presto.R'
+    'sql_translate_env.R'
     'src.desc.src.presto.R'
     'src.presto.R'
-    'src.translate.env.src.presto.R'
     'tbl.src.presto.R'
 RoxygenNote: 5.0.1

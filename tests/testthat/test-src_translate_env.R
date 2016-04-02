@@ -12,7 +12,14 @@ source('utilities.R')
 with_locale(test.locale(), test_that)('as() works', {
 
   conn <- setup_mock_dplyr_connection()[['db']]
-  v <- dplyr::src_translate_env(conn)
+  f <- try(getFromNamespace('src_translate_env', 'dplyr'), silent=TRUE)
+  if (!inherits(f, 'try-error')) {
+    v <- f(conn)
+  } else {
+    f <- getFromNamespace('sql_translate_env', 'dplyr')
+    v <- f(conn[['con']])
+  }
+
   expect_equal(
     dplyr::translate_sql(as(x, 0.0), variant=v),
     dplyr::sql('CAST("x" AS "DOUBLE")')
