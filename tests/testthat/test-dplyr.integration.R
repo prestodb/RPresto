@@ -18,7 +18,11 @@ test_that('dplyr integration works', {
 
   iris_presto <- dplyr::tbl(db, tablename)
 
-  expect_that(nrow(head(iris_presto, 5)), equals(5))
+
+  expect_that(
+    nrow(as.data.frame(iris_presto, n=Inf)),
+    equals(nrow(iris))
+  )
   expect_that(ncol(iris_presto), equals(5))
 
   expect_that(iris_presto, is_a('tbl_presto'))
@@ -33,7 +37,8 @@ test_that('dplyr integration works', {
         Species
       ),
       Species=species
-    )
+    ),
+    n=Inf
   ))
 
   iris_summary <- as.data.frame(
