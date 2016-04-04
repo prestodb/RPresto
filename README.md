@@ -6,7 +6,7 @@ for running interactive analytic queries.
 
 ## Installation
 
-RPresto is both on [CRAN](https://cran.r-project.org/web/packages/RPresto/)
+RPresto is both on [CRAN](https://cran.r-project.org/package=RPresto)
 and [github](https://github.com/prestodb/RPresto).
 For the CRAN version, you can use
 

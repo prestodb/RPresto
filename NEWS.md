@@ -1,4 +1,4 @@
-# RPresto 1.2.0.9000
+# RPresto 1.2.1
 
 - Handle responses with no column information (fixes #49)
 - Add retries for GET and POST responses with error status codes

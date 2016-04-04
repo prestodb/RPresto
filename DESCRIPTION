@@ -1,13 +1,13 @@
 Package: RPresto
 Title: DBI Connector to Presto
-Version: 1.2.0.9000
+Version: 1.2.1
 Authors@R: c(
     person('Onur Ismail', 'Filiz', , 'onur@fb.com', role=c('aut', 'cre')),
     person('Sergey', 'Goder', , 'sgoder@fb.com', role='aut'),
     person('John Myles', 'White', , 'johnmyleswhite@fb.com', role='ctb')
     )
 Copyright: Facebook, Inc. 2015-present.
-Description: Implements a DBI compliant interface to Presto. Presto is
+Description: Implements a 'DBI' compliant interface to Presto. Presto is
     an open source distributed SQL query engine for running interactive
     analytic queries against data sources of all sizes ranging from
     gigabytes to petabytes: <https://prestodb.io/>.
