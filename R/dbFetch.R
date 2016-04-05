@@ -91,8 +91,10 @@ NULL
   if (!dbIsValid(res)) {
     stop('Result object is not valid')
   }
-  if (as.integer(n) != -1L) {
-    stop('fetching custom number of rows (n != -1) is not supported.')
+  if (!((n > 0 && is.infinite(n))
+      || (as.integer(n) == -1L))) {
+    stop('fetching custom number of rows (n != -1 and n != Inf) ',
+         'is not supported, asking for: ', n)
   }
   return(.fetch.all(res))
 }
