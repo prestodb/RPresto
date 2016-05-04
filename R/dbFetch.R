@@ -79,7 +79,13 @@ NULL
     # Preserve attributes for empty data frames
     return(rv[[1]])
   } else {
-    if (requireNamespace('dplyr', quietly=TRUE)) {
+    # We need to check for the uniqueness of columns because dplyr::bind_rows
+    # will drop duplicate column names and we want to preserve all the data
+    column.names <- names(rv[[1]])
+    if (
+      requireNamespace('dplyr', quietly=TRUE) &&
+      length(column.names) == length(unique(column.names))
+    ) {
       return(as.data.frame(dplyr::bind_rows(rv)))
     } else {
       return(do.call('rbind', rv))

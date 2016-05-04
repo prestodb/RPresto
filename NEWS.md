@@ -1,5 +1,7 @@
 # RPresto 1.2.1.9000
 
+- Don't drop data for duplicate column names
+
 # RPresto 1.2.1
 
 - Handle responses with no column information (fixes #49)

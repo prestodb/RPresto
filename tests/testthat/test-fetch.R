@@ -67,3 +67,13 @@ test_that('fetch works with mock', {
     }
   )
 })
+
+test_that('fetch works with duplicate column names', {
+  conn <- setup_live_connection()
+
+  result <- dbSendQuery(conn, 'SELECT 0 AS dummy, 1 AS dummy')
+  expect_equal_data_frame(
+    dbFetch(result),
+    data.frame(dummy=0, dummy=1, check.names=FALSE)
+  )
+})
