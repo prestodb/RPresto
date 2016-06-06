@@ -26,16 +26,14 @@ setMethod('dbListFields',
     if (!dbIsValid(conn)) {
       stop('The result object is not valid')
     }
-    info.response <- .fetch.uri.with.retries(conn@cursor$infoUri())
-    check.status.code(info.response)
-    info <- response.to.content(info.response)
-    if (!is.null(info[['failureInfo']])
-        && !is.null(info[['failureInfo']][['message']])
-    ) {
-      stop('Query failed: ', info[['failureInfo']][['message']])
+    next.response <- .fetch.uri.with.retries(conn@cursor$nextUri())
+    check.status.code(next.response)
+    content <- response.to.content(next.response)
+    if (get.state(content) == 'FAILED') {
+      stop.with.error.message(content)
     }
-    if (!is.null(info[['fieldNames']])) {
-      rv <- unlist(info[['fieldNames']])
+    if (!is.null(content[['columns']])) {
+      rv <- unlist(lapply(content[['columns']], function(x) x[['name']]))
     } else {
       rv <- character(0)
     }

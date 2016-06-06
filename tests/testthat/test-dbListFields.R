@@ -21,7 +21,10 @@ test_that('dbListFields works with live database', {
   result <- dbSendQuery(conn, 'SELECT * FROM __non_existent_table__')
   expect_error(
     dbListFields(result),
-    'Query failed: (line [0-9:]+ )?Table .*__non_existent_table__ does not exist'
+    paste0(
+      'Query.*failed: (line [0-9:]+ )?',
+      'Table .*__non_existent_table__ does not exist'
+    )
   )
   expect_true(dbClearResult(result))
 })
@@ -88,47 +91,40 @@ test_that('dbListFields works with mock - PrestoResult', {
         status_code=200,
         state='QUEUED',
         request_body='SELECT * FROM two_columns',
-        next_uri='http://localhost:8000/query_1/1',
-        info_uri='http://localhost:8000/v1/query/query_1'
+        next_uri='http://localhost:8000/query_1/1'
       ),
       mock_httr_response(
         'http://localhost:8000/v1/statement',
         status_code=200,
         state='QUEUED',
         request_body='SELECT * FROM __non_existent_table__',
-        next_uri='http://localhost:8000/query_2/1',
-        info_uri='http://localhost:8000/v1/query/query_2'
+        next_uri='http://localhost:8000/query_2/1'
       ),
       mock_httr_response(
         'http://localhost:8000/v1/statement',
         status_code=200,
         state='FINISHED',
         request_body='SELECT * FROM empty_table',
-        next_uri='http://localhost:8000/query_3/1',
-        info_uri='http://localhost:8000/v1/query/query_3'
+        next_uri='http://localhost:8000/query_3/1'
       )
     ),
     `httr::GET`=mock_httr_replies(
       mock_httr_response(
-        'http://localhost:8000/v1/query/query_1',
+        'http://localhost:8000/query_1/1',
         status_code=200,
-        extra_content=list(
-          fieldNames=list('column1', 'column2')
-        ),
+        data=data.frame(column1=1, column2=2),
         state='FINISHED',
       ),
       mock_httr_response(
-        'http://localhost:8000/v1/query/query_2',
+        'http://localhost:8000/query_2/1',
         status_code=200,
-        extra_content=list(
-          failureInfo=list(
-            message=jsonlite::unbox('Table __non_existent_table__ does not exist')
-          )
-        ),
+        extra_content=list(error=list(
+          message='Table __non_existent_table__ does not exist'
+        )),
         state='FAILED',
       ),
       mock_httr_response(
-        'http://localhost:8000/v1/query/query_3',
+        'http://localhost:8000/query_3/1',
         status_code=200,
         state='FINISHED',
       )
@@ -149,7 +145,7 @@ test_that('dbListFields works with mock - PrestoResult', {
       expect_true(dbIsValid(result))
       expect_error(
         dbListFields(result),
-        'Query failed: Table __non_existent_table__ does not exist'
+        'Query.*failed: Table __non_existent_table__ does not exist'
       )
 
       result <- dbSendQuery(conn, 'SELECT * FROM empty_table')
