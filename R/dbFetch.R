@@ -22,7 +22,7 @@ NULL
     error=function (e) {
       if (num.retry == 0) {
         stop("There was a problem with the request ",
-         "and we have exhausted our retry limit")
+         "and we have exhausted our retry limit for uri: ", uri)
       }
       message('GET call failed with error: "', conditionMessage(e),
               '", retrying [', 4 - num.retry, '/3]\n')
