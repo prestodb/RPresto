@@ -11,12 +11,13 @@ NULL
 # This is a hack to work around a bug in jsonlite where null's are not
 # converted to NA when simplifyVector=FALSE
 .null.to.na <- function(l) {
-  rs.class <- data.class(l)
-  return(switch(rs.class,
-    "NULL"=NA,
-    "list"=lapply(l, .null.to.na),
+  if (is.null(l)) {
+    NA
+  } else if (is.list(l)) {
+    lapply(l, .null.to.na)
+  } else {
     l
-  ))
+  }
 }
 
 #' Convert a \code{data.frame} formatted in the \code{list} of \code{list}s
@@ -117,15 +118,14 @@ NULL
       )
     }
     for (j in seq_along(row)) {
-      if (is.null(row[[j]])) {
-        next
-      }
-      if (column.types[j] == 'raw') {
-        rv[[j]][[i]] <- RCurl::base64Decode(row[[j]], 'raw')
-      } else {
-        rv[[j]][[i]] <- .null.to.na(row[[j]])
-      }
+      rv[[j]][[i]] <- .null.to.na(row[[j]])
     }
+  }
+
+  for (j in which(column.types %in% 'raw')) {
+    rv[[j]] <- lapply(rv[[j]], function(txt) {
+      if (is.na(txt)) NA else RCurl::base64Decode(txt, 'raw')
+    })
   }
 
   for (j in which(column.types %in% 'numeric')) {
