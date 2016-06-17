@@ -6,19 +6,9 @@
 # of patent rights can be found in the PATENTS file in the same directory.
 
 #' @include dbDataType.R
+#' @useDynLib RPresto
+#' @importFrom Rcpp sourceCpp
 NULL
-
-# This is a hack to work around a bug in jsonlite where null's are not
-# converted to NA when simplifyVector=FALSE
-.null.to.na <- function(l) {
-  if (is.null(l)) {
-    NA
-  } else if (is.list(l)) {
-    lapply(l, .null.to.na)
-  } else {
-    l
-  }
-}
 
 #' Convert a \code{data.frame} formatted in the \code{list} of \code{list}s
 #' style as returned by Presto to an actual \code{data.frame}
@@ -83,56 +73,13 @@ NULL
     }
   }
 
-  column.names <- NULL
-  for (i in seq_len(row.count)) {
-    row <- data[[i]]
-
-    # If the items are named lists, we use the names to infer column
-    # names for the resulting data.frame
-    column.names.from.row <- names(row)
-    if (!is.null(column.names.from.row)) {
-      # item is a named list
-      if (!is.null(column.names)) {
-        # We have 'seen' column names in previous items
-        if (!isTRUE(all.equal(column.names, column.names.from.row))) {
-          # We have a different column name set from what we have seen before
-          warning('Item ', i, ', column names differ across rows, ',
-            'expected: ',
-            jsonlite::toJSON(column.names), ', ',
-            'received: ',
-            jsonlite::toJSON(column.names.from.row)
-          )
-        }
-      } else {
-        # First time we see a named item, use the names for the item as
-        # column names for the resulting data.frame
-        column.names <- column.names.from.row
-      }
-    }
-
-    row.length <- length(row)
-    if (row.length != column.count) {
-      stop('Item ', i, ',
-         expected: ', column.count, ' columns, ',
-        'received: ', row.length
-      )
-    }
-    for (j in seq_along(row)) {
-      rv[[j]][[i]] <- .null.to.na(row[[j]])
-    }
-  }
+  column.names <- .check_names(data, column.count)
+  .transpose(data, rv)
 
   for (j in which(column.types %in% 'raw')) {
     rv[[j]] <- lapply(rv[[j]], function(txt) {
       if (is.na(txt)) NA else RCurl::base64Decode(txt, 'raw')
     })
-  }
-
-  for (j in which(column.types %in% 'numeric')) {
-    rv[[j]] <- replace(rv[[j]], rv[[j]] == 'Infinity', Inf)
-    rv[[j]] <- replace(rv[[j]], rv[[j]] == '-Infinity', -Inf)
-    rv[[j]] <- replace(rv[[j]], rv[[j]] == 'NaN', NaN)
-    rv[[j]] <- as.numeric(rv[[j]])
   }
 
   for (j in which(column.types %in% 'Date')) {
