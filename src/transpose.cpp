@@ -18,7 +18,7 @@ void null_to_na(List x) {
   for (int i = 0; i < size; i++) {
     SEXP elem = x[i];
     if (elem == R_NilValue) {
-      x[i] = NA_LOGICAL;
+      x[i] = LogicalVector::create(NA_LOGICAL);
     } else if(TYPEOF(elem) == VECSXP) {
       null_to_na(elem);
     }
@@ -50,7 +50,33 @@ List transpose(List x, List out) {
       break;
     }
     case INTSXP: {
-      copy<IntegerVector, int>(as<IntegerVector>(column), rows, x, c);
+      // keep track whether we encounter a broken integer
+      bool broken_int = false;
+      // resulting vector if all integers are good
+      IntegerVector intColumn = as<IntegerVector>(column);
+      // placeholder vector if we need to coerce into numerics
+      NumericVector numColumn;
+
+      for (int r = 0; r < rows; r++) {
+        List row = x[r];
+        SEXP cell = row[c];
+        if (cell != R_NilValue) {
+          // keep populating integer vector
+          if (!broken_int && TYPEOF(cell) == INTSXP) {
+            intColumn[r] = as<int>(cell);
+          } else {
+            // fallback current integer vector to numeric vector
+            if (!broken_int) {
+              numColumn = as<NumericVector>(intColumn);
+              broken_int = true;
+            }
+            numColumn[r] = as<double>(cell);
+          }
+        }
+      }
+
+      // set to numeric vector for bigint coercion
+      out[c] = broken_int ? numColumn : intColumn;
       break;
     }
     case REALSXP: {
