@@ -73,7 +73,9 @@ NULL
     }
   }
 
+  # validate all rows have correct number of column and same column names
   column.names <- .check_names(data, column.count)
+  # tranpose list from row major to column major
   .transpose(data, rv)
 
   for (j in which(column.types %in% 'raw')) {

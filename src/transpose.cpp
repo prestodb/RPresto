@@ -13,6 +13,7 @@ inline void copy(T column, int rows, List x, int c) {
   }
 }
 
+// set null element in list to NA (NA_LOGICAL) recursively
 void null_to_na(List x) {
   int size = x.size();
   for (int i = 0; i < size; i++) {
@@ -25,6 +26,12 @@ void null_to_na(List x) {
   }
 }
 
+// tranpose a nested list
+// e.g. list(a=list(x=1,y=2,z=3), b=list(x=1,y=2,z=3)) =>
+//        list(x=list(a=1,b=1), y=list(a=2,b=2), z=list(a=3,b=3))
+// x is the list to tranpose
+// out is a pre-allocated correctly-typed output placeholder
+// type coercion is applied according to `out` type as necessary
 // [[Rcpp::export(name = ".transpose")]]
 List transpose(List x, List out) {
   int rows = x.size();

@@ -1,11 +1,13 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
-std::string to_string(CharacterVector x) {
+// jsonify a character vector
+std::string jsonify(CharacterVector x) {
   std::string out = "[";
   for (int i = 0; i < x.size(); i++) {
     out += "\"" + x[i] + "\",";
   }
+  // trim trailing comma
   if (x.size() > 0) {
     out = out.substr(0, out.size() - 1);
   }
@@ -13,6 +15,8 @@ std::string to_string(CharacterVector x) {
   return out;
 }
 
+// x is a list of lsit. verify all sublists have same number of element as
+// column count. verify all sublists have same names if available.
 // [[Rcpp::export(name = ".check_names")]]
 SEXP check_names(List x, int column_count) {
   CharacterVector column_names = NULL;
@@ -35,8 +39,8 @@ SEXP check_names(List x, int column_count) {
           if (column_names[j] != names[j]) {
             // We have a different column name set from what we have seen before
             warning("Item " + std::to_string(i) + ", column names differ across rows, " +
-              "expected: " + to_string(column_names) + ", " +
-              "received: " + to_string(names));
+              "expected: " + jsonify(column_names) + ", " +
+              "received: " + jsonify(names));
             break;
           }
         }
