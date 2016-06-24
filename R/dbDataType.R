@@ -12,6 +12,7 @@ NULL
   'boolean', 'logical',
   'bigint', 'integer',
   'double', 'numeric',
+  'decimal', 'numeric',
   'varchar', 'character',
   'varbinary', 'raw',
   'json', 'character',
