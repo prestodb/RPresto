@@ -12,7 +12,6 @@ NULL
   'boolean', 'logical',
   'bigint', 'integer',
   'double', 'numeric',
-  'decimal', 'numeric',
   'varchar', 'character',
   'varbinary', 'raw',
   'json', 'character',
@@ -24,7 +23,8 @@ NULL
   'interval year to month', 'character',
   'interval day to second', 'character',
   'array', 'list_unnamed',
-  'map', 'list_named'
+  'map', 'list_named',
+  'decimal', 'numeric'
 ), byrow=TRUE, ncol=2), stringsAsFactors=FALSE)
 colnames(.presto.to.R) <- c('presto.type', 'R.type')
 
