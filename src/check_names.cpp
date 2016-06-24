@@ -5,11 +5,13 @@ using namespace Rcpp;
 std::string jsonify(CharacterVector x) {
   std::string out = "[";
   for (int i = 0; i < x.size(); i++) {
-    out += "\"" + x[i] + "\",";
+    out += "\"";
+    out += x[i];
+    out += "\",";
   }
   // trim trailing comma
   if (x.size() > 0) {
-    out = out.substr(0, out.size() - 1);
+    out.resize(out.size() - 1);
   }
   out += "]";
   return out;
