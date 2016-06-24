@@ -15,7 +15,7 @@ std::string jsonify(CharacterVector x) {
   return out;
 }
 
-// x is a list of lsit. verify all sublists have same number of element as
+// x is a list of list. verify all sublists have same number of element as
 // column count. verify all sublists have same names if available.
 // [[Rcpp::export(name = ".check_names")]]
 SEXP check_names(List x, int column_count) {
@@ -25,12 +25,12 @@ SEXP check_names(List x, int column_count) {
     List row = x[i];
 
     if (row.size() != column_count) {
-      stop("Item " + std::to_string(i) + ", " +
-           "expected: " + std::to_string(column_count) + " columns, " +
-           "received: " + std::to_string(row.size()));
+      stop("Item " + toString(i) + ", " +
+           "expected: " + toString(column_count) + " columns, " +
+           "received: " + toString(row.size()));
     }
 
-    if (row.names() != R_NilValue) {
+    if (!Rf_isNull(row.names())) {
       CharacterVector names = row.names();
       // item is a named list
       if (column_names.size() > 0) {
@@ -38,7 +38,7 @@ SEXP check_names(List x, int column_count) {
         for (int j = 0; j < column_names.size(); j++) {
           if (column_names[j] != names[j]) {
             // We have a different column name set from what we have seen before
-            warning("Item " + std::to_string(i) + ", column names differ across rows, " +
+            warning("Item " + toString(i) + ", column names differ across rows, " +
               "expected: " + jsonify(column_names) + ", " +
               "received: " + jsonify(names));
             break;
