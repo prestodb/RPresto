@@ -11,6 +11,10 @@ NULL
 .presto.to.R <- as.data.frame(matrix(c(
   'boolean', 'logical',
   'bigint', 'integer',
+  'integer', 'integer',
+  'smallint', 'integer',
+  'tinyint', 'integer',
+  'decimal', 'numeric',
   'double', 'numeric',
   'varchar', 'character',
   'varbinary', 'raw',
