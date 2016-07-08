@@ -3,18 +3,9 @@ using namespace Rcpp;
 
 // jsonify a character vector
 std::string jsonify(CharacterVector x) {
-  std::string out = "[";
-  for (int i = 0; i < x.size(); i++) {
-    out += "\"";
-    out += x[i];
-    out += "\",";
-  }
-  // trim trailing comma
-  if (x.size() > 0) {
-    out.resize(out.size() - 1);
-  }
-  out += "]";
-  return out;
+  Function paste = Environment("package:base")["paste"];
+  std::string joined = as<std::string>(paste(x, Named("collapse", ", ")));
+  return "[" + joined + "]";
 }
 
 // x is a list of list. verify all sublists have same number of element as

@@ -18,14 +18,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // transpose
-List transpose(List x, List out);
-RcppExport SEXP RPresto_transpose(SEXP xSEXP, SEXP outSEXP) {
+List transpose(List input, List output);
+RcppExport SEXP RPresto_transpose(SEXP inputSEXP, SEXP outputSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< List >::type x(xSEXP);
-    Rcpp::traits::input_parameter< List >::type out(outSEXP);
-    __result = Rcpp::wrap(transpose(x, out));
+    Rcpp::traits::input_parameter< List >::type input(inputSEXP);
+    Rcpp::traits::input_parameter< List >::type output(outputSEXP);
+    __result = Rcpp::wrap(transpose(input, output));
     return __result;
 END_RCPP
 }

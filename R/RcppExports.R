@@ -5,7 +5,7 @@
     .Call('RPresto_check_names', PACKAGE = 'RPresto', x, column_count)
 }
 
-.transpose <- function(x, out) {
-    .Call('RPresto_transpose', PACKAGE = 'RPresto', x, out)
+.transpose <- function(input, output) {
+    .Call('RPresto_transpose', PACKAGE = 'RPresto', input, output)
 }
 

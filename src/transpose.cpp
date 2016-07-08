@@ -1,27 +1,27 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
-// copy from x with number of rows, to c column in columns
-template <typename T, class RTYPE>
-inline void copy(T column, int rows, List x, int c) {
-  for (int r = 0; r < rows; r++) {
-    List row = x[r];
-    SEXP cell = row[c];
-    if (cell != R_NilValue) {
-      column[r] = as<RTYPE>(cell);
+// copy `c`th column from a row major list `input` to `output` column
+template <typename T, class CPPTYPE>
+inline void copy_column(T column, int row_count, List input, int c) {
+  for (int r = 0; r < row_count; r++) {
+    List row = input[r];
+    RObject cell = row[c];
+    if (!cell.isNULL()) {
+      column[r] = as<CPPTYPE>(cell);
     }
   }
 }
 
-// set null element in list to NA (NA_LOGICAL) recursively
+// set null element in list to NA (NA_LOGICAL) in-place recursively
 void null_to_na(List x) {
   int size = x.size();
   for (int i = 0; i < size; i++) {
-    SEXP elem = x[i];
-    if (elem == R_NilValue) {
+    RObject element = x[i];
+    if (element.isNULL()) {
       x[i] = LogicalVector::create(NA_LOGICAL);
-    } else if(TYPEOF(elem) == VECSXP) {
-      null_to_na(elem);
+    } else if(element.sexp_type() == VECSXP) {
+      null_to_na(as<List>(element));
     }
   }
 }
@@ -30,93 +30,106 @@ void null_to_na(List x) {
 // e.g. list(a=list(x=1,y=2,z=3), b=list(x=1,y=2,z=3)) =>
 //        list(x=list(a=1,b=1), y=list(a=2,b=2), z=list(a=3,b=3))
 // x is the list to tranpose
-// out is a pre-allocated correctly-typed output placeholder
-// type coercion is applied according to `out` type as necessary
+// output is a pre-allocated correctly-typed outputput placeholder
+// type coercion is applied according to `output` type as necessary
 // [[Rcpp::export(name = ".transpose")]]
-List transpose(List x, List out) {
-  int rows = x.size();
-  if(rows == 0) return out;
+List transpose(List input, List output) {
+  int row_count = input.size();
+  if(row_count == 0) {
+    return output;
+  }
 
-  int cols = out.size();
-  if(cols == 0) return out;
+  int column_count = output.size();
+  if(column_count == 0) {
+    return output;
+  }
 
-  for (int c = 0; c < cols; c++) {
-    SEXP column = VECTOR_ELT(out, c);
-    switch(TYPEOF(column)) {
+  for (int c = 0; c < column_count; c++) {
+    RObject column = output[c];
+    switch(column.sexp_type()) {
     case VECSXP: { // list
-      for (int r = 0; r < rows; r++) {
-        SEXP row = VECTOR_ELT(x, r);
-        SEXP cell = VECTOR_ELT(row, c);
-        if (cell != R_NilValue) {
-          if(TYPEOF(cell) == VECSXP) {
-            null_to_na(cell);
+      List list_column = as<List>(column);
+      for (int r = 0; r < row_count; r++) {
+        List row = input[r];
+        RObject cell = row[c];
+        if (!cell.isNULL()) {
+          if(cell.sexp_type() == VECSXP) {
+            null_to_na(as<List>(cell));
           }
-          SET_VECTOR_ELT(column, r, cell);
+          list_column[r] = cell;
         }
       }
       break;
     }
     case INTSXP: {
       // keep track whether we encounter a broken integer
-      bool broken_int = false;
+      // integer can be broken because R only has 32-bit integers
+      // where presto's BIGINT is 64-bit
+      // NB: R is able to tap into floating number to faithfully represent
+      //   up to 2^53
+      bool broken_integer = false;
       // resulting vector if all integers are good
-      IntegerVector intColumn = as<IntegerVector>(column);
-      // placeholder vector if we need to coerce into numerics
-      NumericVector numColumn;
+      IntegerVector integer_column = as<IntegerVector>(column);
+      // placeholder vector if we need to coerce into numeric
+      NumericVector numeric_column;
 
-      for (int r = 0; r < rows; r++) {
-        List row = x[r];
-        SEXP cell = row[c];
-        if (cell != R_NilValue) {
-          // keep populating integer vector
-          if (!broken_int && TYPEOF(cell) == INTSXP) {
-            intColumn[r] = as<int>(cell);
+      for (int r = 0; r < row_count; r++) {
+        List row = input[r];
+        RObject cell = row[c];
+        if (!cell.isNULL()) {
+          if (broken_integer) {
+            numeric_column[r] = as<double>(cell);
           } else {
-            // fallback current integer vector to numeric vector
-            if (!broken_int) {
-              numColumn = as<NumericVector>(intColumn);
-              broken_int = true;
+            if (cell.sexp_type() == INTSXP) {
+              integer_column[r] = as<int>(cell);
+            } else {
+              // first broken integer found. convert copied values to numerics
+              // NB: this makes a copy and need to be reassigned in the end
+              numeric_column = as<NumericVector>(integer_column);
+              numeric_column[r] = as<double>(cell);
+              broken_integer = true;
             }
-            numColumn[r] = as<double>(cell);
           }
         }
       }
 
-      // set to numeric vector for bigint coercion
-      out[c] = broken_int ? numColumn : intColumn;
+      // assign to numeric vector if we had to fallback
+      if (broken_integer) {
+        output[c] = numeric_column;
+      }
       break;
     }
     case REALSXP: {
       // handle special cases
-      NumericVector tmp = as<NumericVector>(column);
-      for (int r = 0; r < rows; r++) {
-        List row = x[r];
-        SEXP cell = row[c];
-        if (cell != R_NilValue) {
-          if (TYPEOF(cell) == STRSXP) {
-            String cellStr = as<String>(cell);
-            if (cellStr == "Infinity") {
-              tmp[r] = INFINITY;
-            } else if (cellStr == "-Infinity") {
-              tmp[r] = -INFINITY;
-            } else if (cellStr == "NaN") {
-              tmp[r] = NAN;
+      NumericVector numeric_column = as<NumericVector>(column);
+      for (int r = 0; r < row_count; r++) {
+        List row = input[r];
+        RObject cell = row[c];
+        if (!cell.isNULL()) {
+          if (cell.sexp_type() == STRSXP) {
+            String cell_string = as<String>(cell);
+            if (cell_string == "Infinity") {
+              numeric_column[r] = INFINITY;
+            } else if (cell_string == "-Infinity") {
+              numeric_column[r] = -INFINITY;
+            } else if (cell_string == "NaN") {
+              numeric_column[r] = NAN;
             } else {
               stop("unrecognized string value in numeric vector!");
             }
           } else {
-            tmp[r] = as<double>(cell);
+            numeric_column[r] = as<double>(cell);
           }
         }
       }
       break;
     }
     case LGLSXP: {
-      copy<LogicalVector, bool>(as<LogicalVector>(column), rows, x, c);
+      copy_column<LogicalVector, bool>(as<LogicalVector>(column), row_count, input, c);
       break;
     }
     case STRSXP: {
-      copy<CharacterVector, String>(as<CharacterVector>(column), rows, x, c);
+      copy_column<CharacterVector, String>(as<CharacterVector>(column), row_count, input, c);
       break;
     }
     default: {
@@ -125,7 +138,7 @@ List transpose(List x, List out) {
     }
   }
 
-  return out;
+  return output;
 }
 
 

@@ -27,9 +27,10 @@ NULL
 #' be inferred from those names. Otherwise they will be
 #' \code{paste0('X', seq_along(data[[1]]))}
 #'
-#' Note that for \code{NA} values, \code{data} should have a \code{NULL}
+#' @note For \code{NA} values, \code{data} should have a \code{NULL}
 #' item in the correct spot. Ragged arrays are not supported (i.e. all sublists
-#' have to have the same length).
+#' have to have the same length). These \code{NULL} value(s) will be replaced
+#' by \code{NA} in-place for the input \code{data}.
 #'
 #' @rdname json.tabular.to.data.frame
 #' @seealso The corresponding unit tests for a full list of capabilities and
@@ -76,6 +77,7 @@ NULL
   # validate all rows have correct number of column and same column names
   column.names <- .check_names(data, column.count)
   # tranpose list from row major to column major
+  # NB: null(s) in lists are replaced with NA(s) in-place for efficiency
   .transpose(data, rv)
 
   for (j in which(column.types %in% 'raw')) {
