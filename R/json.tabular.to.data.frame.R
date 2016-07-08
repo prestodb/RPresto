@@ -6,19 +6,9 @@
 # of patent rights can be found in the PATENTS file in the same directory.
 
 #' @include dbDataType.R
+#' @useDynLib RPresto
+#' @importFrom Rcpp sourceCpp
 NULL
-
-# This is a hack to work around a bug in jsonlite where null's are not
-# converted to NA when simplifyVector=FALSE
-.null.to.na <- function(l) {
-  if (is.null(l)) {
-    NA
-  } else if (is.list(l)) {
-    lapply(l, .null.to.na)
-  } else {
-    l
-  }
-}
 
 #' Convert a \code{data.frame} formatted in the \code{list} of \code{list}s
 #' style as returned by Presto to an actual \code{data.frame}
@@ -37,9 +27,10 @@ NULL
 #' be inferred from those names. Otherwise they will be
 #' \code{paste0('X', seq_along(data[[1]]))}
 #'
-#' Note that for \code{NA} values, \code{data} should have a \code{NULL}
+#' @note For \code{NA} values, \code{data} should have a \code{NULL}
 #' item in the correct spot. Ragged arrays are not supported (i.e. all sublists
-#' have to have the same length).
+#' have to have the same length). These \code{NULL} value(s) will be replaced
+#' by \code{NA} in-place for the input \code{data}.
 #'
 #' @rdname json.tabular.to.data.frame
 #' @seealso The corresponding unit tests for a full list of capabilities and
@@ -83,56 +74,16 @@ NULL
     }
   }
 
-  column.names <- NULL
-  for (i in seq_len(row.count)) {
-    row <- data[[i]]
-
-    # If the items are named lists, we use the names to infer column
-    # names for the resulting data.frame
-    column.names.from.row <- names(row)
-    if (!is.null(column.names.from.row)) {
-      # item is a named list
-      if (!is.null(column.names)) {
-        # We have 'seen' column names in previous items
-        if (!isTRUE(all.equal(column.names, column.names.from.row))) {
-          # We have a different column name set from what we have seen before
-          warning('Item ', i, ', column names differ across rows, ',
-            'expected: ',
-            jsonlite::toJSON(column.names), ', ',
-            'received: ',
-            jsonlite::toJSON(column.names.from.row)
-          )
-        }
-      } else {
-        # First time we see a named item, use the names for the item as
-        # column names for the resulting data.frame
-        column.names <- column.names.from.row
-      }
-    }
-
-    row.length <- length(row)
-    if (row.length != column.count) {
-      stop('Item ', i, ',
-         expected: ', column.count, ' columns, ',
-        'received: ', row.length
-      )
-    }
-    for (j in seq_along(row)) {
-      rv[[j]][[i]] <- .null.to.na(row[[j]])
-    }
-  }
+  # validate all rows have correct number of column and same column names
+  column.names <- .check_names(data, column.count)
+  # tranpose list from row major to column major
+  # NB: null(s) in lists are replaced with NA(s) in-place for efficiency
+  .transpose(data, rv)
 
   for (j in which(column.types %in% 'raw')) {
     rv[[j]] <- lapply(rv[[j]], function(txt) {
       if (is.na(txt)) NA else RCurl::base64Decode(txt, 'raw')
     })
-  }
-
-  for (j in which(column.types %in% 'numeric')) {
-    rv[[j]] <- replace(rv[[j]], rv[[j]] == 'Infinity', Inf)
-    rv[[j]] <- replace(rv[[j]], rv[[j]] == '-Infinity', -Inf)
-    rv[[j]] <- replace(rv[[j]], rv[[j]] == 'NaN', NaN)
-    rv[[j]] <- as.numeric(rv[[j]])
   }
 
   for (j in which(column.types %in% 'Date')) {

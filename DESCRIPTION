@@ -20,7 +20,8 @@ Imports:
     RCurl,
     jsonlite,
     stringi,
-    stats
+    stats,
+    Rcpp
 Suggests:
     testthat,
     dplyr (>= 0.4.3)
@@ -36,6 +37,7 @@ Collate:
     'utility_functions.R'
     'PrestoCursor.R'
     'PrestoResult.R'
+    'RcppExports.R'
     'copy.to.src.presto.R'
     'db.data.type.PrestoConnection.R'
     'db.explain.PrestoConnection.R'
@@ -67,3 +69,4 @@ Collate:
     'src.presto.R'
     'tbl.src.presto.R'
 RoxygenNote: 5.0.1
+LinkingTo: Rcpp
