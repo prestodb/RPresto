@@ -13,6 +13,8 @@ style as returned by Presto to an actual \code{data.frame}}
 \item{column.types}{A \code{character} vector of (extended) data types
 corresponding to each column. See \code{.presto.to.R} for a list
 of possible values.}
+
+\item{timezone}{The timezone to use for date types.}
 }
 \value{
 A \code{data.frame} of \code{length(data)} rows and
@@ -26,10 +28,12 @@ returned by Presto, like timestamps with time zones.
 If the items in \code{data} are named lists the column names will
 be inferred from those names. Otherwise they will be
 \code{paste0('X', seq_along(data[[1]]))}
-
-Note that for \code{NA} values, \code{data} should have a \code{NULL}
+}
+\note{
+For \code{NA} values, \code{data} should have a \code{NULL}
 item in the correct spot. Ragged arrays are not supported (i.e. all sublists
-have to have the same length).
+have to have the same length). These \code{NULL} value(s) will be replaced
+by \code{NA} in-place for the input \code{data}.
 }
 \seealso{
 The corresponding unit tests for a full list of capabilities and

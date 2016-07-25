@@ -20,6 +20,7 @@ NULL
 #' @param column.types A \code{character} vector of (extended) data types
 #'        corresponding to each column. See \code{.presto.to.R} for a list
 #'        of possible values.
+#' @param timezone The timezone to use for date types.
 #' @return A \code{data.frame} of \code{length(data)} rows and
 #'         \code{length(data[[1]])} columns.
 #'
