@@ -88,6 +88,7 @@ with_locale(test.locale(), test_that)('regular data is converted correctly', {
       TRUE,
       1L,
       0.0,
+      '0',
       '',
       'YQ==', # a
       '2015-03-01',
@@ -101,6 +102,7 @@ with_locale(test.locale(), test_that)('regular data is converted correctly', {
       FALSE,
       2L,
       1.0,
+      '1.414',
       'z',
       'YmM=', # bc
       '2015-03-02',
@@ -112,7 +114,7 @@ with_locale(test.locale(), test_that)('regular data is converted correctly', {
     )
   )
 
-  column.classes <- c('logical', 'integer', 'numeric', 'character',
+  column.classes <- c('logical', 'integer', 'numeric', 'character', 'character',
     'raw', 'Date', 'POSIXct_no_time_zone', 'POSIXct_with_time_zone',
     'character', 'list_unnamed', 'list_named')
   column.names <- column.classes
