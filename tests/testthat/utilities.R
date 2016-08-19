@@ -87,6 +87,7 @@ data.frame.with.all.classes <- function(row.indices) {
     c(TRUE, FALSE),
     c(1L, 2L),
     c(0.0, 1.0),
+    c('0', '1.414'),
     c('', 'z'),
     rep(NA, 2),
     as.Date(c('2015-03-01', '2015-03-02')),
@@ -105,7 +106,7 @@ data.frame.with.all.classes <- function(row.indices) {
     rep(NA, 2),
     stringsAsFactors=FALSE
   )
-  column.classes <- c('logical', 'integer', 'numeric', 'character',
+  column.classes <- c('logical', 'integer', 'numeric', 'character', 'character',
     'raw', 'Date', 'POSIXct_no_time_zone', 'POSIXct_with_time_zone',
     'character', 'list_unnamed', 'list_named')
   column.names <- column.classes
