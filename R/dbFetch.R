@@ -55,6 +55,7 @@ NULL
     )
 
     check.status.code(get.response)
+    # Call response to content, then .extract.data
     content <- response.to.content(get.response)
     if (get.state(content) == 'FAILED') {
       res@cursor$state('FAILED')

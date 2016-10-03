@@ -12,6 +12,8 @@ NULL
   data.list <- response.content[['data']]
   if (is.null(data.list)) {
     data.list <- list()
+  } else {
+    print(paste("response.content[['data']] is", data.list))
   }
   column.list <- response.content[['columns']]
   if (is.null(column.list)) {
@@ -22,6 +24,7 @@ NULL
     # name, type, typeSignature
     c('character', 'character', 'list_named')
   )
+  # column.info is a data.frame of name, type, typeSignature now.
   # The typeSignature item for each column has a 'rawType' value which
   # corresponds to the Presto data type.
   presto.types <- vapply(
