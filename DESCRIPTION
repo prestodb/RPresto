@@ -17,7 +17,7 @@ Depends:
 Imports:
     DBI (>= 0.3.0),
     httr (>= 0.6),
-    RCurl,
+    openssl,
     jsonlite,
     stringi,
     stats,

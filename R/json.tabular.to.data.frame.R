@@ -83,7 +83,7 @@ NULL
 
   for (j in which(column.types %in% 'raw')) {
     rv[[j]] <- lapply(rv[[j]], function(txt) {
-      if (is.na(txt)) NA else RCurl::base64Decode(txt, 'raw')
+      if (is.na(txt)) NA else openssl::base64_decode(as.character(txt))
     })
   }
 
