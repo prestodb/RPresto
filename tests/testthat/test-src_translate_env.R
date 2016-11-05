@@ -70,7 +70,7 @@ with_locale(test.locale(), test_that)('as() works', {
       s[['con']],
       dplyr::sql('SELECT 1')
     ),
-    vars=list(as.name('x'))
+    vars=c('x')
   )
 
   f <- try(getFromNamespace('src_translate_env', 'dplyr'), silent=TRUE)
