@@ -41,6 +41,7 @@ setMethod('dbConnect',
     user,
     host = 'localhost',
     port = 8080,
+    source = getPackageName(),
     session.timezone='UTC',
     parameters = list(),
     ...
@@ -56,6 +57,7 @@ setMethod('dbConnect',
       user=user,
       host=host,
       port=port,
+      source=source,
       session.timezone=session.timezone,
       parameters=parameters
     )

@@ -39,6 +39,7 @@ test_that('dbConnect constructs PrestoConnection correctly', {
       schema='test',
       host='http://localhost',
       port=8000,
+      source='testsource',
       session.timezone=test.timezone(),
       user=Sys.getenv('USER')
     ),
@@ -52,6 +53,7 @@ test_that('dbConnect constructs PrestoConnection correctly', {
       schema='test',
       host='http://localhost',
       port=8000,
+      source='testsource',
       session.timezone=test.timezone(),
       user=Sys.getenv('USER'),
       parameters=list(

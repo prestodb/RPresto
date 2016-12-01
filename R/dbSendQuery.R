@@ -13,7 +13,7 @@ NULL
     "X-Presto-User"= conn@user,
     "X-Presto-Catalog"= conn@catalog,
     "X-Presto-Schema"= conn@schema,
-    "X-Presto-Source"= getPackageName(),
+    "X-Presto-Source"= conn@source,
     "X-Presto-Time-Zone" = conn@session.timezone,
     "User-Agent"= getPackageName(),
     "X-Presto-Session"=paste(
