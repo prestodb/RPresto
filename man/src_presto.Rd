@@ -6,7 +6,8 @@
 \title{dplyr integration to connect to a Presto database.}
 \usage{
 src_presto(catalog = NULL, schema = NULL, user = NULL, host = NULL,
-  port = NULL, session.timezone = NULL, parameters = NULL, ...)
+  port = NULL, source = NULL, session.timezone = NULL,
+  parameters = NULL, ...)
 
 tbl.src_presto(src, from, ...)
 }
@@ -20,6 +21,8 @@ tbl.src_presto(src, from, ...)
 \item{host}{Host name to connect to the database}
 
 \item{port}{Port number to use with the host name}
+
+\item{source}{Source to specify for the connection}
 
 \item{session.timezone}{Time zone for the connection}
 

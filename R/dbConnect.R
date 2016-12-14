@@ -14,6 +14,7 @@ NULL
 #' @param user The current user
 #' @param host The presto host to connect to
 #' @param port Port to use for the connection
+#' @param source Source to specify for the connection
 #' @param session.timezone Time zone to use for the connection. Presto returns
 #'          timestamps without time zones with respect to this value. The time
 #'          arithmetic (e.g. adding hours) will also be done in the given time

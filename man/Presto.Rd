@@ -10,8 +10,8 @@
 Presto(...)
 
 \S4method{dbConnect}{PrestoDriver}(drv, catalog, schema, user,
-  host = "localhost", port = 8080, session.timezone = "UTC",
-  parameters = list(), ...)
+  host = "localhost", port = 8080, source = getPackageName(),
+  session.timezone = "UTC", parameters = list(), ...)
 
 \S4method{dbDisconnect}{PrestoConnection}(conn)
 }
@@ -29,6 +29,8 @@ Presto(...)
 \item{host}{The presto host to connect to}
 
 \item{port}{Port to use for the connection}
+
+\item{source}{Source to specify for the connection}
 
 \item{session.timezone}{Time zone to use for the connection. Presto returns
 timestamps without time zones with respect to this value. The time
