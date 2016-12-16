@@ -33,7 +33,8 @@ con <- dbConnect(
   port=7777,
   user=Sys.getenv('USER'),
   schema='<schema>',
-  catalog='<catalog>'
+  catalog='<catalog>',
+  source='<source>'
 )
 
 res <- dbSendQuery(con, 'SELECT 1')

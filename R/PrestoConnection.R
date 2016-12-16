@@ -17,6 +17,7 @@ setClass('PrestoConnection',
     'user'='character',
     'host'='character',
     'port'='integer',
+    'source'='character',
     'session.timezone'='character',
     'Id'='character',
     'parameters'='list'
@@ -33,6 +34,7 @@ setMethod('show',
       'Catalog: ', object@catalog, '\n',
       'Schema: ', object@schema, '\n',
       'User: ', object@user, '\n',
+      'Source: ', object@source, '\n',
       'Session Time Zone: ', object@session.timezone, '\n',
       sep=''
     )

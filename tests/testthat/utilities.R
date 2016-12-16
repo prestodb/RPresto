@@ -275,7 +275,7 @@ read_credentials <- function() {
   if (!file.exists('credentials.dcf')) {
     skip(paste0('credential file missing, please create a file ',
          system.file('tests', 'testthat', 'credentials.dcf', package='RPresto'),
-         ' with fields "host", "port", "catalog", "schema" to do live testing'
+         ' with fields "host", "port", "source", "catalog", "schema" to do live testing'
     ))
   }
   dcf <- read.dcf("credentials.dcf")
@@ -300,6 +300,7 @@ setup_live_connection <- function(session.timezone) {
     catalog=credentials$catalog,
     host=credentials$host,
     port=credentials$port,
+    source=credentials$source,
     session.timezone=session.timezone,
     user=Sys.getenv('USER')
   )
@@ -323,6 +324,7 @@ setup_live_dplyr_connection <- function(session.timezone) {
     catalog=credentials$catalog,
     host=credentials$host,
     port=credentials$port,
+    source=credentials$source,
     user=Sys.getenv('USER'),
     session.timezone=session.timezone,
     parameters=list()
@@ -337,6 +339,7 @@ setup_mock_connection <- function() {
     catalog='catalog',
     host='http://localhost',
     port=8000,
+    source='RPresto Test',
     session.timezone=test.timezone(),
     user=Sys.getenv('USER')
   )
@@ -353,6 +356,7 @@ setup_mock_dplyr_connection <- function() {
     catalog='catalog',
     host='http://localhost',
     port=8000,
+    source='RPresto Test',
     user=Sys.getenv('USER'),
     session.timezone=test.timezone(),
     parameters=list()

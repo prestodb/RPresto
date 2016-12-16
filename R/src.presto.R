@@ -14,6 +14,7 @@
 #' @param user User name to use in the connection
 #' @param host Host name to connect to the database
 #' @param port Port number to use with the host name
+#' @param source Source to specify for the connection
 #' @param session.timezone Time zone for the connection
 #' @param parameters Additional parameters to pass to the connection
 #' @param ... For \code{src_presto} other arguments passed on to the underlying
@@ -32,6 +33,7 @@ src_presto <- function(
     user=NULL,
     host= NULL,
     port=NULL,
+    source=NULL,
     session.timezone=NULL,
     parameters=NULL,
     ...
@@ -48,6 +50,7 @@ src_presto <- function(
     user=user %||% character(0),
     host=host %||% character(0),
     port=port %||% character(0),
+    source=source %||% character(0),
     session.timezone=session.timezone %||% character(0),
     parameters=parameters %||% list(),
     ...
