@@ -141,7 +141,7 @@ with_locale(test.locale(), test_that)('as() works', {
           '^SELECT "b" AS "b", "c" AS "c", "d" AS "d".*',
           'FROM \\(',
             'SELECT ',
-              '"_col0", ',
+              '"x", ',
               'CAST\\("a" AS "VARBINARY"\\) AS "b", ' ,
               'CAST\\("a" AS "TIMESTAMP WITH TIME ZONE"\\) AS "c", ',
               'CAST\\("a" AS "BOOLEAN"\\) AS "d"\n',
