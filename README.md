@@ -73,7 +73,8 @@ db <- src_presto(
   port=7777,
   user=Sys.getenv('USER'),
   schema='<schema>',
-  catalog='<catalog>'
+  catalog='<catalog>',
+  source='<source>'
 )
 
 # Assuming you have a table like iris in the database
