@@ -15,6 +15,7 @@ NULL
   'smallint', 'integer',
   'tinyint', 'integer',
   'decimal', 'character',
+  'real', 'numeric',
   'double', 'numeric',
   'varchar', 'character',
   'varbinary', 'raw',
