@@ -284,7 +284,8 @@ read_credentials <- function() {
     port=as.integer(as.vector(dcf[1, "port"])),
     catalog=as.vector(dcf[1, "catalog"]),
     schema=as.vector(dcf[1, "schema"]),
-    iris_table_name=as.vector(dcf[1, "iris_table_name"])
+    iris_table_name=as.vector(dcf[1, "iris_table_name"]),
+    source=as.vector(dcf[1, "source"])
   )
   return(credentials)
 }
