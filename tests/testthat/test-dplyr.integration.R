@@ -27,6 +27,16 @@ test_that('dplyr integration works', {
 
   expect_that(iris_presto, is_a('tbl_presto'))
 
+  # collapse forces the tbl to be a subquery, therefore tests the
+  # db_query_fields path that has `sql` as a subselect as opposed
+  # to a table name. There is some behavioral change between dplyr
+  # 0.4.3 vs 0.5.0 that no longer wraps the former in parentheses
+  # so it should be tested.
+  expect_that(
+    nrow(as.data.frame(dplyr::collapse(iris_presto), n=Inf)),
+    equals(nrow(iris))
+  )
+
   iris_presto_summary <- as.data.frame(dplyr::collect(
     dplyr::rename(
       dplyr::arrange(

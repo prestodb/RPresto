@@ -12,7 +12,7 @@
 #' @export
 db_query_fields.PrestoConnection <- function(con, sql, ...) {
   fields <- dplyr::build_sql(
-    "SELECT * FROM ", sql, " LIMIT 0",
+    "SELECT * FROM ", dplyr::sql_subquery(con, sql), " LIMIT 0",
     con = con
   )
   result <- dbSendQuery(con, fields)
