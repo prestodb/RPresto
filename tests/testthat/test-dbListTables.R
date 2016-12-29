@@ -28,14 +28,14 @@ test_that('dbListTables works with mock', {
         'http://localhost:8000/v1/statement',
         status_code=200,
         state='QUEUED',
-        request_body='SHOW TABLES',
+        request_body='^SHOW TABLES$',
         next_uri='http://localhost:8000/query_1/1'
       ),
       mock_httr_response(
         'http://localhost:8000/v1/statement',
         status_code=200,
         state='QUEUED',
-        request_body="SHOW TABLES LIKE '_no_table_'",
+        request_body="^SHOW TABLES LIKE '_no_table_'$",
         next_uri='http://localhost:8000/query_2/1'
       )
     ),

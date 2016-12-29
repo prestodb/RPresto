@@ -46,7 +46,8 @@ test_that('db_query_fields works with mock', {
         'http://localhost:8000/v1/statement',
         status_code=200,
         state='QUEUED',
-        request_body='SELECT * FROM (SELECT 1 AS a, \'t\' AS b) "a" LIMIT 0',
+        request_body=
+          '^SELECT \\* FROM \\(SELECT 1 AS a, \'t\' AS b\\) "a" LIMIT 0$',
         next_uri='http://localhost:8000/query_1/1',
         info_uri='http://localhost:8000/v1/query/query_1'
       ),
@@ -55,29 +56,71 @@ test_that('db_query_fields works with mock', {
         status_code=200,
         state='QUEUED',
         # For dplyr 0.4.3
-        request_body=
-          'SELECT * FROM (SELECT 1 AS a, \'t\' AS b) AS "a" LIMIT 0',
+        request_body=paste0(
+          '^SELECT \\* FROM ',
+          '\\(\\(SELECT 1 AS a, \'t\' AS b\\) AS "a"\\) ',
+          'AS "zzz[0-9]+" LIMIT 0$'
+        ),
         next_uri='http://localhost:8000/query_1/1'
       ),
       mock_httr_response(
         'http://localhost:8000/v1/statement',
         status_code=200,
         state='QUEUED',
-        request_body='SELECT * FROM "__non_existent_table__" LIMIT 0',
+        # For dplyr 0.5.0
+        request_body=paste0(
+          '^SELECT \\* FROM \\(',
+            '\\(SELECT 1 AS a, \'t\' AS b\\) "a"',
+          '\\) "zzz[0-9]+" LIMIT 0$'
+        ),
+        next_uri='http://localhost:8000/query_1/1'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/v1/statement',
+        status_code=200,
+        state='QUEUED',
+        request_body='^SELECT \\* FROM "__non_existent_table__" LIMIT 0$',
+        next_uri='http://localhost:8000/query_2/1',
+      ),
+      mock_httr_response(
+        'http://localhost:8000/v1/statement',
+        status_code=200,
+        state='QUEUED',
+        # For dplyr 0.5.0
+        request_body=paste0(
+          '^SELECT \\* FROM "__non_existent_table__" ',
+          'AS "zzz[0-9]+" LIMIT 0$'
+        ),
         next_uri='http://localhost:8000/query_2/1',
       ),
       mock_httr_response(
         'http://localhost:8000/v1/statement',
         status_code=200,
         state='FINISHED',
-        request_body='SELECT * FROM "empty_table" LIMIT 0',
+        request_body='^SELECT \\* FROM "empty_table" LIMIT 0$',
+        next_uri='http://localhost:8000/query_3/1',
+      ),
+      mock_httr_response(
+        'http://localhost:8000/v1/statement',
+        status_code=200,
+        state='FINISHED',
+        # For dplyr 0.5.0
+        request_body='^SELECT \\* FROM "empty_table" AS "zzz[0-9]+" LIMIT 0$',
         next_uri='http://localhost:8000/query_3/1',
       ),
       mock_httr_response(
         'http://localhost:8000/v1/statement',
         status_code=200,
         state='QUEUED',
-        request_body='SELECT * FROM "two_columns" LIMIT 0',
+        request_body='^SELECT \\* FROM "two_columns" LIMIT 0$',
+        next_uri='http://localhost:8000/query_4/1',
+      ),
+      mock_httr_response(
+        'http://localhost:8000/v1/statement',
+        status_code=200,
+        state='QUEUED',
+        # For dplyr 0.5.0
+        request_body='^SELECT \\* FROM "two_columns" AS "zzz[0-9]+" LIMIT 0$',
         next_uri='http://localhost:8000/query_4/1',
       )
     ),

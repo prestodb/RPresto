@@ -40,7 +40,8 @@ test_that('dbFetch works with mock', {
         'http://localhost:8000/v1/statement',
         status_code=200,
         state='QUEUED',
-        request_body='SELECT n FROM (VALUES (1), (2)) AS t (n)',
+        request_body=
+          '^SELECT n FROM \\(VALUES \\(1\\), \\(2\\)\\) AS t \\(n\\)$',
         next_uri='http://localhost:8000/query_1/1'
       ),
       mock_httr_response(
@@ -217,7 +218,7 @@ with_locale(test.locale(), test_that)('dbFetch rbind works correctly', {
         'http://localhost:8000/v1/statement',
         status_code=200,
         state='FINISHED',
-        request_body='SELECT * FROM all_types',
+        request_body='SELECT \\* FROM all_types',
         next_uri='http://localhost:8000/query_1/1'
       )
     ),
@@ -280,14 +281,14 @@ with_locale(test.locale(), test_that)('dbFetch rbind works with zero row chunks'
         'http://localhost:8000/v1/statement',
         status_code=200,
         state='PAUSED',
-        request_body='SELECT * FROM all_types',
+        request_body='SELECT \\* FROM all_types',
         next_uri='http://localhost:8000/query_3/1'
       ),
       mock_httr_response(
         'http://localhost:8000/v1/statement',
         status_code=200,
         state='QUEUED',
-        request_body='SELECT * FROM all_types_with_queue',
+        request_body='SELECT \\* FROM all_types_with_queue',
         next_uri='http://localhost:8000/query_4/1'
       )
     ),
