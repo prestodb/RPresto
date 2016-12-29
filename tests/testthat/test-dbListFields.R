@@ -37,14 +37,14 @@ test_that('dbListFields works with mock - PrestoConnection', {
         'http://localhost:8000/v1/statement',
         status_code=200,
         state='QUEUED',
-        request_body='SELECT * FROM "two_columns" LIMIT 0',
+        request_body='SELECT \\* FROM "two_columns" LIMIT 0',
         next_uri='http://localhost:8000/query_1/1'
       ),
       mock_httr_response(
         'http://localhost:8000/v1/statement',
         status_code=200,
         state='QUEUED',
-        request_body='SELECT * FROM "__non_existent_table__" LIMIT 0',
+        request_body='SELECT \\* FROM "__non_existent_table__" LIMIT 0',
         next_uri='http://localhost:8000/query_2/1'
       )
     ),
@@ -90,21 +90,21 @@ test_that('dbListFields works with mock - PrestoResult', {
         'http://localhost:8000/v1/statement',
         status_code=200,
         state='QUEUED',
-        request_body='SELECT * FROM two_columns',
+        request_body='SELECT \\* FROM two_columns',
         next_uri='http://localhost:8000/query_1/1'
       ),
       mock_httr_response(
         'http://localhost:8000/v1/statement',
         status_code=200,
         state='QUEUED',
-        request_body='SELECT * FROM __non_existent_table__',
+        request_body='SELECT \\* FROM __non_existent_table__',
         next_uri='http://localhost:8000/query_2/1'
       ),
       mock_httr_response(
         'http://localhost:8000/v1/statement',
         status_code=200,
         state='FINISHED',
-        request_body='SELECT * FROM empty_table',
+        request_body='SELECT \\* FROM empty_table',
         next_uri='http://localhost:8000/query_3/1'
       )
     ),

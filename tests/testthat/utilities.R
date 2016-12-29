@@ -253,7 +253,7 @@ mock_httr_replies <- function(...) {
       } else {
         body.matches <- (
           !is.null(item[['request_body']])
-          && item[['request_body']] == body
+          && grepl(item[['request_body']], body)
         )
       }
 
