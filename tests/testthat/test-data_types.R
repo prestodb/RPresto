@@ -24,6 +24,8 @@ test_that("Queries return the correct primitive types", {
                data_frame(bool = TRUE))
   expect_equal_data_frame(dbGetQuery(conn, "select 1 one"),
                data_frame(one = 1))
+  expect_equal_data_frame(dbGetQuery(conn, "select 1.0 one"),
+               data_frame(one = 1.0))
   expect_equal_data_frame(dbGetQuery(conn, "select 'one' one"),
                data_frame(one = 'one'))
 })
@@ -75,7 +77,11 @@ test_that("all data types work", {
   conn <- setup_live_connection(session.timezone=test.timezone())
   e <- data_frame(
     type_boolean=TRUE,
+    type_tinyint=1L,
+    type_smallint=1L,
+    type_integer=1L,
     type_bigint=1L,
+    type_real=1.0,
     type_double=1.0,
     type_decimal='1.414',
     type_varchar='a',
@@ -103,8 +109,12 @@ test_that("all data types work", {
     dbGetQuery(conn, "
       SELECT
         true AS type_boolean,
-        1 AS type_bigint,
-        1.0 AS type_double,
+        CAST(1 AS TINYINT) AS type_tinyint,
+        CAST(1 AS SMALLINT) AS type_smallint,
+        CAST(1 AS INTEGER) AS type_integer,
+        CAST(1 AS BIGINT) AS type_bigint,
+        CAST(1.0 AS REAL) AS type_real,
+        CAST(1.0 AS DOUBLE) AS type_double,
         DECIMAL '1.414' AS type_decimal,
         CAST('a' AS VARCHAR) AS type_varchar,
         CAST('a' AS VARBINARY) AS type_varbinary,
@@ -125,7 +135,11 @@ test_that("all data types work", {
 
   e <- data_frame(
     type_boolean=NA,
+    type_tinyint=NA_integer_,
+    type_smallint=NA_integer_,
+    type_integer=NA_integer_,
     type_bigint=NA_integer_,
+    type_real=NA_real_,
     type_double=NA_real_,
     type_decimal=NA_character_,
     type_varchar=NA_character_,
@@ -148,7 +162,11 @@ test_that("all data types work", {
     dbGetQuery(conn, "
       SELECT
         CAST(NULL AS BOOLEAN) AS type_boolean,
+        CAST(NULL AS TINYINT) AS type_tinyint,
+        CAST(NULL AS SMALLINT) AS type_smallint,
+        CAST(NULL AS INTEGER) AS type_integer,
         CAST(NULL AS BIGINT) AS type_bigint,
+        CAST(NULL AS REAL) AS type_real,
         CAST(NULL AS DOUBLE) AS type_double,
         CAST(NULL AS DECIMAL) AS type_decimal,
         CAST(NULL AS VARCHAR) AS type_varchar,
