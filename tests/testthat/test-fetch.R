@@ -73,7 +73,7 @@ test_that('fetch works with duplicate column names', {
 
   result <- dbSendQuery(conn, 'SELECT 0 AS dummy, 1 AS dummy')
   expect_equal_data_frame(
-    dbFetch(result),
+    dbFetch(result, n=Inf),
     data.frame(dummy=0, dummy=1, check.names=FALSE)
   )
 })
