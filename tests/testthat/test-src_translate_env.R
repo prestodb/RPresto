@@ -138,10 +138,9 @@ with_locale(test.locale(), test_that)('as() works', {
       l <- TRUE
       query <- as.character(dbplyr::sql_render(dplyr::transmute(
         t,
-        # Currently !! does not work with raw values
-        b=dbplyr::partial_eval(quote(as(a, r)), vars='a'),
-        c=as(a, !!p),
-        d=as(a, !!l)
+        b=as(a, r),
+        c=as(a, p),
+        d=as(a, l)
       )))
       expect_true(
         grepl(
