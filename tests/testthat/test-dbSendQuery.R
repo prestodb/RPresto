@@ -14,7 +14,7 @@ test_that('dbSendQuery works with live database', {
 
   expect_error(
     dbSendQuery(conn, 'INVALID SQL'),
-    "Query .* failed: .* no viable alternative at input 'INVALID'"
+    "Query.*failed:.*(no viable alternative at|mismatched) input 'INVALID'"
   )
 
   result <- dbSendQuery(conn, 'SELECT * FROM __non_existent_table__')

@@ -29,7 +29,7 @@ test_that('dbIsValid works with live database', {
 
   expect_error(
     dbSendQuery(conn, 'INVALID SQL'),
-    "Query.*failed:.*no viable alternative at input 'INVALID'"
+    "Query.*failed:.*(no viable alternative at|mismatched) input 'INVALID'"
   )
 })
 

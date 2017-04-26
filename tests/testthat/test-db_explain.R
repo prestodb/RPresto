@@ -17,7 +17,7 @@ test_that('db_explain works with live database', {
 
   expect_error(
     dplyr::db_explain(s[['con']], dplyr::sql('INVALID')),
-    "Query.*failed:.*no viable alternative at input 'INVALID'"
+    "Query.*failed:.*(no viable alternative at|mismatched) input 'INVALID'"
   )
 })
 
