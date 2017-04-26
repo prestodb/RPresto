@@ -11,12 +11,19 @@ source('utilities.R')
 
 with_locale(test.locale(), test_that)('as() works', {
 
+  translate_sql <- RPresto:::dbplyr_compatible('translate_sql')
+  translate_sql_ <- RPresto:::dbplyr_compatible('translate_sql_')
+
   conn <- setup_mock_dplyr_connection()[['db']]
-  f <- try(getFromNamespace('src_translate_env', 'dplyr'), silent=TRUE)
-  if (!inherits(f, 'try-error')) {
-    v <- f(conn)
+
+  src_translate_env <- try(
+    getFromNamespace('src_translate_env', 'dplyr'),
+    silent=TRUE
+  )
+  if (!inherits(src_translate_env, 'try-error')) {
+    v <- src_translate_env(conn)
     expect_equal(
-      dplyr::translate_sql(as(x, 0.0), variant=v),
+      translate_sql(as(x, 0.0), variant=v),
       dplyr::sql('CAST("x" AS "DOUBLE")')
     )
     expect_equal(
@@ -40,15 +47,15 @@ with_locale(test.locale(), test_that)('as() works', {
     )
   } else {
     expect_equal(
-      dplyr::translate_sql(as(x, 0.0), con=conn[['con']]),
+      translate_sql(as(x, 0.0), con=conn[['con']]),
       dplyr::sql('CAST("x" AS "DOUBLE")')
     )
     expect_equal(
-      dplyr::translate_sql(pmax(x), con=conn[['con']]),
+      translate_sql(pmax(x), con=conn[['con']]),
       dplyr::sql('GREATEST("x")')
     )
     expect_equal(
-      dplyr::translate_sql_(
+      translate_sql_(
         list(substitute(as(x, l), list(l=list()))),
         con=conn[['con']]
       ),
@@ -57,7 +64,7 @@ with_locale(test.locale(), test_that)('as() works', {
 
     substituted.expression <- substitute(as(x, l), list(l=Sys.Date()))
     expect_equal(
-      dplyr::translate_sql_(list(substituted.expression), con=conn[['con']]),
+      translate_sql_(list(substituted.expression), con=conn[['con']]),
       dplyr::sql('CAST("x" AS "DATE")')
     )
   }
@@ -73,16 +80,15 @@ with_locale(test.locale(), test_that)('as() works', {
     vars=c('x')
   )
 
-  f <- try(getFromNamespace('src_translate_env', 'dplyr'), silent=TRUE)
-  if (!inherits(f, 'try-error')) {
+  if (!inherits(src_translate_env, 'try-error')) {
     l <- list(a=1L)
     expect_equal(
-      dplyr::translate_sql(as(x, l), tbl=t),
+      translate_sql(as(x, l), tbl=t),
       dplyr::sql('CAST("x" AS "MAP<VARCHAR, BIGINT>")')
     )
 
     expect_equal(
-      dplyr::translate_sql(as(x, local(list(a=Sys.time()))), tbl=t),
+      translate_sql(as(x, local(list(a=Sys.time()))), tbl=t),
       dplyr::sql('CAST("x" AS "MAP<VARCHAR, TIMESTAMP>")')
     )
 
@@ -111,47 +117,93 @@ with_locale(test.locale(), test_that)('as() works', {
       )
     )
   } else {
-    l <- list(a=1L)
-    expect_equal(
-      dplyr::translate_sql(as(x, l), con=s[['con']], vars='x'),
-      dplyr::sql('CAST("x" AS "MAP<VARCHAR, BIGINT>")')
-    )
-
-    expect_equal(
-      dplyr::translate_sql(
-        as(x, local(list(a=Sys.time()))),
-        vars='x',
-        con=s[['con']]
-      ),
-      dplyr::sql('CAST("x" AS "MAP<VARCHAR, TIMESTAMP>")')
-    )
-
-    r <- as.raw(0)
-    p <- as.POSIXct('2001-02-03 04:05:06', tz='Europe/Istanbul')
-    query <- as.character(dplyr::sql_render(dplyr::transmute(
-      t,
-      b=as(a, r),
-      c=as(a, p),
-      d=as(a, TRUE)
-    )))
-
-    expect_true(
-      grepl(
-        paste0(
-          '^SELECT "b" AS "b", "c" AS "c", "d" AS "d".*',
-          'FROM \\(',
-            'SELECT ',
-              '"x", ',
-              'CAST\\("a" AS "VARBINARY"\\) AS "b", ' ,
-              'CAST\\("a" AS "TIMESTAMP WITH TIME ZONE"\\) AS "c", ',
-              'CAST\\("a" AS "BOOLEAN"\\) AS "d"\n',
-            'FROM \\(',
-              '\\(SELECT 1\\) "[_0-9a-z]+"',
-            '\\) "[_0-9a-z]+"',
-          '\\) "[_0-9a-z]+"$'
+    if (packageVersion('dplyr') >= '0.5.0.9004') {
+      l <- list(a=1L)
+      expect_equal(
+        translate_sql(
+          as(x, !!l),
+          con=s[['con']]
         ),
-        query
+        dplyr::sql('CAST("x" AS "MAP<VARCHAR, BIGINT>")')
       )
-    )
+      expect_equal(
+        translate_sql(
+          as(x, !!local(list(a=Sys.time()))),
+          con=s[['con']]
+        ),
+        dplyr::sql('CAST("x" AS "MAP<VARCHAR, TIMESTAMP>")')
+      )
+      r <- as.raw(0)
+      p <- as.POSIXct('2001-02-03 04:05:06', tz='Europe/Istanbul')
+      l <- TRUE
+      query <- as.character(dbplyr::sql_render(dplyr::transmute(
+        t,
+        # Currently !! does not work with raw values
+        b=dbplyr::partial_eval(quote(as(a, r)), vars='a'),
+        c=as(a, !!p),
+        d=as(a, !!l)
+      )))
+      expect_true(
+        grepl(
+          paste0(
+            '^SELECT "b" AS "b", "c" AS "c", "d" AS "d".*',
+            'FROM \\(',
+              'SELECT ',
+                '"_col0", ',
+                'CAST\\("a" AS "VARBINARY"\\) AS "b", ' ,
+                'CAST\\("a" AS "TIMESTAMP WITH TIME ZONE"\\) AS "c", ',
+                'CAST\\("a" AS "BOOLEAN"\\) AS "d"\n',
+              'FROM \\(',
+                '\\(SELECT 1\\) "[_0-9a-z]+"',
+              '\\) "[_0-9a-z]+"',
+            '\\) "[_0-9a-z]+"$'
+          ),
+          query
+        )
+      )
+    } else {
+      l <- list(a=1L)
+      expect_equal(
+        translate_sql(as(x, l), con=s[['con']], vars='x'),
+        dplyr::sql('CAST("x" AS "MAP<VARCHAR, BIGINT>")')
+      )
+
+      expect_equal(
+        translate_sql(
+          as(x, local(list(a=Sys.time()))),
+          vars='x',
+          con=s[['con']]
+        ),
+        dplyr::sql('CAST("x" AS "MAP<VARCHAR, TIMESTAMP>")')
+      )
+
+      r <- as.raw(0)
+      p <- as.POSIXct('2001-02-03 04:05:06', tz='Europe/Istanbul')
+      query <- as.character(dplyr::sql_render(dplyr::transmute(
+        t,
+        b=as(a, r),
+        c=as(a, p),
+        d=as(a, TRUE)
+      )))
+
+      expect_true(
+        grepl(
+          paste0(
+            '^SELECT "b" AS "b", "c" AS "c", "d" AS "d".*',
+            'FROM \\(',
+              'SELECT ',
+                '"x", ',
+                'CAST\\("a" AS "VARBINARY"\\) AS "b", ' ,
+                'CAST\\("a" AS "TIMESTAMP WITH TIME ZONE"\\) AS "c", ',
+                'CAST\\("a" AS "BOOLEAN"\\) AS "d"\n',
+              'FROM \\(',
+                '\\(SELECT 1\\) "[_0-9a-z]+"',
+              '\\) "[_0-9a-z]+"',
+            '\\) "[_0-9a-z]+"$'
+          ),
+          query
+        )
+      )
+    }
   }
 })

@@ -39,7 +39,7 @@ src_presto <- function(
     ...
   ) {
   if(!requireNamespace('dplyr', quietly=TRUE)) {
-    stop('This function requires the dplyr package, please install it first ',
+    stop('src_presto requires the dplyr package, please install it first ',
          'and try again.')
   }
 
@@ -56,14 +56,26 @@ src_presto <- function(
     ...
   )
 
-  info <- DBI::dbGetInfo(con)
-
-  return(dplyr::src_sql(
-    "presto",
-    con,
-    info=info,
-    disco=.db.disconnector(con)
-  ))
+  if (packageVersion('dplyr') >= '0.5.0.9004') {
+    if (!requireNamespace('dbplyr', quietly=TRUE)) {
+      stop('src_presto requires the dbplyr package, please install it first ',
+           'and try again'
+      )
+    }
+    src_function <- getFromNamespace('src_dbi', 'dbplyr')
+    src <- src_function(con, auto_disconnect=FALSE)
+  } else {
+    info <- DBI::dbGetInfo(con)
+    src_function <- getFromNamespace('src_sql', 'dplyr')
+    src <- src_function(
+      "presto",
+      con,
+      info=info,
+      disco=.db.disconnector(con)
+    )
+  }
+  class(src) <- union('src_presto', class(src))
+  return(src)
 }
 
 .db.disconnector <- function(con) {
