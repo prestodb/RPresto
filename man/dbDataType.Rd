@@ -43,4 +43,3 @@ dbDataType(drv, Sys.time())
 # Data types for ARRAY or MAP values can be tricky
 all.equal('VARCHAR', dbDataType(drv, list(1, 2, 3L)))
 }
-

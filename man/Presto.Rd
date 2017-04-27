@@ -61,4 +61,3 @@ Connect to a Presto database
   dbDisconnect(conn)
 }
 }
-

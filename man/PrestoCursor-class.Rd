@@ -2,8 +2,8 @@
 % Please edit documentation in R/PrestoCursor.R
 \docType{class}
 \name{PrestoCursor-class}
-\alias{PrestoCursor}
 \alias{PrestoCursor-class}
+\alias{PrestoCursor}
 \title{Internal implementation detail class needed for its side-effects.
 When dbFetch is called, we need to both return the data and update
 the uri to the next value.}

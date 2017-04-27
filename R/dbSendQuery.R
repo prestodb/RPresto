@@ -16,12 +16,7 @@ NULL
     "X-Presto-Source"= conn@source,
     "X-Presto-Time-Zone" = conn@session.timezone,
     "User-Agent"= getPackageName(),
-    "X-Presto-Session"=paste(
-      names(conn@parameters),
-      conn@parameters,
-      sep='=',
-      collapse=','
-    )
+    "X-Presto-Session"=conn@session$parameterString()
   ))
 }
 
@@ -49,7 +44,8 @@ NULL
         post.response=post.response,
         statement=statement,
         session.timezone=conn@session.timezone,
-        cursor=cursor
+        cursor=cursor,
+        session=conn@session
       )
     }
   } else {

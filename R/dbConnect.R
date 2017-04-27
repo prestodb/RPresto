@@ -60,7 +60,7 @@ setMethod('dbConnect',
       port=port,
       source=source,
       session.timezone=session.timezone,
-      parameters=parameters
+      session=PrestoSession$new(parameters)
     )
     return(conn)
   }

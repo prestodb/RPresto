@@ -5,7 +5,7 @@
 # LICENSE file in the root directory of this source tree. An additional grant
 # of patent rights can be found in the PATENTS file in the same directory.
 
-#' @include utility_functions.R PrestoCursor.R
+#' @include utility_functions.R PrestoCursor.R PrestoSession.R
 NULL
 
 #' An S4 class to represent a Presto Result
@@ -14,6 +14,8 @@ NULL
 #' @slot session.timezone Session time zone used for the connection
 #' @slot cursor An internal implementation detail for keeping track of
 #'  what stage a request is in
+#' @slot session Presto session that is associated with connection. Parameters
+#'  can be updated in place
 #' @keywords internal
 #' @export
 setClass('PrestoResult',
@@ -22,7 +24,8 @@ setClass('PrestoResult',
     'post.response'='ANY',
     'statement'='character',
     'session.timezone'='character',
-    'cursor'='PrestoCursor'
+    'cursor'='PrestoCursor',
+    'session'='PrestoSession'
   )
 )
 
