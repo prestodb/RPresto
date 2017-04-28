@@ -38,18 +38,23 @@ test_that('dplyr integration works', {
   )
 
   iris_presto_summary <- as.data.frame(dplyr::collect(
-    dplyr::rename(
+      # dbplyr currently has a bug that breaks rename after grouping:
+      # https://github.com/tidyverse/dplyr/issues/2704
+      # so we temporarily rename locally. We will change this back once
+      # the issue is fixed
+      #dplyr::rename(
       dplyr::arrange(
         dplyr::summarise(
           dplyr::group_by(iris_presto, species),
           mean_sepal_length = mean(as(sepal_length, 0.0))
         ),
-        Species
+        species
       ),
-      Species=species
-    ),
+       #Species=species
+    #),
     n=Inf
   ))
+  iris_presto_summary <- dplyr::rename(iris_presto_summary, Species=species)
 
   iris_summary <- as.data.frame(
     dplyr::arrange(

@@ -5,6 +5,9 @@
 # LICENSE file in the root directory of this source tree. An additional grant
 # of patent rights can be found in the PATENTS file in the same directory.
 
+#' @include dbplyr_compatible.R
+NULL
+
 #' dplyr integration to connect to a table in a database.
 #'
 #' Use \code{src_presto} to connect to an existing database,
@@ -25,7 +28,8 @@
 #' @export
 #' @rdname src_presto
 tbl.src_presto <- function(src, from, ...) {
-  rv <- dplyr::tbl_sql("presto", src = src, from = from, ...)
+  tbl_sql <- dbplyr_compatible('tbl_sql')
+  rv <- tbl_sql("presto", src = src, from = from, ...)
   if (!inherits(rv, 'tbl_presto')) {
     class(rv) <- c('tbl_presto', class(rv))
   }

@@ -5,6 +5,9 @@
 # LICENSE file in the root directory of this source tree. An additional grant
 # of patent rights can be found in the PATENTS file in the same directory.
 
+#' @include db_desc.PrestoConnection.R
+NULL
+
 #' S3 implementation of \code{\link[dplyr]{src_desc}} for Presto.
 #'
 #' @rdname dplyr_function_implementations
@@ -12,18 +15,5 @@
 #' @export
 src_desc.src_presto <- function(x) {
   info <- x[['info']]
-  return(paste0(
-    'presto ',
-    ' [',
-    info[['schema']],
-    ':',
-    info[['catalog']],
-    ' | ',
-    info[['user']],
-    '@',
-    info[['host']],
-    ':',
-    info[['port']],
-    ']'
-  ))
+  return(.description.from.info(info))
 }
