@@ -40,4 +40,3 @@ The corresponding unit tests for a full list of capabilities and
  data types supported
 }
 \keyword{internal}
-

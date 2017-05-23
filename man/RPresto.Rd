@@ -3,8 +3,8 @@
 \docType{package}
 \name{RPresto}
 \alias{RPresto}
-\alias{RPresto-package}
 \alias{package-RPresto}
+\alias{RPresto-package}
 \title{RPresto}
 \description{
 A DBI-compliant interface to Presto.
@@ -15,4 +15,3 @@ library("DBI")
 library("RPresto")
 
 }
-

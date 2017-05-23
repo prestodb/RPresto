@@ -2,8 +2,8 @@
 % Please edit documentation in R/dbGetInfo.R
 \docType{methods}
 \name{dbGetInfo,PrestoDriver-method}
-\alias{dbGetInfo,PrestoConnection-method}
 \alias{dbGetInfo,PrestoDriver-method}
+\alias{dbGetInfo,PrestoConnection-method}
 \alias{dbGetInfo,PrestoResult-method}
 \title{Metadata about database objects}
 \usage{
@@ -57,4 +57,3 @@ implement things like progress bars. See the examples section.
   close(progress.bar)
 }
 }
-

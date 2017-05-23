@@ -1,6 +1,10 @@
 # RPresto 1.2.1.9000
 
 - Don't drop data for duplicate column names
+- `SET/RESET SESSION` queries are now correctly respected when used under `dbGetQuery`.
+  `PrestoConnection` no longer has `parameters` slot but `dbConnect` remains backward
+  compatible. Manual change to parameter is still possible via `conn@session$setParameter()`.
+
 
 # RPresto 1.2.1
 

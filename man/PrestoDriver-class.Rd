@@ -3,8 +3,8 @@
 \docType{class}
 \name{PrestoDriver-class}
 \alias{PrestoDriver-class}
-\alias{dbUnloadDriver,PrestoDriver-method}
 \alias{show,PrestoDriver-method}
+\alias{dbUnloadDriver,PrestoDriver-method}
 \title{An S4 class to represent a Presto Driver (and methods)
 It is used purely for dispatch and \code{dbUnloadDriver} is unnecessary}
 \usage{
@@ -17,4 +17,3 @@ An S4 class to represent a Presto Driver (and methods)
 It is used purely for dispatch and \code{dbUnloadDriver} is unnecessary
 }
 \keyword{internal}
-

@@ -30,11 +30,12 @@ URL: https://github.com/prestodb/RPresto
 BugReports: https://github.com/prestodb/RPresto/issues
 Encoding: UTF-8
 LazyData: true
-Collate:
+Collate: 
     'PrestoDriver.R'
     'Presto.R'
-    'PrestoConnection.R'
     'utility_functions.R'
+    'PrestoSession.R'
+    'PrestoConnection.R'
     'PrestoCursor.R'
     'PrestoResult.R'
     'RcppExports.R'
@@ -70,5 +71,5 @@ Collate:
     'src.desc.src.presto.R'
     'src.presto.R'
     'tbl.src.presto.R'
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
 LinkingTo: Rcpp

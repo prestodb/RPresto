@@ -290,11 +290,14 @@ read_credentials <- function() {
   return(credentials)
 }
 
-setup_live_connection <- function(session.timezone) {
+setup_live_connection <- function(session.timezone, parameters) {
   skip_on_cran()
   credentials <- read_credentials()
   if (missing(session.timezone)) {
     session.timezone <- ''
+  }
+  if (missing(parameters)) {
+    parameters <- list()
   }
   conn <- dbConnect(RPresto::Presto(),
     schema=credentials$schema,
@@ -303,6 +306,7 @@ setup_live_connection <- function(session.timezone) {
     port=credentials$port,
     source=credentials$source,
     session.timezone=session.timezone,
+    parameters=parameters,
     user=Sys.getenv('USER')
   )
   return(conn)

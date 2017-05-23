@@ -57,4 +57,3 @@ within that database
 my_tbl <- tbl(my_db, "my_table")
 }
 }
-
