@@ -12,7 +12,7 @@ std::string jsonify(CharacterVector x) {
 // column count. verify all sublists have same names if available.
 // [[Rcpp::export(name = ".check_names")]]
 SEXP check_names(List x, int column_count) {
-  CharacterVector column_names = NULL;
+  CharacterVector column_names;
 
   for (int i = 0; i < x.size(); i++) {
     List row = x[i];
