@@ -32,7 +32,7 @@ void null_to_na(List x) {
 // x is the list to tranpose
 // output is a pre-allocated correctly-typed outputput placeholder
 // type coercion is applied according to `output` type as necessary
-// [[Rcpp::export(name = ".transpose")]]
+// [[Rcpp::export]]
 List transpose(List input, List output) {
   int row_count = input.size();
   if(row_count == 0) {
@@ -148,6 +148,6 @@ List transpose(List input, List output) {
 //
 
 /*** R
-.transpose(list(), list())
-.transpose(list(list(1, "2"), list(3, "4")), list(c(NA_integer_, NA_integer_), c(NA_character_, NA_character_)))
+transpose(list(), list())
+transpose(list(list(1, "2"), list(3, "4")), list(c(NA_integer_, NA_integer_), c(NA_character_, NA_character_)))
 */

@@ -10,7 +10,7 @@ std::string jsonify(CharacterVector x) {
 
 // x is a list of list. verify all sublists have same number of element as
 // column count. verify all sublists have same names if available.
-// [[Rcpp::export(name = ".check_names")]]
+// [[Rcpp::export]]
 SEXP check_names(List x, int column_count) {
   CharacterVector column_names;
 
@@ -58,10 +58,10 @@ SEXP check_names(List x, int column_count) {
 //
 
 /*** R
-.check_names(list(), 0)
-.check_names(list(list(1, 2)), 2)
-.check_names(list(list(a = 1, b = 2), list(a = 2, b = 3)), 2)
-.check_names(list(list(a = 1, b = 2), list(a = 2, c = 3)), 2)
-.check_names(list(list(a = 1, b = 2), list(a = 2)), 2)
-try({.check_names(list(list(a = 1), list(a = 2)), 2)})
+check_names(list(), 0)
+check_names(list(list(1, 2)), 2)
+check_names(list(list(a = 1, b = 2), list(a = 2, b = 3)), 2)
+check_names(list(list(a = 1, b = 2), list(a = 2, c = 3)), 2)
+check_names(list(list(a = 1, b = 2), list(a = 2)), 2)
+try({check_names(list(list(a = 1), list(a = 2)), 2)})
 */

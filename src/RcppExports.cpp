@@ -29,3 +29,14 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+
+static const R_CallMethodDef CallEntries[] = {
+    {"RPresto_check_names", (DL_FUNC) &RPresto_check_names, 2},
+    {"RPresto_transpose", (DL_FUNC) &RPresto_transpose, 2},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_RPresto(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
+}
