@@ -76,10 +76,10 @@ NULL
   }
 
   # validate all rows have correct number of column and same column names
-  column.names <- .check_names(data, column.count)
+  column.names <- check_names(data, column.count)
   # tranpose list from row major to column major
   # NB: null(s) in lists are replaced with NA(s) in-place for efficiency
-  .transpose(data, rv)
+  transpose(data, rv)
 
   for (j in which(column.types %in% 'raw')) {
     rv[[j]] <- lapply(rv[[j]], function(txt) {
