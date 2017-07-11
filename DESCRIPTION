@@ -21,10 +21,12 @@ Imports:
     jsonlite,
     stringi,
     stats,
-    Rcpp
+    Rcpp,
+    utils
 Suggests:
     testthat,
-    dplyr (>= 0.4.3)
+    dplyr (>= 0.4.3),
+    dbplyr
 License: BSD_3_clause + file LICENSE
 URL: https://github.com/prestodb/RPresto
 BugReports: https://github.com/prestodb/RPresto/issues
@@ -62,6 +64,7 @@ Collate:
     'dbIsValid.R'
     'dbListFields.R'
     'dbUnloadDriver.R'
+    'description_from_info.R'
     'db_desc.PrestoConnection.R'
     'db_query_fields.R'
     'fetch.R'

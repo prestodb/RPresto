@@ -56,17 +56,17 @@ src_presto <- function(
     ...
   )
 
-  if (packageVersion('dplyr') >= '0.5.0.9004') {
+  if (utils::packageVersion('dplyr') >= '0.5.0.9004') {
     if (!requireNamespace('dbplyr', quietly=TRUE)) {
       stop('src_presto requires the dbplyr package, please install it first ',
            'and try again'
       )
     }
-    src_function <- getFromNamespace('src_dbi', 'dbplyr')
+    src_function <- utils::getFromNamespace('src_dbi', 'dbplyr')
     src <- src_function(con, auto_disconnect=FALSE)
   } else {
     info <- DBI::dbGetInfo(con)
-    src_function <- getFromNamespace('src_sql', 'dplyr')
+    src_function <- utils::getFromNamespace('src_sql', 'dplyr')
     src <- src_function(
       "presto",
       con,
