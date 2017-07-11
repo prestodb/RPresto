@@ -29,7 +29,7 @@ with_locale(test.locale(), test_that)('presto simple types are correct', {
     expect_equal(dbDataType(drv, factor()), 'VARCHAR')
     expect_equal(dbDataType(drv, factor(ordered=TRUE)), 'VARCHAR')
     expect_equal(
-      dbDataType(drv, structure(NULL, class='test_class')),
+      dbDataType(drv, structure(list(), class='test_class')),
       'VARCHAR'
     )
 })
