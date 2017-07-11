@@ -1,10 +1,22 @@
-# RPresto 1.2.1.9000
+# RPresto 1.3.0
 
-- Don't drop data for duplicate column names
+- Fix Rcpp compilation under Windows (#79)
 - `SET/RESET SESSION` queries are now correctly respected when used under `dbGetQuery`.
   `PrestoConnection` no longer has `parameters` slot but `dbConnect` remains backward
-  compatible. Manual change to parameter is still possible via `conn@session$setParameter()`.
-
+  compatible. Manual change to parameter is still possible via `conn@session$setParameter()` (#77)
+- Adapt to changes in dplyr version 0.7.0, mainly around the remote
+  backend support being split to `dbplyr`. This should be backwards compatible
+  back to dplyr 0.4.3 (#76)
+- Add support for the REAL data type (#70)
+- Allow specifying the connection source (#68)
+- Drop RCurl dependency (#67)
+- Return DECIMAL data types as characters as opposed to numeric's
+  previously (#64, fixes #60)
+- Add support for new integer data types (INTEGER, SMALLINT, TINYINT) (#59, fixes #56)
+- Migrate the  `json` to `data.frame` construction from pure R to Rcpp for 10x
+  speed gains! (thanks @saurfang) (#57, #58)
+- Fix dbListFields to use the nextUri instead of infoUri (#55)
+- Don't drop data for duplicate column names (#53)
 
 # RPresto 1.2.1
 
