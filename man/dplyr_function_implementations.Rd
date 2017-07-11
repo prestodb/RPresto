@@ -43,7 +43,7 @@ S3 implementation of \code{\link[dplyr]{db_explain}} for Presto.
 
 S3 implementation of \code{\link[dplyr]{db_query_rows}} for Presto.
 
-S3 implementation of \code{\link[dplyr]{db_desc}} for Presto.
+S3 implementation of \code{db_desc} for Presto.
 
 S3 implementation of \code{sql_translate_env} for Presto.
 
@@ -51,6 +51,6 @@ S3 implementation of \code{src_translate_env} for Presto.
 
 S3 implementation of \code{sql_translate_env} for Presto.
 
-S3 implementation of \code{\link[dplyr]{src_desc}} for Presto.
+S3 implementation of \code{src_desc} for Presto.
 }
 \keyword{internal}
