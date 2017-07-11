@@ -8,6 +8,23 @@
 #' @include dbplyr_compatible.R
 NULL
 
+presto_window_functions <- function() {
+  base_win <- dbplyr_compatible('base_win')
+  if (utils::packageVersion('dplyr') < '0.5.0.9004') {
+    return(base_win)
+  }
+  sql_translator <- dbplyr_compatible('sql_translator')
+  win_absent <- dbplyr_compatible('win_absent')
+  win_recycled <- dbplyr_compatible('win_recycled')
+  return(sql_translator(
+    .parent=base_win,
+    all=win_recycled('bool_and'),
+    or=win_recycled('bool_or'),
+    n_distinct=win_absent('n_distinct'),
+    sd=win_recycled("stddev_samp")
+  ))
+}
+
 #' S3 implementation of \code{src_translate_env} for Presto.
 #'
 #' @rdname dplyr_function_implementations
@@ -21,7 +38,6 @@ src_translate_env.src_presto <- function(x) {
   build_sql <- dbplyr_compatible('build_sql')
   base_scalar <- dbplyr_compatible('base_scalar')
   base_agg <- dbplyr_compatible('base_agg')
-  base_win <- dbplyr_compatible('base_win')
   ident <- dbplyr_compatible('ident')
   return(sql_variant(
     sql_translator(.parent = base_scalar,
@@ -48,6 +64,6 @@ src_translate_env.src_presto <- function(x) {
       all = sql_prefix("bool_and"),
       any = sql_prefix("bool_or")
     ),
-    base_win
+    presto_window_functions()
   ))
 }
