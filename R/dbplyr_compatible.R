@@ -9,15 +9,15 @@
 # dplyr 0.6.0 release. This function allows us to provide backward
 # compatibility by importing from dplyr when necessary.
 dbplyr_compatible <- function(function_name) {
-  if (packageVersion('dplyr') >= '0.5.0.9004') {
+  if (utils::packageVersion('dplyr') >= '0.5.0.9004') {
     if (!requireNamespace('dbplyr', quietly=TRUE)) {
       stop(function_name, ' requires the dbplyr package, please install it ',
         'first and try again'
       )
     }
-    f <- getFromNamespace(function_name, 'dbplyr')
+    f <- utils::getFromNamespace(function_name, 'dbplyr')
   } else {
-    f <- getFromNamespace(function_name, 'dplyr')
+    f <- utils::getFromNamespace(function_name, 'dplyr')
   }
   return(f)
 }

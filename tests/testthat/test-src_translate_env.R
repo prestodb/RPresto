@@ -10,6 +10,9 @@ context('src_translate_env')
 source('utilities.R')
 
 with_locale(test.locale(), test_that)('as() works', {
+  if (!requireNamespace('dplyr', quietly=TRUE)) {
+    skip('dplyr not available')
+  }
 
   translate_sql <- RPresto:::dbplyr_compatible('translate_sql')
   translate_sql_ <- RPresto:::dbplyr_compatible('translate_sql_')
@@ -136,7 +139,8 @@ with_locale(test.locale(), test_that)('as() works', {
       r <- as.raw(0)
       p <- as.POSIXct('2001-02-03 04:05:06', tz='Europe/Istanbul')
       l <- TRUE
-      query <- as.character(dbplyr::sql_render(dplyr::transmute(
+      sql_render <- RPresto:::dbplyr_compatible('sql_render')
+      query <- as.character(sql_render(dplyr::transmute(
         t,
         b=as(a, r),
         c=as(a, p),

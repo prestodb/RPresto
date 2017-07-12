@@ -44,19 +44,34 @@ test_that('session properties can be configured in connection', {
   expect_equal(query_session_property(conn, optimize_hash_generation), optimize_hash_generation_inverse)
 
   # additional property can be set
-  columnar_processing <- 'columnar_processing'
-  columnar_processing_default <- query_session_property(conn, columnar_processing)
-  columnar_processing_inverse <- invert_boolean_property(columnar_processing_default)
-  dbGetQuery(conn, paste0('SET SESSION ', columnar_processing, '=', columnar_processing_inverse))
-  # proerty is set
-  expect_equal(query_session_property(conn, columnar_processing), columnar_processing_inverse)
+  potential_properties <- c(
+    'columnar_processing',
+    'reorder_joins',
+    'optimize_metadata_queries',
+    'colocated_join',
+    'distributed_join'
+  )
+  for (additional_property in potential_properties) {
+    additional_default <- query_session_property(conn, additional_property)
+    if (length(additional_default)) {
+      break
+    }
+  }
+  if (length(additional_default) == 0) {
+    skip('Cannot find additional property with a default value')
+  }
+
+  additional_inverse <- invert_boolean_property(additional_default)
+  dbGetQuery(conn, paste0('SET SESSION ', additional_property, '=', additional_inverse))
+  # property is set
+  expect_equal(query_session_property(conn, additional_property), additional_inverse)
   # previous property is preserved
   expect_equal(query_session_property(conn, optimize_hash_generation), optimize_hash_generation_inverse)
 
   # property can be reset via query
   dbGetQuery(conn, paste('RESET SESSION', optimize_hash_generation))
   # property is cleared in connection and the remaining is preserved
-  expect_equal(conn@session$parameters(), setNames(list(columnar_processing_inverse), columnar_processing))
+  expect_equal(conn@session$parameters(), setNames(list(additional_inverse), additional_property))
   # property has been reset in subsequent queries
   expect_equal(query_session_property(conn, optimize_hash_generation), optimize_hash_generation_default)
 })

@@ -1,6 +1,6 @@
 Package: RPresto
 Title: DBI Connector to Presto
-Version: 1.2.1.9000
+Version: 1.3.0
 Authors@R: c(
     person('Onur Ismail', 'Filiz', , 'onur@fb.com', role=c('aut', 'cre')),
     person('Sergey', 'Goder', , 'sgoder@fb.com', role='aut'),
@@ -21,16 +21,18 @@ Imports:
     jsonlite,
     stringi,
     stats,
-    Rcpp
+    Rcpp,
+    utils
 Suggests:
     testthat,
-    dplyr (>= 0.4.3)
+    dplyr (>= 0.4.3),
+    dbplyr
 License: BSD_3_clause + file LICENSE
 URL: https://github.com/prestodb/RPresto
 BugReports: https://github.com/prestodb/RPresto/issues
 Encoding: UTF-8
 LazyData: true
-Collate: 
+Collate:
     'PrestoDriver.R'
     'Presto.R'
     'utility_functions.R'
@@ -62,6 +64,7 @@ Collate:
     'dbIsValid.R'
     'dbListFields.R'
     'dbUnloadDriver.R'
+    'description_from_info.R'
     'db_desc.PrestoConnection.R'
     'db_query_fields.R'
     'fetch.R'
