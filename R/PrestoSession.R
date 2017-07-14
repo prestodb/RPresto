@@ -10,7 +10,7 @@ NULL
 
 #' Internal implementation detail class needed for its side-effects.
 #' When SET/RESET SESSION queries are called, session parameters need to be
-#' mantained by the client and requires an in-place update.
+#' maintained by the client and requires an in-place update.
 PrestoSession <- setRefClass('PrestoSession',
   fields=c(
     '.parameters'='list'
