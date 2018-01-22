@@ -2,10 +2,10 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 check_names <- function(x, column_count) {
-    .Call('RPresto_check_names', PACKAGE = 'RPresto', x, column_count)
+    .Call('_RPresto_check_names', PACKAGE = 'RPresto', x, column_count)
 }
 
 transpose <- function(input, output) {
-    .Call('RPresto_transpose', PACKAGE = 'RPresto', input, output)
+    .Call('_RPresto_transpose', PACKAGE = 'RPresto', input, output)
 }
 

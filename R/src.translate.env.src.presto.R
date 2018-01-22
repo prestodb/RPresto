@@ -19,7 +19,7 @@ presto_window_functions <- function() {
   return(sql_translator(
     .parent=base_win,
     all=win_recycled('bool_and'),
-    or=win_recycled('bool_or'),
+    any=win_recycled('bool_or'),
     n_distinct=win_absent('n_distinct'),
     sd=win_recycled("stddev_samp")
   ))
