@@ -21,7 +21,7 @@ Imports:
     jsonlite,
     stringi,
     stats,
-    Rcpp,
+    Rcpp (>= 0.12.7),
     utils
 Suggests:
     testthat,

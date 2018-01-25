@@ -7,7 +7,7 @@ using namespace Rcpp;
 
 // check_names
 SEXP check_names(List x, int column_count);
-RcppExport SEXP RPresto_check_names(SEXP xSEXP, SEXP column_countSEXP) {
+RcppExport SEXP _RPresto_check_names(SEXP xSEXP, SEXP column_countSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -19,7 +19,7 @@ END_RCPP
 }
 // transpose
 List transpose(List input, List output);
-RcppExport SEXP RPresto_transpose(SEXP inputSEXP, SEXP outputSEXP) {
+RcppExport SEXP _RPresto_transpose(SEXP inputSEXP, SEXP outputSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -31,8 +31,8 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"RPresto_check_names", (DL_FUNC) &RPresto_check_names, 2},
-    {"RPresto_transpose", (DL_FUNC) &RPresto_transpose, 2},
+    {"_RPresto_check_names", (DL_FUNC) &_RPresto_check_names, 2},
+    {"_RPresto_transpose", (DL_FUNC) &_RPresto_transpose, 2},
     {NULL, NULL, 0}
 };
 
