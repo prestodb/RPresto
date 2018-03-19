@@ -20,7 +20,7 @@ NULL
   column.info <- .json.tabular.to.data.frame(
     column.list,
     # name, type, typeSignature
-    c('character', 'character', 'list_named')
+    c(varchar='character', varchar='character', map='list_named')
   )
   # The typeSignature item for each column has a 'rawType' value which
   # corresponds to the Presto data type.
@@ -30,6 +30,7 @@ NULL
     ''
   )
   r.types <- with(.presto.to.R, R.type[match(presto.types, presto.type)])
+  names(r.types) <- presto.types
   rv <- .json.tabular.to.data.frame(data.list, r.types, timezone=timezone)
   if (!is.null(column.info[['name']])) {
     colnames(rv) <- column.info[['name']]
