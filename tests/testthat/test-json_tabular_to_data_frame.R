@@ -16,12 +16,15 @@ test_that('edge cases are handled correctly', {
       data.frame()
     )
     expect_error(
-      .json.tabular.to.data.frame(1, 'a'),
+      .json.tabular.to.data.frame(1, c(some_type='a')),
       'Unexpected data class',
       label='Unexpected data class'
     )
     expect_error(
-      .json.tabular.to.data.frame(list(list(1)), 'a'),
+      .json.tabular.to.data.frame(
+        list(list(1)),
+        c(unsupported_presto_type=NA_character_)
+      ),
       'Unsupported column type',
       label='Unsupported column type'
     )
@@ -31,13 +34,16 @@ test_that('edge cases are handled correctly', {
           list(a=1L),
           list(b=1L)
         ),
-        'integer'
+        c(integer='integer')
       ),
       'Item .*, column names differ across rows',
       label='Different column names'
     )
     expect_error(
-      .json.tabular.to.data.frame(list(list(a=1)), c('integer', 'raw')),
+      .json.tabular.to.data.frame(
+        list(list(a=1)),
+        c(integer='integer', varbinary='raw')
+      ),
       'Item .*,.+expected: 2 columns,.+received: 1',
       label='Not enough columns'
     )
@@ -59,9 +65,16 @@ test_that('edge cases are handled correctly', {
     attr(e[['POSIXct_with_time_zone']], 'tzone') <- NULL
 
     column.types <- c(
-        'logical', 'integer', 'numeric', 'character', 'Date',
-        'POSIXct_no_time_zone', 'POSIXct_with_time_zone',
-        'list_unnamed', 'list_named', 'raw'
+        boolean='logical',
+        integer='integer',
+        double='numeric',
+        varchar='character',
+        date='Date',
+        timestamp='POSIXct_no_time_zone',
+        'timestamp with time zone'='POSIXct_with_time_zone',
+        array='list_unnamed',
+        map='list_named',
+        varbinary='raw'
     )
     r <- .json.tabular.to.data.frame(
       list(),
@@ -114,9 +127,20 @@ with_locale(test.locale(), test_that)('regular data is converted correctly', {
     )
   )
 
-  column.classes <- c('logical', 'integer', 'numeric', 'character', 'character',
-    'raw', 'Date', 'POSIXct_no_time_zone', 'POSIXct_with_time_zone',
-    'character', 'list_unnamed', 'list_named')
+  column.classes <- c(
+    boolean='logical',
+    integer='integer',
+    double='numeric',
+    varchar='character',
+    varchar='character',
+    varbinary='raw',
+    date='Date',
+    timestamp='POSIXct_no_time_zone',
+    'timestamp with time zone'='POSIXct_with_time_zone',
+    varchar='character',
+    array='list_unnamed',
+    map='list_named'
+  )
   column.names <- column.classes
   column.names[length(column.names) - 2] <- '<odd_name>'
   e <- data.frame.with.all.classes()
@@ -168,7 +192,7 @@ with_locale(test.locale(), test_that)('regular data is converted correctly', {
 test_that('NAs are handled correctly', {
   .json.tabular.to.data.frame <- RPresto:::.json.tabular.to.data.frame
   expect_equal_data_frame(
-    .json.tabular.to.data.frame(list(list(A=NULL)), 'logical'),
+    .json.tabular.to.data.frame(list(list(A=NULL)), c(boolean='logical')),
     data.frame(A=NA)
   )
 
@@ -177,15 +201,28 @@ test_that('NAs are handled correctly', {
   expect_equal_data_frame(
     .json.tabular.to.data.frame(
       list(list(A=NULL, B=3L, C=NULL)),
-      c('Date', 'integer', 'POSIXct_with_time_zone'),
+      c(
+        date='Date',
+        integer='integer',
+        'timestamp with time zone'='POSIXct_with_time_zone'
+      ),
       timezone=test.timezone()
     ),
     e
   )
 
-  column.classes <- c('logical', 'integer', 'numeric', 'character',
-    'raw', 'Date', 'POSIXct_no_time_zone', 'POSIXct_with_time_zone',
-    'list_unnamed', 'list_named')
+  column.classes <- c(
+    boolean='logical',
+    integer='integer',
+    double='numeric',
+    varchar='character',
+    varbinary='raw',
+    date='Date',
+    timestamp='POSIXct_no_time_zone',
+    'timestamp with time zone'='POSIXct_with_time_zone',
+    array='list_unnamed',
+    map='list_named'
+  )
 
   r <- .json.tabular.to.data.frame(
     list(rep(list(NULL), length(column.classes))),
@@ -276,7 +313,7 @@ test_that('Inf, -Inf and NaN are handled correctly', {
   expect_equal_data_frame(
     .json.tabular.to.data.frame(
       list(list(A='Infinity', B='-Infinity', C='NaN')),
-      c('numeric', 'numeric', 'numeric')
+      c(double='numeric', double='numeric', double='numeric')
     ),
     data.frame(A=Inf, B=-Inf, C=NaN)
   )
@@ -284,7 +321,7 @@ test_that('Inf, -Inf and NaN are handled correctly', {
   expect_equal_data_frame(
     .json.tabular.to.data.frame(
       list(list(A='Infinity', B='-Infinity', C='NaN')),
-      c('character', 'character', 'character')
+      c(varchar='character', varchar='character', varchar='character')
     ),
     data.frame(A='Infinity', B='-Infinity', C='NaN', stringsAsFactors=FALSE)
   )
@@ -296,7 +333,7 @@ test_that('Inf, -Inf and NaN are handled correctly', {
         list(A='Infinity', B='-Infinity', C='NaN'),
         list(A=1.0, B=1.0, C=1.0)
       ),
-      c('numeric', 'numeric', 'numeric')
+      c(double='numeric', double='numeric', double='numeric')
     ),
     data.frame(A=c(1.0, Inf, 1.0), B=c(1.0, -Inf, 1.0), C=c(1.0, NaN, 1.0))
   )

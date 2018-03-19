@@ -69,9 +69,18 @@ NULL
       list_unnamed=as.list(rep(NA, row.count)),
       list_named=as.list(rep(NA, row.count)),
       unknown=stop(
-        'Unknown column type, make sure all columns in the query have a type'
+        sprintf(paste0(
+          '"unknown" column type for column [%d], ',
+          'CAST() it to a known column type'
+        ), j)
       ),
-      stop('Unsupported column type: ', type)
+      stop(
+        sprintf(paste0(
+          'Unsupported column type for column [%d], ',
+          'presto type: "%s", ',
+          'R type: "%s"'
+        ), j, names(column.types)[j], type)
+      )
     )
     if (type %in% 'POSIXct_with_time_zone') {
       attr(rv[[j]], 'tzone') <- 'UTC'
