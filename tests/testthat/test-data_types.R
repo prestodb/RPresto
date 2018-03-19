@@ -18,7 +18,7 @@ test_that("Queries return the correct primitive types", {
   conn <- setup_live_connection()
 
   expect_error(dbGetQuery(conn, "select null unknown"),
-               'Unsupported column type',
+               'Unknown column type',
                label='column of type "unknown"')
   expect_equal_data_frame(dbGetQuery(conn, "select true bool"),
                data_frame(bool = TRUE))
