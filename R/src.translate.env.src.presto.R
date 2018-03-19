@@ -38,7 +38,6 @@ src_translate_env.src_presto <- function(x) {
   build_sql <- dbplyr_compatible('build_sql')
   base_scalar <- dbplyr_compatible('base_scalar')
   base_agg <- dbplyr_compatible('base_agg')
-  ident <- dbplyr_compatible('ident')
   return(sql_variant(
     sql_translator(.parent = base_scalar,
       ifelse = sql_prefix("if"),
@@ -47,7 +46,7 @@ src_translate_env.src_presto <- function(x) {
           dbDataType(Presto(), type),
           'en_US.UTF-8'
         )
-        build_sql('CAST(', column, ' AS ', ident(sql_type), ')')
+        build_sql('CAST(', column, ' AS ', sql(sql_type), ')')
       },
       tolower = sql_prefix("lower"),
       toupper = sql_prefix("upper"),

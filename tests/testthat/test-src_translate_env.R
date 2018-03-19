@@ -27,31 +27,31 @@ with_locale(test.locale(), test_that)('as() works', {
     v <- src_translate_env(conn)
     expect_equal(
       translate_sql(as(x, 0.0), variant=v),
-      dplyr::sql('CAST("x" AS "DOUBLE")')
+      dplyr::sql('CAST("x" AS DOUBLE)')
     )
     expect_equal(
       dplyr::translate_sql_q(
         list(substitute(as(x, l), list(l=list()))),
         variant=v
       ),
-      dplyr::sql('CAST("x" AS "ARRAY<VARCHAR>")')
+      dplyr::sql('CAST("x" AS ARRAY<VARCHAR>)')
     )
 
     substituted.expression <- substitute(as(x, l), list(l=Sys.Date()))
     expect_equal(
       dplyr::translate_sql_q(list(substituted.expression), variant=v),
-      dplyr::sql('CAST("x" AS "DATE")')
+      dplyr::sql('CAST("x" AS DATE)')
     )
 
     substituted.expression <- substitute(as(x, l), list(l=Sys.Date()))
     expect_equal(
       dplyr::translate_sql_q(list(substituted.expression), variant=v),
-      dplyr::sql('CAST("x" AS "DATE")')
+      dplyr::sql('CAST("x" AS DATE)')
     )
   } else {
     expect_equal(
       translate_sql(as(x, 0.0), con=conn[['con']]),
-      dplyr::sql('CAST("x" AS "DOUBLE")')
+      dplyr::sql('CAST("x" AS DOUBLE)')
     )
     expect_equal(
       translate_sql(pmax(x), con=conn[['con']]),
@@ -62,13 +62,13 @@ with_locale(test.locale(), test_that)('as() works', {
         list(substitute(as(x, l), list(l=list()))),
         con=conn[['con']]
       ),
-      dplyr::sql('CAST("x" AS "ARRAY<VARCHAR>")')
+      dplyr::sql('CAST("x" AS ARRAY<VARCHAR>)')
     )
 
     substituted.expression <- substitute(as(x, l), list(l=Sys.Date()))
     expect_equal(
       translate_sql_(list(substituted.expression), con=conn[['con']]),
-      dplyr::sql('CAST("x" AS "DATE")')
+      dplyr::sql('CAST("x" AS DATE)')
     )
   }
 
@@ -87,12 +87,12 @@ with_locale(test.locale(), test_that)('as() works', {
     l <- list(a=1L)
     expect_equal(
       translate_sql(as(x, l), tbl=t),
-      dplyr::sql('CAST("x" AS "MAP<VARCHAR, BIGINT>")')
+      dplyr::sql('CAST("x" AS MAP<VARCHAR, BIGINT>)')
     )
 
     expect_equal(
       translate_sql(as(x, local(list(a=Sys.time()))), tbl=t),
-      dplyr::sql('CAST("x" AS "MAP<VARCHAR, TIMESTAMP>")')
+      dplyr::sql('CAST("x" AS MAP<VARCHAR, TIMESTAMP>)')
     )
 
     r <- as.raw(0)
@@ -111,9 +111,9 @@ with_locale(test.locale(), test_that)('as() works', {
       grepl(
         paste0(
           '^SELECT ',
-          'CAST\\("a" AS "VARBINARY"\\) AS "b", ' ,
-          'CAST\\("a" AS "TIMESTAMP WITH TIME ZONE"\\) AS "c", ',
-          'CAST\\("a" AS "BOOLEAN"\\) AS "d"\n',
+          'CAST\\("a" AS VARBINARY\\) AS "b", ' ,
+          'CAST\\("a" AS TIMESTAMP WITH TIME ZONE\\) AS "c", ',
+          'CAST\\("a" AS BOOLEAN\\) AS "d"\n',
           'FROM \\(\\(SELECT 1\\) AS "(_W|zzz)\\d+"\\) AS "[_0-9a-z]+"$'
         ),
         query
@@ -127,14 +127,14 @@ with_locale(test.locale(), test_that)('as() works', {
           as(x, !!l),
           con=s[['con']]
         ),
-        dplyr::sql('CAST("x" AS "MAP<VARCHAR, BIGINT>")')
+        dplyr::sql('CAST("x" AS MAP<VARCHAR, BIGINT>)')
       )
       expect_equal(
         translate_sql(
           as(x, !!local(list(a=Sys.time()))),
           con=s[['con']]
         ),
-        dplyr::sql('CAST("x" AS "MAP<VARCHAR, TIMESTAMP>")')
+        dplyr::sql('CAST("x" AS MAP<VARCHAR, TIMESTAMP>)')
       )
       r <- as.raw(0)
       p <- as.POSIXct('2001-02-03 04:05:06', tz='Europe/Istanbul')
@@ -153,9 +153,9 @@ with_locale(test.locale(), test_that)('as() works', {
             'FROM \\(',
               'SELECT ',
                 '"_col0", ',
-                'CAST\\("a" AS "VARBINARY"\\) AS "b", ' ,
-                'CAST\\("a" AS "TIMESTAMP WITH TIME ZONE"\\) AS "c", ',
-                'CAST\\("a" AS "BOOLEAN"\\) AS "d"\n',
+                'CAST\\("a" AS VARBINARY\\) AS "b", ' ,
+                'CAST\\("a" AS TIMESTAMP WITH TIME ZONE\\) AS "c", ',
+                'CAST\\("a" AS BOOLEAN\\) AS "d"\n',
               'FROM \\(',
                 '\\(SELECT 1\\) "[_0-9a-z]+"',
               '\\) "[_0-9a-z]+"',
@@ -168,7 +168,7 @@ with_locale(test.locale(), test_that)('as() works', {
       l <- list(a=1L)
       expect_equal(
         translate_sql(as(x, l), con=s[['con']], vars='x'),
-        dplyr::sql('CAST("x" AS "MAP<VARCHAR, BIGINT>")')
+        dplyr::sql('CAST("x" AS MAP<VARCHAR, BIGINT>)')
       )
 
       expect_equal(
@@ -177,7 +177,7 @@ with_locale(test.locale(), test_that)('as() works', {
           vars='x',
           con=s[['con']]
         ),
-        dplyr::sql('CAST("x" AS "MAP<VARCHAR, TIMESTAMP>")')
+        dplyr::sql('CAST("x" AS MAP<VARCHAR, TIMESTAMP>)')
       )
 
       r <- as.raw(0)
@@ -196,9 +196,9 @@ with_locale(test.locale(), test_that)('as() works', {
             'FROM \\(',
               'SELECT ',
                 '"x", ',
-                'CAST\\("a" AS "VARBINARY"\\) AS "b", ' ,
-                'CAST\\("a" AS "TIMESTAMP WITH TIME ZONE"\\) AS "c", ',
-                'CAST\\("a" AS "BOOLEAN"\\) AS "d"\n',
+                'CAST\\("a" AS VARBINARY\\) AS "b", ' ,
+                'CAST\\("a" AS TIMESTAMP WITH TIME ZONE\\) AS "c", ',
+                'CAST\\("a" AS BOOLEAN\\) AS "d"\n',
               'FROM \\(',
                 '\\(SELECT 1\\) "[_0-9a-z]+"',
               '\\) "[_0-9a-z]+"',
