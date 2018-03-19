@@ -68,6 +68,9 @@ NULL
       POSIXct_with_time_zone=rep(NA_character_, row.count),
       list_unnamed=as.list(rep(NA, row.count)),
       list_named=as.list(rep(NA, row.count)),
+      unknown=stop(
+        'Unknown column type, make sure all columns in the query have a type'
+      ),
       stop('Unsupported column type: ', type)
     )
     if (type %in% 'POSIXct_with_time_zone') {
