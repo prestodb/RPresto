@@ -38,7 +38,6 @@ src_translate_env.src_presto <- function(x) {
   build_sql <- dbplyr_compatible('build_sql')
   base_scalar <- dbplyr_compatible('base_scalar')
   base_agg <- dbplyr_compatible('base_agg')
-  ident <- dbplyr_compatible('ident')
   return(sql_variant(
     sql_translator(.parent = base_scalar,
       ifelse = sql_prefix("if"),
