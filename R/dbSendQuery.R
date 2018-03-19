@@ -21,6 +21,7 @@ NULL
 }
 
 .dbSendQuery <- function(conn, statement, ...) {
+  statement <- gsub("NULL AS ", "cast(NULL AS BOOLEAN) AS ", statement, ignore.case = TRUE)
   url <- paste0(conn@host, ':', conn@port, '/v1/statement')
   status <- 503L
   retries <- 3
