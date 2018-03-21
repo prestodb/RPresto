@@ -96,6 +96,15 @@ NULL
   return(.fetch.all(res))
 }
 
+.fetch.next.chunk <- function(res, n, ...) {
+  if (!res@cursor$postDataParsed()) {
+    df <- .parse.response(res, res@cursor$postResponse())
+    res@cursor$postDataParsed(TRUE)
+    return(df)
+  }
+  return(.fetch.single.uri(res, n, ...))
+}
+
 #' @rdname PrestoResult-class
 #' @export
 setMethod('dbFetch', c('PrestoResult', 'integer'), .fetch.with.count)
@@ -106,4 +115,4 @@ setMethod('dbFetch', c('PrestoResult', 'numeric'), .fetch.with.count)
 
 #' @rdname PrestoResult-class
 #' @export
-setMethod('dbFetch', c('PrestoResult', 'missing'), .fetch.single.uri)
+setMethod('dbFetch', c('PrestoResult', 'missing'), .fetch.next.chunk)
