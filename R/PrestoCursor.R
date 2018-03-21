@@ -17,13 +17,26 @@ PrestoCursor <- setRefClass('PrestoCursor',
     '.info.uri'='character',
     '.state'='character',
     '.fetched.row.count'='integer',
-    '.stats'='list'
+    '.stats'='list',
+    '.post.response'='ANY',
+    '.post.data.parsed'='logical'
   ),
   methods=list(
-    initialize=function(post.content, ...) {
-      initFields(.fetched.row.count=as.integer(0))
+    initialize=function(post.response, ...) {
+      initFields(
+        .fetched.row.count=as.integer(0),
+        .post.data.parsed=FALSE,
+        .post.response=post.response
+      )
+      post.content <- response.to.content(post.response)
+      if (is.null(post.content[['data']])) {
+        .post.data.parsed <<- TRUE
+      }
       updateCursor(post.content, 0)
     },
+    # A cleaner design would be to pass the response
+    # directly as an argument, but that would mean parsing
+    # the content multiple times.
     updateCursor=function(response.content, row.count) {
 
       if (is.null(response.content[['nextUri']])) {
@@ -53,6 +66,9 @@ PrestoCursor <- setRefClass('PrestoCursor',
     fetchedRowCount=function() {
       return(.fetched.row.count)
     },
+    postResponse=function() {
+      return(.post.response)
+    },
     state=function(new.state) {
       old.state <- .state
       if (!missing(new.state)) {
@@ -72,7 +88,17 @@ PrestoCursor <- setRefClass('PrestoCursor',
       return(old.stats)
     },
     hasCompleted=function() {
-      return(.uri == '')
+      return(
+        .uri == ''
+        && postDataParsed()
+      )
+    },
+    postDataParsed=function(value) {
+      old.value <- .post.data.parsed
+      if (!missing(value)) {
+        .post.data.parsed <<- value
+      }
+      return(old.value)
     }
   )
 )

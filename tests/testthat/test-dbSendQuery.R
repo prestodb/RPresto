@@ -184,3 +184,49 @@ test_that('dbSendQuery works with mock - regular', {
     }
   )
 })
+
+test_that('dbSendQuery works with mock - POST data', {
+  conn <- setup_mock_connection()
+  with_mock(
+    `httr::POST`=mock_httr_replies(
+      mock_httr_response(
+        'http://localhost:8000/v1/statement',
+        status_code=200,
+        request_body='SELECT 1 AS x',
+        state='RUNNING',
+        data=data.frame(x=1),
+        next_uri='http://localhost:8000/query_1/1'
+      )
+    ),
+    `httr::GET`=mock_httr_replies(
+      mock_httr_response(
+        'http://localhost:8000/query_1/1',
+        status_code=200,
+        state='FINISHED',
+        data=data.frame()
+      )
+    ),
+    {
+      result <- dbSendQuery(conn, 'SELECT 1 AS x')
+      expect_is(result, 'PrestoResult')
+      expect_equal(result@statement, 'SELECT 1 AS x')
+      expect_equal(result@cursor$fetchedRowCount(), 0)
+      expect_false(result@cursor$hasCompleted())
+      expect_false(result@cursor$postDataParsed())
+      expect_equal_data_frame(
+        dbFetch(result),
+        data.frame(x=1)
+      )
+      expect_true(result@cursor$postDataParsed())
+      expect_false(result@cursor$hasCompleted())
+      expect_equal(result@cursor$fetchedRowCount(), 1)
+      expect_equal_data_frame(
+        dbFetch(result),
+        data.frame()
+      )
+      expect_true(result@cursor$hasCompleted())
+      expect_equal(result@cursor$fetchedRowCount(), 1)
+      expect_true(dbHasCompleted(result))
+    }
+  )
+})
