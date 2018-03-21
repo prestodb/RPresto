@@ -100,3 +100,45 @@ with_locale(test.locale(), test_that)('dbGetQuery works with mock', {
   )
 })
 
+test_that('dbGetQuery works with data in POST response', {
+  conn <- setup_mock_connection()
+
+  with_mock(
+    `httr::POST`=mock_httr_replies(
+      mock_httr_response(
+        'http://localhost:8000/v1/statement',
+        status_code=200,
+        state='FINISHED',
+        request_body='SELECT 1 AS x',
+        data=data.frame(x=1, stringsAsFactors=FALSE)
+      ),
+      mock_httr_response(
+        'http://localhost:8000/v1/statement',
+        status_code=200,
+        state='FINISHED',
+        request_body='SELECT n FROM two_rows',
+        data=data.frame(n=3, stringsAsFactors=FALSE),
+        next_uri='http://localhost:8000/query_1/1'
+      )
+    ),
+    `httr::GET`=mock_httr_replies(
+      mock_httr_response(
+        'http://localhost:8000/query_1/1',
+        status_code=200,
+        data=data.frame(n=4, stringsAsFactors=FALSE),
+        state='FINISHED'
+      )
+    ),
+    {
+      expect_equal_data_frame(
+        dbGetQuery(conn, 'SELECT 1 AS x'),
+        data.frame(x=1)
+      )
+
+      expect_equal_data_frame(
+        dbGetQuery(conn, 'SELECT n FROM two_rows'),
+        data.frame(n=c(3, 4))
+      )
+    }
+  )
+})

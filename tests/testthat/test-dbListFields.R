@@ -161,3 +161,48 @@ test_that('dbListFields works with mock - PrestoResult', {
   )
 })
 
+test_that('dbListFields works with mock - PrestoResult - POST response', {
+  conn <- setup_mock_connection()
+  with_mock(
+    `httr::POST`=mock_httr_replies(
+      mock_httr_response(
+        'http://localhost:8000/v1/statement',
+        status_code=200,
+        state='QUEUED',
+        request_body='SELECT \\* FROM two_columns',
+        data=data.frame(column1=3, column2=4)
+      ),
+      mock_httr_response(
+        'http://localhost:8000/v1/statement',
+        status_code=200,
+        state='FINISHED',
+        request_body='SELECT \\* FROM two_rows',
+        data=data.frame(column1=5, column2=6),
+        next_uri='http://localhost:8000/query_2/1'
+      )
+    ),
+    `httr::GET`=mock_httr_replies(
+      mock_httr_response(
+        'http://localhost:8000/query_2/1',
+        status_code=200,
+        data=data.frame(column1=7, column2=8),
+        state='FINISHED',
+      )
+    ),
+    {
+      result <- dbSendQuery(conn, 'SELECT * FROM two_columns')
+      expect_true(dbIsValid(result))
+      expect_equal(dbListFields(result), c('column1', 'column2'))
+      expect_equal(dbFetch(result), data.frame(column1=3, column2=4))
+      expect_true(dbHasCompleted(result))
+
+      result <- dbSendQuery(conn, 'SELECT * FROM two_rows')
+      expect_true(dbIsValid(result))
+      expect_equal(dbListFields(result), c('column1', 'column2'))
+      expect_equal(dbFetch(result), data.frame(column1=5, column2=6))
+      expect_false(dbHasCompleted(result))
+      expect_equal(dbFetch(result), data.frame(column1=7, column2=8))
+      expect_true(dbHasCompleted(result))
+    }
+  )
+})
