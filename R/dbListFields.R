@@ -26,7 +26,11 @@ setMethod('dbListFields',
     if (!dbIsValid(conn)) {
       stop('The result object is not valid')
     }
-    next.response <- .fetch.uri.with.retries(conn@cursor$nextUri())
+    if (!conn@cursor$postDataParsed()) {
+      next.response <- conn@cursor$postResponse()
+    } else {
+      next.response <- .fetch.uri.with.retries(conn@cursor$nextUri())
+    }
     check.status.code(next.response)
     content <- response.to.content(next.response)
     if (get.state(content) == 'FAILED') {
