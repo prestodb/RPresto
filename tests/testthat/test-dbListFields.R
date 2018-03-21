@@ -161,7 +161,7 @@ test_that('dbListFields works with mock - PrestoResult', {
   )
 })
 
-test_that('dbListFields works with mock - PrestoResult - POST response', {
+test_that('dbListFields works with mock - PrestoResult - POST data', {
   conn <- setup_mock_connection()
   with_mock(
     `httr::POST`=mock_httr_replies(
@@ -202,6 +202,120 @@ test_that('dbListFields works with mock - PrestoResult - POST response', {
       expect_equal(dbFetch(result), data.frame(column1=5, column2=6))
       expect_false(dbHasCompleted(result))
       expect_equal(dbFetch(result), data.frame(column1=7, column2=8))
+      expect_true(dbHasCompleted(result))
+    }
+  )
+})
+
+test_that('dbListFields works with mock - PrestoResult - POST columns', {
+  conn <- setup_mock_connection()
+  with_mock(
+    `httr::POST`=mock_httr_replies(
+      list(
+        url='http://localhost:8000/v1/statement',
+        response=structure(
+          list(
+            url='http://localhost:8000/v1/statement',
+            status_code=200,
+            headers=list(
+              'content-type'='application/json'
+            ),
+            content=charToRaw(jsonlite::toJSON(
+              list(
+                stats=list(state=jsonlite::unbox('QUEUED')),
+                id=jsonlite::unbox('http__localhost_8000_v1_statement'),
+                nextUri=jsonlite::unbox('http://localhost:8000/query_1/1'),
+                columns=data.to.list(
+                  data.frame(column1=1, column2=2)
+                )[['column.data']]
+              ),
+              dataframe='values'
+            ))
+          ),
+          class='response'
+        ),
+        request_body='SELECT \\* FROM two_columns'
+      ),
+      list(
+        url='http://localhost:8000/v1/statement',
+        response=structure(
+          list(
+            url='http://localhost:8000/v1/statement',
+            status_code=200,
+            headers=list(
+              'content-type'='application/json'
+            ),
+            content=charToRaw(jsonlite::toJSON(
+              list(
+                stats=list(state=jsonlite::unbox('QUEUED')),
+                id=jsonlite::unbox('http__localhost_8000_v1_statement'),
+                nextUri=jsonlite::unbox('http://localhost:8000/query_2/1'),
+                columns=data.to.list(
+                  data.frame(column3=1, column4=2)
+                )[['column.data']]
+              ),
+              dataframe='values'
+            ))
+          ),
+          class='response'
+        ),
+        request_body='SELECT \\* FROM other_two_columns'
+      )
+    ),
+    `httr::GET`=mock_httr_replies(
+      mock_httr_response(
+        'http://localhost:8000/query_1/1',
+        status_code=200,
+        data=data.frame(column1=9, column2=10),
+        state='FINISHED',
+      ),
+      list(
+        url='http://localhost:8000/query_2/1',
+        response=structure(
+          list(
+            url='http://localhost:8000/query_2/1',
+            status_code=200,
+            headers=list(
+              'content-type'='application/json'
+            ),
+            content=charToRaw(jsonlite::toJSON(
+              list(
+                stats=list(state=jsonlite::unbox('QUEUED')),
+                id=jsonlite::unbox('http__localhost_8000_query_1_1'),
+                nextUri=jsonlite::unbox('http://localhost:8000/query_2/2'),
+                columns=data.to.list(
+                  data.frame(column3=1, column4=2)
+                )[['column.data']]
+              ),
+              dataframe='values'
+            ))
+          ),
+          class='response'
+        )
+      ),
+      mock_httr_response(
+        'http://localhost:8000/query_2/2',
+        status_code=200,
+        data=data.frame(column3=13, column4=14),
+        state='FINISHED',
+      )
+    ),
+    {
+      result <- dbSendQuery(conn, 'SELECT * FROM two_columns')
+      expect_true(dbIsValid(result))
+      expect_equal(dbListFields(result), c('column1', 'column2'))
+      expect_equal(dbFetch(result), data.frame(column1=9, column2=10))
+      expect_true(dbHasCompleted(result))
+
+      result <- dbSendQuery(conn, 'SELECT * FROM other_two_columns')
+      expect_true(dbIsValid(result))
+      expect_equal(dbListFields(result), c('column3', 'column4'))
+      expect_equal(
+        dbFetch(result),
+        data.frame(column3=1, column4=2)[FALSE, , drop=FALSE]
+      )
+      expect_false(dbHasCompleted(result))
+      expect_equal(dbFetch(result), data.frame(column3=13, column4=14))
       expect_true(dbHasCompleted(result))
     }
   )
