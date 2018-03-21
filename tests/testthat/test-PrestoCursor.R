@@ -10,9 +10,22 @@ context('PrestoCursor')
 source('utilities.R')
 
 test_that('PrestoCursor methods work correctly', {
-    post.content <- list(stats=list(state='INITIAL'))
+    post.content <- list(stats=list(
+      state=jsonlite::unbox('INITIAL')
+    ))
+    post.response <- structure(
+      list(
+        url='http://localhost:8000/v1/statement',
+        status_code=200,
+        headers=list(
+          'content-type'='application/json'
+        ),
+        content=charToRaw(jsonlite::toJSON(post.content))
+      ),
+      class='response'
+    )
 
-    cursor <- PrestoCursor(post.content)
+    cursor <- PrestoCursor(post.response)
     expect_equal(cursor$infoUri(), '')
     expect_equal(cursor$nextUri(), '')
     expect_equal(cursor$state(), 'INITIAL')

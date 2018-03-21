@@ -21,7 +21,6 @@ NULL
 setClass('PrestoResult',
   contains='DBIResult',
   slots=c(
-    'post.response'='ANY',
     'statement'='character',
     'session.timezone'='character',
     'cursor'='PrestoCursor',
@@ -34,7 +33,7 @@ setClass('PrestoResult',
 setMethod('show',
   'PrestoResult',
   function(object) {
-    r <- object@post.response
+    r <- object@cursor$postResponse()
     content <- response.to.content(r)
     stats <- object@cursor$stats()
 
