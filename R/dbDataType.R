@@ -18,6 +18,7 @@ NULL
   'real', 'numeric',
   'double', 'numeric',
   'varchar', 'character',
+  'char', 'character',
   'varbinary', 'raw',
   'json', 'character',
   'date', 'Date',
