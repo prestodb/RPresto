@@ -31,7 +31,7 @@ NULL
         if (!is.null(properties)) {
           for (pair in strsplit(properties, ',', fixed = TRUE)) {
             pair <- unlist(strsplit(pair, '=', fixed = TRUE))
-            result@session$setParameter(pair[1], pair[2])
+            result@connection@session$setParameter(pair[1], pair[2])
           }
         }
       },
@@ -39,13 +39,13 @@ NULL
         properties <- httr::headers(response)[['x-presto-clear-session']]
         if (!is.null(properties)) {
           for (key in strsplit(properties, ',', fixed = TRUE)) {
-            result@session$unsetParameter(key)
+            result@connection@session$unsetParameter(key)
           }
         }
       }
     )
   }
-  df <- .extract.data(content, timezone=result@session.timezone)
+  df <- .extract.data(content, timezone=result@connection@session.timezone)
   result@cursor$updateCursor(content, NROW(df))
   return(df)
 }
