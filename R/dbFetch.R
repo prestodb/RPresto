@@ -72,7 +72,16 @@ NULL
   } else {
     # We need to check for the uniqueness of columns because dplyr::bind_rows
     # will drop duplicate column names and we want to preserve all the data
-    column.names <- names(rv[[1]])
+    unique.chunk.column.names <- unique(lapply(
+      Filter(function(df) NROW(df) || NCOL(df), rv),
+      names
+    ))
+    if (length(unique.chunk.column.names) != 1) {
+      stop('Chunk column names are different across chunks: ',
+        jsonlite::toJSON(lapply(rv, names))
+      )
+    }
+    column.names <- unique.chunk.column.names[[1]]
     if (
       requireNamespace('dplyr', quietly=TRUE) &&
       length(column.names) == length(unique(column.names))
