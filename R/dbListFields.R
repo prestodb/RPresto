@@ -26,21 +26,11 @@ setMethod('dbListFields',
     if (!dbIsValid(conn)) {
       stop('The result object is not valid')
     }
-    if (!conn@cursor$postDataParsed()) {
-      next.response <- conn@cursor$postResponse()
-    } else {
-      next.response <- .fetch.uri.with.retries(conn@cursor$nextUri())
-    }
-    check.status.code(next.response)
-    content <- response.to.content(next.response)
-    if (get.state(content) == 'FAILED') {
-      stop.with.error.message(content)
-    }
-    if (!is.null(content[['columns']])) {
-      rv <- unlist(lapply(content[['columns']], function(x) x[['name']]))
-    } else {
-      rv <- character(0)
-    }
-    return(rv)
+    # We cannot use the result object without advancing the cursor.
+    # Sometimes presto does not return the full column information, e.g.
+    # for the PLANNING state. So we have to kick off a new query.
+    new_query <- sprintf("SELECT * FROM (%s) WHERE 1 = 0", conn@statement)
+    output <- dbGetQuery(conn@connection, new_query)
+    return(colnames(output))
   }
 )

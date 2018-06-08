@@ -27,8 +27,12 @@ test_that('dbIsValid works with live database', {
   expect_error(dbFetch(result))
   expect_false(dbIsValid(result))
 
-  expect_error(
-    dbSendQuery(conn, 'INVALID SQL'),
+  expect_error({
+      result <- dbSendQuery(conn, 'INVALID SQL')
+      while (!dbHasCompleted(result)) {
+        dbFetch(result)
+      }
+    },
     "Query.*failed:.*(no viable alternative at|mismatched) input 'INVALID'"
   )
 })

@@ -77,3 +77,79 @@ test_that('fetch works with duplicate column names', {
     data.frame(dummy=0, dummy=1, check.names=FALSE)
   )
 })
+
+test_that('fetch works with duplicate column names - mock', {
+  conn <- setup_mock_connection()
+
+  with_mock(
+    `httr::POST`=mock_httr_replies(
+      mock_httr_response(
+        'http://localhost:8000/v1/statement',
+        status_code=200,
+        state='PLANNING',
+        request_body='SELECT a, a FROM one_column',
+        next_uri='http://localhost:8000/query_1/1'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/v1/statement',
+        status_code=200,
+        state='PLANNING',
+        request_body='SELECT a, a FROM no_rows',
+        next_uri='http://localhost:8000/query_2/1'
+      )
+    ),
+    `httr::GET`=mock_httr_replies(
+      mock_httr_response(
+        'http://localhost:8000/query_1/1',
+        status_code=200,
+        state='PLANNING',
+        next_uri='http://localhost:8000/query_1/2'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/query_1/2',
+        status_code=200,
+        state='RUNNING',
+        data=data.frame(a=1, a=1, check.names=FALSE),
+        next_uri='http://localhost:8000/query_1/3'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/query_1/3',
+        status_code=200,
+        state='RUNNING',
+        data=data.frame(a=2, a=2, check.names=FALSE),
+        next_uri='http://localhost:8000/query_1/4'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/query_1/4',
+        status_code=200,
+        state='FINISHED',
+        data=data.frame(a=3, a=3, check.names=FALSE),
+      ),
+      mock_httr_response(
+        'http://localhost:8000/query_2/1',
+        status_code=200,
+        state='PLANNING',
+        next_uri='http://localhost:8000/query_2/2'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/query_2/2',
+        status_code=200,
+        state='FINISHED',
+        data=data.frame(a=1, a=1, check.names=FALSE)[FALSE, , drop=FALSE]
+      )
+    ),
+    {
+      result <- dbSendQuery(conn, 'SELECT a, a FROM one_column')
+      expect_equal_data_frame(
+        dbFetch(result, n=Inf),
+        data.frame(a=1:3, a=1:3, check.names=FALSE)
+      )
+
+      result <- dbSendQuery(conn, 'SELECT a, a FROM no_rows')
+      expect_equal_data_frame(
+        dbFetch(result, n=Inf),
+        data.frame(a=1, a=1, check.names=FALSE)[FALSE, , drop=FALSE]
+      )
+    }
+  )
+})

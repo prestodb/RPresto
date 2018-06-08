@@ -12,8 +12,12 @@ source('utilities.R')
 test_that('dbSendQuery works with live database', {
   conn <- setup_live_connection()
 
-  expect_error(
-    dbSendQuery(conn, 'INVALID SQL'),
+  expect_error({
+      result <- dbSendQuery(conn, 'INVALID SQL')
+      while (!dbHasCompleted(result)) {
+        dbFetch(result)
+      }
+    },
     "Query.*failed:.*(no viable alternative at|mismatched) input 'INVALID'"
   )
 

@@ -97,8 +97,18 @@ test_that('dbListFields works with mock - PrestoResult', {
         'http://localhost:8000/v1/statement',
         status_code=200,
         state='QUEUED',
-        request_body='SELECT \\* FROM __non_existent_table__',
+        request_body='^SELECT \\* FROM __non_existent_table__$',
         next_uri='http://localhost:8000/query_2/1'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/v1/statement',
+        status_code=200,
+        state='QUEUED',
+        request_body=paste0(
+          '^SELECT \\* FROM \\(SELECT \\* FROM __non_existent_table__\\) ',
+          'WHERE 1 = 0$'
+        ),
+        next_uri='http://localhost:8000/query_4/1'
       ),
       mock_httr_response(
         'http://localhost:8000/v1/statement',
@@ -106,6 +116,23 @@ test_that('dbListFields works with mock - PrestoResult', {
         state='FINISHED',
         request_body='SELECT \\* FROM empty_table',
         next_uri='http://localhost:8000/query_3/1'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/v1/statement',
+        status_code=200,
+        state='PLANNING',
+        request_body='^SELECT \\* FROM three_columns$',
+        next_uri='http://localhost:8000/query_5/1'
+      ),
+      mock_httr_response(
+        'http://localhost:8000/v1/statement',
+        status_code=200,
+        state='PLANNING',
+        request_body=paste0(
+          '^SELECT \\* FROM \\(SELECT \\* FROM three_columns\\) ',
+          'WHERE 1 = 0$'
+        ),
+        next_uri='http://localhost:8000/query_6/1'
       )
     ),
     `httr::GET`=mock_httr_replies(
@@ -127,11 +154,49 @@ test_that('dbListFields works with mock - PrestoResult', {
         'http://localhost:8000/query_3/1',
         status_code=200,
         state='FINISHED',
+      ),
+      mock_httr_response(
+        'http://localhost:8000/query_4/1',
+        status_code=200,
+        extra_content=list(error=list(
+          message='Table __non_existent_table__ does not exist'
+        )),
+        state='FAILED',
+      ),
+      mock_httr_response(
+        'http://localhost:8000/query_5/1',
+        status_code=200,
+        next_uri='http://localhost:8000/query_5/2',
+        state='PLANNING',
+      ),
+      mock_httr_response(
+        'http://localhost:8000/query_6/1',
+        status_code=200,
+        next_uri='http://localhost:8000/query_6/2',
+        state='PLANNING',
+      ),
+      mock_httr_response(
+        'http://localhost:8000/query_6/2',
+        status_code=200,
+        data=data.frame(
+          a=1, b=TRUE, c='', stringsAsFactors=FALSE
+        )[FALSE, , drop=FALSE],
+        state='FINISHED',
       )
     ),
     `httr::DELETE`=mock_httr_replies(
       mock_httr_response(
         url='http://localhost:8000/query_3/1',
+        status_code=200,
+        state=''
+      ),
+      mock_httr_response(
+        url='http://localhost:8000/query_4/1',
+        status_code=200,
+        state=''
+      ),
+      mock_httr_response(
+        url='http://localhost:8000/query_6/2',
         status_code=200,
         state=''
       )
@@ -157,6 +222,9 @@ test_that('dbListFields works with mock - PrestoResult', {
         dbListFields(result),
         'The result object is not valid'
       )
+
+      result <- dbSendQuery(conn, 'SELECT * FROM three_columns')
+      expect_equal(dbListFields(result), c('a', 'b', 'c'))
     }
   )
 })

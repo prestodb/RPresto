@@ -8,7 +8,7 @@
 #' @include dbplyr_compatible.R
 NULL
 
-#' S3 implementation of \code{sql_translate_env} for Presto.
+#' S3 implementation of \code{db_query_fields} for Presto.
 #'
 #' @rdname dplyr_function_implementations
 #' @keywords internal
@@ -16,10 +16,9 @@ NULL
 db_query_fields.PrestoConnection <- function(con, sql, ...) {
   build_sql <- dbplyr_compatible('build_sql')
   fields <- build_sql(
-    "SELECT * FROM ", dplyr::sql_subquery(con, sql), " LIMIT 0",
+    "SELECT * FROM ", dplyr::sql_subquery(con, sql), " WHERE 1 = 0",
     con = con
   )
-  result <- dbSendQuery(con, fields)
-  on.exit(dbClearResult(result))
-  return(dbListFields(result))
+  df <- dbGetQuery(con, fields)
+  return(colnames(df))
 }
