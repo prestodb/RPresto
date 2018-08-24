@@ -149,7 +149,7 @@ with_locale(test.locale(), test_that)('as() works', {
       expect_true(
         grepl(
           paste0(
-            '^SELECT "b" AS "b", "c" AS "c", "d" AS "d".*',
+            '^SELECT "b"( AS "b")?, "c"( AS "c")?, "d"( AS "d")?.*',
             'FROM \\(',
               'SELECT ',
                 '"_col0", ',
@@ -192,7 +192,7 @@ with_locale(test.locale(), test_that)('as() works', {
       expect_true(
         grepl(
           paste0(
-            '^SELECT "b" AS "b", "c" AS "c", "d" AS "d".*',
+            '^SELECT "b"( AS "b")?, "c"( AS "c")?, "d"( AS "d")?.*',
             'FROM \\(',
               'SELECT ',
                 '"x", ',
