@@ -75,5 +75,5 @@ Collate:
     'src.desc.src.presto.R'
     'src.presto.R'
     'tbl.src.presto.R'
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
 LinkingTo: Rcpp
