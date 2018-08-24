@@ -1,4 +1,10 @@
-# RPresto 1.3.0.9000
+# RPresto 1.3.1
+
+- Presto now might return data in POST response (#89)
+- Presto now might not always return column information in each response (#93)
+- Better error message for unknown column types (#86, #87)
+- Adapt to presto changes for type casting translation (#88)
+- Add CHAR data type (#91)
 
 # RPresto 1.3.0
 
