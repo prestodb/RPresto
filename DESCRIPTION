@@ -1,6 +1,6 @@
 Package: RPresto
 Title: DBI Connector to Presto
-Version: 1.3.0.9000
+Version: 1.3.1
 Authors@R: c(
     person('Onur Ismail', 'Filiz', , 'onur@fb.com', role=c('aut', 'cre')),
     person('Sergey', 'Goder', , 'sgoder@fb.com', role='aut'),
@@ -75,5 +75,5 @@ Collate:
     'src.desc.src.presto.R'
     'src.presto.R'
     'tbl.src.presto.R'
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
 LinkingTo: Rcpp

@@ -42,7 +42,7 @@ test_that('dplyr integration works', {
       dplyr::arrange(
         dplyr::summarise(
           dplyr::group_by(iris_presto, species),
-          mean_sepal_length = mean(as(sepal_length, 0.0))
+          mean_sepal_length = mean(as(sepal_length, 0.0), na.rm=TRUE)
         ),
         species
       ),
@@ -61,7 +61,7 @@ test_that('dplyr integration works', {
           ),
           Species
         ),
-        mean_sepal_length=mean(Sepal.Length)
+        mean_sepal_length=mean(Sepal.Length, na.rm=TRUE)
       ),
       Species
     )

@@ -52,17 +52,12 @@ An S4 class to represent a Presto Result
 \section{Slots}{
 
 \describe{
-\item{\code{post.response}}{The initial response from the HTTP API}
-
 \item{\code{statement}}{The SQL statement sent to the database}
 
-\item{\code{session.timezone}}{Session time zone used for the connection}
+\item{\code{connection}}{The connection object associated with the result}
 
 \item{\code{cursor}}{An internal implementation detail for keeping track of
 what stage a request is in}
-
-\item{\code{session}}{Presto session that is associated with connection. Parameters
-can be updated in place}
 }}
 
 \keyword{internal}

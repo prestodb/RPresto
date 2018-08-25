@@ -6,10 +6,10 @@
 \alias{PrestoSession}
 \title{Internal implementation detail class needed for its side-effects.
 When SET/RESET SESSION queries are called, session parameters need to be
-mantained by the client and requires an in-place update.}
+maintained by the client and requires an in-place update.}
 \description{
 Internal implementation detail class needed for its side-effects.
 When SET/RESET SESSION queries are called, session parameters need to be
-mantained by the client and requires an in-place update.
+maintained by the client and requires an in-place update.
 }
 
