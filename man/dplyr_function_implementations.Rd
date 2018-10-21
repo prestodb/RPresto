@@ -2,8 +2,7 @@
 % Please edit documentation in R/copy.to.src.presto.R,
 %   R/db.data.type.PrestoConnection.R, R/db.explain.PrestoConnection.R,
 %   R/db.query.rows.PrestoConnection.R, R/db_desc.PrestoConnection.R,
-%   R/db_query_fields.R, R/src.translate.env.src.presto.R,
-%   R/sql_translate_env.R, R/src.desc.src.presto.R
+%   R/db_query_fields.R, R/sql_translate_env.R
 \name{copy_to.src_presto}
 \alias{copy_to.src_presto}
 \alias{db_data_type.PrestoConnection}
@@ -11,9 +10,7 @@
 \alias{db_query_rows.PrestoConnection}
 \alias{db_desc.PrestoConnection}
 \alias{db_query_fields.PrestoConnection}
-\alias{src_translate_env.src_presto}
 \alias{sql_translate_env.PrestoConnection}
-\alias{src_desc.src_presto}
 \title{S3 implementation of \code{\link[dplyr]{copy_to}} for Presto.}
 \usage{
 copy_to.src_presto(dest, df)
@@ -28,11 +25,7 @@ db_desc.PrestoConnection(x)
 
 db_query_fields.PrestoConnection(con, sql, ...)
 
-src_translate_env.src_presto(x)
-
-sql_translate_env.PrestoConnection(conn)
-
-src_desc.src_presto(x)
+sql_translate_env.PrestoConnection(con)
 }
 \description{
 S3 implementation of \code{\link[dplyr]{copy_to}} for Presto.
@@ -47,10 +40,6 @@ S3 implementation of \code{db_desc} for Presto.
 
 S3 implementation of \code{db_query_fields} for Presto.
 
-S3 implementation of \code{src_translate_env} for Presto.
-
 S3 implementation of \code{sql_translate_env} for Presto.
-
-S3 implementation of \code{src_desc} for Presto.
 }
 \keyword{internal}

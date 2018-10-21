@@ -1,3 +1,8 @@
+# RPresto 1.3.2
+
+- Use the new delayed S3 registration mechanism in 3.6.0 for dplyr method implementations.
+- Bump minimum dplyr version required to 0.7.0.
+
 # RPresto 1.3.1
 
 - Presto now might return data in POST response (#89)
