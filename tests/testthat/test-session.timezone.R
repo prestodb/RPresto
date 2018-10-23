@@ -10,7 +10,9 @@ context('session.timezone')
 source('utilities.R')
 
 test_that('session.timezone works', {
-  current.timezone <- Sys.timezone()
+  # We suppress warnings because R now uses timedatectl for timezone
+  # inference on systemd systems which can give an 'access denied' warning
+  current.timezone <- suppressWarnings(Sys.timezone())
   if (!is.na(current.timezone)) {
     on.exit(Sys.setenv(TZ=current.timezone))
   } else {
