@@ -1,0 +1,12 @@
+language: r
+sudo: false
+cache: packages
+matrix:
+  include:
+    - os: linux
+      r: oldrel
+    - os: linux
+      r: release
+    - os: linux
+      r: devel
+
