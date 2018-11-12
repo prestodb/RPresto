@@ -4,3 +4,4 @@
 ^RPresto\.Rproj$
 ^cran-comments\.md$
 ^\.Rproj\.user$
+^\.travis\.yml$
