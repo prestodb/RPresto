@@ -1,3 +1,5 @@
+# RPresto 1.3.2.9000
+
 # RPresto 1.3.2
 
 - Use the new delayed S3 registration mechanism in 3.6.0 for dplyr method implementations.
