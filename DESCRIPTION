@@ -47,6 +47,7 @@ Collate:
     'dbplyr_compatible.R'
     'db.explain.PrestoConnection.R'
     'db.query.rows.PrestoConnection.R'
+    'request_headers.R'
     'dbHasCompleted.R'
     'dbClearResult.R'
     'dbConnect.R'

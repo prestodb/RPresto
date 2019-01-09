@@ -5,29 +5,21 @@
 # LICENSE file in the root directory of this source tree. An additional grant
 # of patent rights can be found in the PATENTS file in the same directory.
 
-#' @include PrestoConnection.R PrestoCursor.R utility_functions.R
+#' @include PrestoConnection.R PrestoCursor.R request_headers.R utility_functions.R
 NULL
-
-.request.headers <- function(conn) {
-  return(httr::add_headers(
-    "X-Presto-User"= conn@user,
-    "X-Presto-Catalog"= conn@catalog,
-    "X-Presto-Schema"= conn@schema,
-    "X-Presto-Source"= conn@source,
-    "X-Presto-Time-Zone" = conn@session.timezone,
-    "User-Agent"= getPackageName(),
-    "X-Presto-Session"=conn@session$parameterString()
-  ))
-}
 
 .dbSendQuery <- function(conn, statement, ...) {
   url <- paste0(conn@host, ':', conn@port, '/v1/statement')
   status <- 503L
   retries <- 3
-  headers <- .request.headers(conn)
+  headers <- .request_headers(conn)
   while (status == 503L || (retries > 0 && status >= 400L)) {
     wait()
-    post.response <- httr::POST(url, body=enc2utf8(statement), headers)
+    post.response <- httr::POST(
+      url,
+      body=enc2utf8(statement),
+      config=headers
+    )
     status <- as.integer(httr::status_code(post.response))
     if (status >= 400L && status != 503L) {
       retries <- retries - 1

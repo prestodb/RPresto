@@ -184,7 +184,7 @@ test_that('dbFetch works with mock', {
           state='FINISHED',
           data=data.frame(n=4)
         )
-      )(url))
+      )(url, ...))
     },
     `httr::handle_reset`=function(...) return(),
     {

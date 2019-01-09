@@ -5,7 +5,7 @@
 # LICENSE file in the root directory of this source tree. An additional grant
 # of patent rights can be found in the PATENTS file in the same directory.
 
-#' @include dbHasCompleted.R PrestoResult.R
+#' @include dbHasCompleted.R PrestoResult.R request_headers.R
 NULL
 
 #' @rdname PrestoResult-class
@@ -26,7 +26,8 @@ setMethod('dbClearResult',
       return(TRUE)
     }
 
-    delete.result <- httr::DELETE(uri)
+    headers <- .request_headers(res@connection)
+    delete.result <- httr::DELETE(uri, config=headers)
     s <- httr::status_code(delete.result)
     if (s >= 200 && s < 300) {
       res@cursor$state('__KILLED')

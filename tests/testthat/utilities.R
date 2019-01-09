@@ -238,10 +238,28 @@ mock_httr_response <- function(
   return(rv)
 }
 
+check_header <- function(header, value, ...) {
+  arguments <- list(...)
+  if (!'config' %in% names(arguments)) {
+    stop('config argument for request not set')
+  }
+  config <- arguments[['config']]
+  if (inherits(config, 'request')
+    && !is.null(config[['headers']])
+    && !is.null(config[['headers']][[header]])
+    && config[['headers']][[header]] == value) {
+    # OK
+  } else {
+    stop('Expected value ', value, ' for header ', header, ' not set')
+  }
+}
+
 mock_httr_replies <- function(...) {
   response.list <- list(...)
   names(response.list) <- unlist(lapply(response.list, function(l) l[['url']]))
   f <- function(url, body, ...) {
+    check_header('X-Presto-User', Sys.getenv('USER'), ...)
+    check_header('User-Agent', 'RPresto', ...)
     # Iterate over all specified response mocks and see if both url and body
     # match
     for (i in seq_along(response.list)) {
