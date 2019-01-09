@@ -96,3 +96,40 @@ with_locale(test.locale(), test_that)('as() works', {
     )
   )
 })
+
+with_locale(test.locale(), test_that)('as.<type>() works', {
+  if (!requireNamespace('dplyr', quietly=TRUE)) {
+    skip('dplyr not available')
+  }
+
+  translate_sql <- RPresto:::dbplyr_compatible('translate_sql')
+  s <- setup_mock_dplyr_connection()[['db']]
+  expect_equal(
+    translate_sql(as.character(x), con=s[['con']]),
+    dplyr::sql('CAST("x" AS VARCHAR)')
+  )
+  expect_equal(
+    translate_sql(as.numeric(x), con=s[['con']]),
+    dplyr::sql('CAST("x" AS DOUBLE)')
+  )
+  expect_equal(
+    translate_sql(as.double(x), con=s[['con']]),
+    dplyr::sql('CAST("x" AS DOUBLE)')
+  )
+  expect_equal(
+    translate_sql(as.integer(x), con=s[['con']]),
+    dplyr::sql('CAST("x" AS BIGINT)')
+  )
+  expect_equal(
+    translate_sql(as.Date(x), con=s[['con']]),
+    dplyr::sql('CAST("x" AS DATE)')
+  )
+  expect_equal(
+    translate_sql(as.logical(x), con=s[['con']]),
+    dplyr::sql('CAST("x" AS BOOLEAN)')
+  )
+  expect_equal(
+    translate_sql(as.raw(x), con=s[['con']]),
+    dplyr::sql('CAST("x" AS VARBINARY)')
+  )
+})
