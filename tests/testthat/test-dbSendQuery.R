@@ -92,7 +92,7 @@ test_that('dbSendQuery works with mock - status code 503', {
             request_body='SELECT 1 AS n',
             state='RETRYING'
           )
-        )(url, body))
+        )(url, body=body, ...))
       }
       return(mock_httr_replies(
         mock_httr_response(
@@ -102,7 +102,7 @@ test_that('dbSendQuery works with mock - status code 503', {
           request_body='SELECT 1 AS n',
           next_uri='http://localhost:8000/query_1/1'
         )
-      )(url, body))
+      )(url, body=body, ...))
     },
     {
       assign('request.count', 0, envir=environment(httr::POST))

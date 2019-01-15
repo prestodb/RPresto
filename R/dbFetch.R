@@ -7,11 +7,12 @@
 
 #' @include extract.data.R json.tabular.to.data.frame.R
 #' @include utility_functions.R PrestoResult.R parse.response.R
+#' @include request_headers.R
 NULL
 
-.fetch.uri.with.retries <- function(uri, num.retry=3) {
+.fetch.uri.with.retries <- function(uri, headers, num.retry=3) {
   get.response <- tryCatch({
-      response <- httr::GET(uri)
+      response <- httr::GET(uri, config=headers)
       if (httr::status_code(response) >= 400L) {
         # stop_for_status also fails for 300 <= status < 400
         # so we need the if condition
@@ -28,7 +29,7 @@ NULL
               '", retrying [', 4 - num.retry, '/3]\n')
       wait()
       httr::handle_reset(uri)
-      return(.fetch.uri.with.retries(uri, num.retry - 1))
+      return(.fetch.uri.with.retries(uri, headers, num.retry - 1))
     }
   )
   return(get.response)
@@ -39,9 +40,10 @@ NULL
     stop('Result object is not valid')
   }
   df <- data.frame()
+  headers <- .request_headers(res@connection)
   if (!res@cursor$hasCompleted()) {
     get.response <- tryCatch(
-      .fetch.uri.with.retries(res@cursor$nextUri()),
+      .fetch.uri.with.retries(res@cursor$nextUri(), headers=headers),
       error=function(e) {
         res@cursor$state('FAILED')
         stop(simpleError(

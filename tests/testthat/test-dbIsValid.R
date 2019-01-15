@@ -126,14 +126,14 @@ test_that('dbIsValid works with mock - retries and failures', {
             state='FINISHED',
             data=data.frame(n=2)
           )
-        )(url))
+        )(url, ...))
       }
       if (url == 'http://localhost:8000/query_3/1') {
         if (request.count == 0) {
           request.count <<- 1
           return(mock_httr_replies(
             mock_httr_response(url, status_code=404)
-          )(url))
+          )(url, ...))
         }
         return(mock_httr_replies(
           mock_httr_response(
@@ -142,12 +142,12 @@ test_that('dbIsValid works with mock - retries and failures', {
             state='FINISHED',
             data=data.frame(z='text')
           )
-        )(url))
+        )(url, ...))
       }
       if (url == 'http://localhost:8000/query_4/1') {
         return(mock_httr_replies(
           mock_httr_response(url, status_code=404)
-        )(url))
+        )(url, ...))
       }
       stop('Unhandled url in httr::GET mock: ', url)
     },
