@@ -40,6 +40,7 @@ sql_translate_env.PrestoConnection <- function(con) {
   sql_variant <- dbplyr_compatible('sql_variant')
   sql_translator <- dbplyr_compatible('sql_translator')
   sql_prefix <- dbplyr_compatible('sql_prefix')
+  sql_cast <- dbplyr_compatible('sql_cast')
   sql <- dbplyr_compatible('sql')
   build_sql <- dbplyr_compatible('build_sql')
   base_scalar <- dbplyr_compatible('base_scalar')
@@ -54,6 +55,13 @@ sql_translate_env.PrestoConnection <- function(con) {
         )
         build_sql('CAST(', column, ' AS ', sql(sql_type), ')')
       },
+      as.character = sql_cast("VARCHAR"),
+      as.numeric = sql_cast("DOUBLE"),
+      as.double = sql_cast("DOUBLE"),
+      as.integer = sql_cast("BIGINT"),
+      as.Date = sql_cast("DATE"),
+      as.logical = sql_cast("BOOLEAN"),
+      as.raw = sql_cast("VARBINARY"),
       tolower = sql_prefix("lower"),
       toupper = sql_prefix("upper"),
       pmax = sql_prefix("greatest"),
