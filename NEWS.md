@@ -1,5 +1,6 @@
 # RPresto 1.3.2.9000
 
+- Fix tests for compatibility with `dbplyr` 1.4.0.
 - Send headers with all http requests (#103).
 - Add support for `as.<data_type>` style casting for dplyr (#97).
 

@@ -47,7 +47,7 @@ sql_translate_env.PrestoConnection <- function(con) {
   base_agg <- dbplyr_compatible('base_agg')
   return(sql_variant(
     sql_translator(.parent = base_scalar,
-      ifelse = sql_prefix("if"),
+      ifelse = sql_prefix("IF"),
       as = function(column, type) {
         sql_type <- stringi::stri_trans_toupper(
           dbDataType(Presto(), type),
@@ -62,20 +62,20 @@ sql_translate_env.PrestoConnection <- function(con) {
       as.Date = sql_cast("DATE"),
       as.logical = sql_cast("BOOLEAN"),
       as.raw = sql_cast("VARBINARY"),
-      tolower = sql_prefix("lower"),
-      toupper = sql_prefix("upper"),
-      pmax = sql_prefix("greatest"),
-      pmin = sql_prefix("least"),
-      is.finite = sql_prefix("is_finite"),
-      is.infinite = sql_prefix("is_infinite"),
-      is.nan = sql_prefix("is_nan")
+      tolower = sql_prefix("LOWER"),
+      toupper = sql_prefix("UPPER"),
+      pmax = sql_prefix("GREATEST"),
+      pmin = sql_prefix("LEAST"),
+      is.finite = sql_prefix("IS_FINITE"),
+      is.infinite = sql_prefix("IS_FINITE"),
+      is.nan = sql_prefix("IS_NAN")
     ),
     sql_translator(.parent = base_agg,
-      n = function() sql("count(*)"),
-      sd =  sql_prefix("stddev_samp"),
-      var = sql_prefix("var_samp"),
-      all = sql_prefix("bool_and"),
-      any = sql_prefix("bool_or")
+      n = function() sql("COUNT(*)"),
+      sd =  sql_prefix("STDDEV_SAMP"),
+      var = sql_prefix("VAR_SAMP"),
+      all = sql_prefix("BOOL_AND"),
+      any = sql_prefix("BOOL_OR")
     ),
     presto_window_functions()
   ))
