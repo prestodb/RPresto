@@ -74,5 +74,5 @@ Collate:
     'help.R'
     'sql_translate_env.R'
     'tbl.src.presto.R'
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
 LinkingTo: Rcpp
