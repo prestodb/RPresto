@@ -21,7 +21,7 @@ NULL
 #' }
 db_explain.PrestoConnection <- function(con, sql, ...) {
   build_sql <- dbplyr_compatible('build_sql')
-  explain.sql <- build_sql("EXPLAIN ", sql)
+  explain.sql <- build_sql("EXPLAIN ", sql, con = con)
   explanation <- DBI::dbGetQuery(con, explain.sql)
   return(paste(explanation[[1]], collapse = "\n"))
 }
