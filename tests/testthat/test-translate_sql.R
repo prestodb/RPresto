@@ -133,3 +133,31 @@ with_locale(test.locale(), test_that)('as.<type>() works', {
     dplyr::sql('CAST("x" AS VARBINARY)')
   )
 })
+
+with_locale(test.locale(), test_that)('subscripting with `[[` works', {
+  dbplyr_version <- try(utils::packageVersion('dbplyr'))
+  if (inherits(dbplyr_version, 'try-error')) {
+    skip('dbplyr not available')
+  } else if (dbplyr_version < '1.4.0') {
+    skip('remote evaluation of `[[` requires dbplyr >= 1.4.0')
+  }
+
+  translate_sql <- RPresto:::dbplyr_compatible('translate_sql')
+  s <- setup_mock_dplyr_connection()[['db']]
+
+  # a character index should be escaped
+  expect_equal(
+    translate_sql(x[['a']], con=s[['con']]),
+    dbplyr::build_sql(dbplyr::ident('x'), "['a']", con=s[['con']])
+  )
+  # but a numeric index (for arrays) should not
+  expect_equal(
+    translate_sql(x[[1]], con=s[['con']]),
+    dbplyr::build_sql(dbplyr::ident('x'), "[1]", con=s[['con']])
+  )
+  expect_equal(
+    translate_sql(x[[1L]], con=s[['con']]),
+    dbplyr::build_sql(dbplyr::ident('x'), "[1]", con=s[['con']])
+  )
+  expect_error(translate_sql(x[[TRUE]], con=s[['con']]))
+})

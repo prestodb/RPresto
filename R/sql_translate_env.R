@@ -68,7 +68,18 @@ sql_translate_env.PrestoConnection <- function(con) {
       pmin = sql_prefix("LEAST"),
       is.finite = sql_prefix("IS_FINITE"),
       is.infinite = sql_prefix("IS_FINITE"),
-      is.nan = sql_prefix("IS_NAN")
+      is.nan = sql_prefix("IS_NAN"),
+      `[[` = function(x, i) {
+        i <- dplyr::enexpr(i)
+        if (is.character(i)) {
+          dbplyr::build_sql(x, "[", dbplyr::escape(i, con = con), "]")
+        } else if (is.numeric(i)) {
+          # allow syntax like x[1] versus enforcing x[1L]
+          dbplyr::build_sql(x, "[", as.integer(i), "]")
+        } else {
+          stop("Error: `x` must be character or numeric")
+        }
+      }
     ),
     sql_translator(.parent = base_agg,
       n = function() sql("COUNT(*)"),
