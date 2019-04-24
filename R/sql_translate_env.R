@@ -77,7 +77,7 @@ sql_translate_env.PrestoConnection <- function(con) {
           # allow syntax like x[1] versus enforcing x[1L]
           dbplyr::build_sql(x, "[", as.integer(i), "]")
         } else {
-          stop("Error: `x` must be character or numeric")
+          stop("Error: `i` must be character or numeric")
         }
       }
     ),
