@@ -159,5 +159,16 @@ with_locale(test.locale(), test_that)('subscripting with `[[` works', {
     translate_sql(x[[1L]], con=s[['con']]),
     dbplyr::build_sql(dbplyr::ident('x'), "[1]", con=s[['con']])
   )
+
+  # neither `x` nor `i` should be evaluated locally
+  expect_equal(
+    translate_sql(dim[['a']], con=s[['con']]),
+    dbplyr::build_sql(dbplyr::ident('dim'), "['a']", con=s[['con']])
+  )
+  expect_equal(
+    translate_sql(x[['dim']], con=s[['con']]),
+    dbplyr::build_sql(dbplyr::ident('x'), "['dim']", con=s[['con']])
+  )
+
   expect_error(translate_sql(x[[TRUE]], con=s[['con']]))
 })

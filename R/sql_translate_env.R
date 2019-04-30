@@ -70,7 +70,7 @@ sql_translate_env.PrestoConnection <- function(con) {
       is.infinite = sql_prefix("IS_FINITE"),
       is.nan = sql_prefix("IS_NAN"),
       `[[` = function(x, i) {
-        i <- dplyr::enexpr(i)
+        i <- substitute(i)
         if (is.character(i)) {
           dbplyr::build_sql(x, "[", dbplyr::escape(i, con = con), "]")
         } else if (is.numeric(i)) {
