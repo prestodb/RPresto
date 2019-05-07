@@ -1,9 +1,8 @@
 # Test environments
 
-- OS X 10.13.6 High Sierra, R 3.5.1
+- OS X 10.14.4 Mojave, R 3.6.0
 - CentOS 7.3, R 3.5.1
-- CentOS 7.3, R-devel
-- win-builder (devel, release and oldrelease)
+- win-builder (devel and release)
 
 # R CMD check results
 
