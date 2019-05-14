@@ -134,7 +134,7 @@ with_locale(test.locale(), test_that)('as.<type>() works', {
   )
 })
 
-with_locale(test.locale(), test_that)('subscripting with `[[` works', {
+with_locale(test.locale(), test_that)('`[[` works for char/numeric indices', {
   dbplyr_version <- try(utils::packageVersion('dbplyr'))
   if (inherits(dbplyr_version, 'try-error')) {
     skip('dbplyr not available')
@@ -169,6 +169,137 @@ with_locale(test.locale(), test_that)('subscripting with `[[` works', {
     translate_sql(x[['dim']], con=s[['con']]),
     dbplyr::build_sql(dbplyr::ident('x'), "['dim']", con=s[['con']])
   )
+})
 
-  expect_error(translate_sql(x[[TRUE]], con=s[['con']]))
+with_locale(test.locale(), test_that)('`[[` works for dynamic indices', {
+  dbplyr_version <- try(utils::packageVersion('dbplyr'))
+  if (inherits(dbplyr_version, 'try-error')) {
+    skip('dbplyr not available')
+  } else if (dbplyr_version < '1.4.0') {
+    skip('remote evaluation of `[[` requires dbplyr >= 1.4.0')
+  }
+
+  # create an inline table with both array and map columns
+  x <- dplyr::tbl(
+    setup_live_dplyr_connection()[['db']],
+    dbplyr::sql(
+      "SELECT * FROM (
+      VALUES
+        (
+          ARRAY['a', 'b'],
+          MAP(ARRAY[1, 2], ARRAY['map_1', 'map_2']),
+          2.0
+        ),
+        (
+          ARRAY['x', 'y'],
+          MAP(ARRAY[1.5, 2.5], ARRAY['map_1.5', 'map_2.5']),
+          1.0
+        )
+    ) AS data(arr, map, idx)"
+    )
+  )
+
+  # index an array with a function of fixed values
+  expect_equal(
+    x %>%
+      dplyr::mutate(y = arr[[as.integer(POW(2, 1))]]) %>%
+      dplyr::pull(y),
+    c("b", "y")
+  )
+
+  # index an array with a function of a dynamic reference
+  expect_equal(
+    x %>%
+      dplyr::mutate(y = arr[[as.integer(POW(idx, 1))]]) %>%
+      dplyr::pull(y),
+    c("b", "x")
+  )
+
+  # index a map with a function of fixed values
+  expect_equal(
+    x %>%
+      dplyr::mutate(y = map[[as.integer(POW(2, 1))]]) %>%
+      dplyr::pull(y),
+    c("map_2", NA)
+  )
+
+  # index a map with a function of a dynamic reference
+  expect_equal(
+    x %>%
+      dplyr::mutate(y = map[[as.integer(POW(idx, 1))]]) %>%
+      dplyr::pull(y),
+    c("map_2", NA)
+  )
+
+  # index an array with a fixed numeric
+  expect_equal(
+    x %>%
+      dplyr::mutate(y = arr[[1]]) %>%
+      dplyr::pull(y),
+    c("a", "x")
+  )
+
+  # index an array with a fixed integer
+  expect_equal(
+    x %>%
+      dplyr::mutate(y = arr[[1L]]) %>%
+      dplyr::pull(y),
+    c("a", "x")
+  )
+
+  # index a map with an integer-ish numeric
+  expect_equal(
+    x %>%
+      dplyr::mutate(y = map[[1]]) %>%
+      dplyr::pull(y),
+    c("map_1", NA)
+  )
+
+  # index a map with a numeric
+  expect_equal(
+    x %>%
+      dplyr::mutate(y = map[[1.5]]) %>%
+      dplyr::pull(y),
+    c(NA, "map_1.5")
+  )
+
+  # index a map with an integer
+  expect_equal(
+    x %>%
+      dplyr::mutate(y = map[[1L]]) %>%
+      dplyr::pull(y),
+    c("map_1", NA)
+  )
+
+  # index an array with a dynamic reference coerced to an integer
+  expect_equal(
+    x %>%
+      dplyr::mutate(y = arr[[as.integer(idx)]]) %>%
+      dplyr::pull(y),
+    c("b", "x")
+  )
+
+  # index a map with an integer-ish dynamic reference
+  expect_equal(
+    x %>%
+      dplyr::mutate(y = map[[idx]]) %>%
+      dplyr::pull(y),
+    c("map_2", NA)
+  )
+
+  # index a map with a function of an integer-ish dynamic reference
+  expect_equal(
+    x %>%
+      dplyr::mutate(y = map[[idx + 0.5]]) %>%
+      dplyr::pull(y),
+    c(NA, "map_1.5")
+  )
+
+  # index a map with a dynamic reference coerced to an integer
+  expect_equal(
+    x %>%
+      dplyr::mutate(y = map[[as.integer(idx)]]) %>%
+      dplyr::pull(y),
+    c("map_2", NA)
+  )
 })

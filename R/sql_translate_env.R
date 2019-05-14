@@ -70,15 +70,10 @@ sql_translate_env.PrestoConnection <- function(con) {
       is.infinite = sql_prefix("IS_FINITE"),
       is.nan = sql_prefix("IS_NAN"),
       `[[` = function(x, i) {
-        i <- substitute(i)
-        if (is.character(i)) {
-          dbplyr::build_sql(x, "[", dbplyr::escape(i, con = con), "]")
-        } else if (is.numeric(i)) {
-          # allow syntax like x[1] versus enforcing x[1L]
-          dbplyr::build_sql(x, "[", as.integer(i), "]")
-        } else {
-          stop("Error: `i` must be character or numeric")
+        if (is.numeric(i) && isTRUE(all.equal(i, as.integer(i)))) {
+          i <- as.integer(i)
         }
+        dbplyr::build_sql(dbplyr::ident_q(x), "[", i, "]")
       }
     ),
     sql_translator(.parent = base_agg,
