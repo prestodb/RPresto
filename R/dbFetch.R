@@ -68,7 +68,8 @@ NULL
     rv[[chunk.count]] <- chunk
     chunk.count <- chunk.count + 1
   }
-  if (length(rv) == 1) {
+  if (!length(rv)) return(rv)
+  if (length(rv) <= 1) {
     # Preserve attributes for empty data frames
     return(rv[[1]])
   } else {
