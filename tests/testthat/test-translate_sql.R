@@ -43,14 +43,30 @@ with_locale(test.locale(), test_that)('as() works', {
 
   # Hacky dummy table so that we can test substitution
   s <- setup_live_dplyr_connection()[['db']]
-  t <- dplyr::tbl(
-    s,
-    from=dplyr::sql_subquery(
-      s[['con']],
-      dplyr::sql('SELECT 1')
-    ),
-    vars=c('x')
-  )
+  if (requireNamespace('dbplyr', quietly=TRUE)
+      && utils::compareVersion(
+        as.character(utils::packageVersion('dbplyr')),
+        '1.3.0'
+      ) >= 0
+  ) {
+    # vars argument gives a deprecation warning starting with 1.3.0
+    t <- dplyr::tbl(
+      s,
+      from=dplyr::sql_subquery(
+        s[['con']],
+        dplyr::sql('SELECT 1')
+      )
+    )
+  } else {
+    t <- dplyr::tbl(
+      s,
+      from=dplyr::sql_subquery(
+        s[['con']],
+        dplyr::sql('SELECT 1')
+      ),
+      vars=c('x')
+    )
+  }
 
   l <- list(a=1L)
   expect_equal(
