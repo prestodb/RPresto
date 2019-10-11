@@ -51,7 +51,7 @@ test_that('Integration tests work', {
   expect_that(nrow(df), equals(5))
   expect_that(ncol(df), equals(5))
 
-  expect_that(dbClearResult(rs), is_true())
+  expect_true(dbClearResult(rs))
 
   df <- dbGetQuery(conn, sql)
   expect_that(df, is_a("data.frame"))
@@ -62,5 +62,5 @@ test_that('Integration tests work', {
   expect_that(tbls, is_a("character"))
   expect_that(length(tbls), is_more_than(0))
 
-  expect_that(dbDisconnect(conn), is_true())
+  expect_true(dbDisconnect(conn))
 })

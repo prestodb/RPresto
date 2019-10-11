@@ -38,6 +38,7 @@ test_that('check.status.code works', {
   )
   expect_error(
     check.status.code(response),
-    '403'
+    '403',
+    class='http_403'
   )
 })
