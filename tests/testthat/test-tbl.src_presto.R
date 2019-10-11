@@ -24,7 +24,21 @@ test_that('dplyr::tbl works', {
     dplyr::sql(paste('SELECT * FROM', parts[['iris_table_name']]))
   )
   expect_equal(
-    iris_presto_materialized,
-    as.data.frame(dplyr::collect(iris_from_sql, n=Inf))
+    dplyr::arrange(
+      iris_presto_materialized,
+      sepal_width,
+      sepal_length,
+      petal_width,
+      petal_length,
+      species
+    ),
+    dplyr::arrange(
+      as.data.frame(dplyr::collect(iris_from_sql, n=Inf)),
+      sepal_width,
+      sepal_length,
+      petal_width,
+      petal_length,
+      species
+    ),
   )
 })
