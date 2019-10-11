@@ -93,23 +93,37 @@ with_locale(test.locale(), test_that)('as() works', {
     c=as(a, p),
     d=as(a, l)
   )))
+  old_expected_query_pattern <- paste0(
+    '^SELECT "b"( AS "b")?, "c"( AS "c")?, "d"( AS "d")?.*',
+    'FROM \\(',
+      'SELECT ',
+        '"_col0", ',
+        'CAST\\("a" AS VARBINARY\\) AS "b", ' ,
+        'CAST\\("a" AS TIMESTAMP WITH TIME ZONE\\) AS "c", ',
+        'CAST\\("a" AS BOOLEAN\\) AS "d"\n',
+      'FROM \\(',
+        '\\(SELECT 1\\) "[_0-9a-z]+"',
+      '\\) "[_0-9a-z]+"',
+    '\\) "[_0-9a-z]+"$'
+  )
+  new_expected_query_pattern <- paste0(
+    '^SELECT ',
+      'CAST\\("a" AS VARBINARY\\) AS "b", ' ,
+      'CAST\\("a" AS TIMESTAMP WITH TIME ZONE\\) AS "c", ',
+      'CAST\\("a" AS BOOLEAN\\) AS "d"\n',
+    'FROM \\(',
+      '\\(SELECT 1\\) "[_0-9a-z]+"',
+    '\\) "[_0-9a-z]+"$'
+  )
+  # newer versions of dplyr have a simpler pattern
+  expected_query_pattern <- paste0('(',
+    old_expected_query_pattern,
+    "|",
+    new_expected_query_pattern,
+    ')'
+  )
   expect_true(
-    grepl(
-      paste0(
-        '^SELECT "b"( AS "b")?, "c"( AS "c")?, "d"( AS "d")?.*',
-        'FROM \\(',
-          'SELECT ',
-            '"_col0", ',
-            'CAST\\("a" AS VARBINARY\\) AS "b", ' ,
-            'CAST\\("a" AS TIMESTAMP WITH TIME ZONE\\) AS "c", ',
-            'CAST\\("a" AS BOOLEAN\\) AS "d"\n',
-          'FROM \\(',
-            '\\(SELECT 1\\) "[_0-9a-z]+"',
-          '\\) "[_0-9a-z]+"',
-        '\\) "[_0-9a-z]+"$'
-      ),
-      query
-    )
+    grepl(expected_query_pattern, query)
   )
 })
 
