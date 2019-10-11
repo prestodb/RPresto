@@ -135,10 +135,10 @@ with_locale(test.locale(), test_that)('as.<type>() works', {
 })
 
 with_locale(test.locale(), test_that)('`[[` works for char/numeric indices', {
-  dbplyr_version <- try(utils::packageVersion('dbplyr'))
+  dbplyr_version <- try(as.character(utils::packageVersion('dbplyr')))
   if (inherits(dbplyr_version, 'try-error')) {
     skip('dbplyr not available')
-  } else if (dbplyr_version < '1.4.0') {
+  } else if (utils::compareVersion(dbplyr_version, '1.4.0') < 0) {
     skip('remote evaluation of `[[` requires dbplyr >= 1.4.0')
   }
 
@@ -172,10 +172,10 @@ with_locale(test.locale(), test_that)('`[[` works for char/numeric indices', {
 })
 
 with_locale(test.locale(), test_that)('`[[` works for dynamic indices', {
-  dbplyr_version <- try(utils::packageVersion('dbplyr'))
+  dbplyr_version <- try(as.character(utils::packageVersion('dbplyr')))
   if (inherits(dbplyr_version, 'try-error')) {
     skip('dbplyr not available')
-  } else if (dbplyr_version < '1.4.0') {
+  } else if (utils::compareVersion(dbplyr_version, '1.4.0') < 0) {
     skip('remote evaluation of `[[` requires dbplyr >= 1.4.0')
   }
 

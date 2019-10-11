@@ -1,5 +1,7 @@
 # RPresto 1.3.3.9000
 
+- Translate `[[` to allow indexing arrays and maps with dplyr (#110).
+
 # RPresto 1.3.3
 
 - Fix tests for compatibility with `dbplyr` 1.4.0.
