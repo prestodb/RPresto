@@ -98,7 +98,7 @@ supported.
 RPresto has been tested on Presto 0.100.
 
 ## License
-RPresto is BSD-licensed. We also provide an additional patent grant.
+RPresto is BSD-licensed.
 
 [1] See <https://github.com/prestodb/presto/wiki/HTTP-Protocol> for a
 description of the API.
