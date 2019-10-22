@@ -1,7 +1,7 @@
 # Test environments
 
-- OS X 10.14.4 Mojave, R 3.6.0
-- CentOS 7.3, R 3.5.1
+- OS X 10.14.6 Mojave, R 3.6.1
+- CentOS 7.3, R 3.6.1
 - win-builder (devel and release)
 
 # R CMD check results
