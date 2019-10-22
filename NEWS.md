@@ -1,6 +1,7 @@
-# RPresto 1.3.3.9000
+# RPresto 1.3.4
 
 - Translate `[[` to allow indexing arrays and maps with dplyr (#110).
+- Switch from BSD+Patents license to Standard BSD license (#114).
 
 # RPresto 1.3.3
 
