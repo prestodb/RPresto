@@ -332,3 +332,58 @@ with_locale(test.locale(), test_that)('`[[` works for dynamic indices', {
     c("map_2", NA)
   )
 })
+
+with_locale(test.locale(), test_that)('quantile() and median() throw errors', {
+  dbplyr_version <- try(as.character(utils::packageVersion('dbplyr')))
+  if (inherits(dbplyr_version, 'try-error')) {
+    skip('dbplyr not available')
+  } else if (utils::compareVersion(dbplyr_version, '1.4.0') < 0) {
+    skip('remote evaluation of `[[` requires dbplyr >= 1.4.0')
+  }
+
+  translate_sql <- RPresto:::dbplyr_compatible('translate_sql')
+  s <- setup_mock_dplyr_connection()[['db']]
+
+  expect_error(translate_sql(quantile(x, 0.9), con=s[['con']]))
+  expect_error(translate_sql(median(x), con=s[['con']]))
+
+  x <- dplyr::tbl(
+    setup_live_dplyr_connection()[['db']],
+    dbplyr::sql(
+      "SELECT * FROM (
+      VALUES
+        ('a', 1),
+        ('b', 2)
+    ) AS data(y, z)"
+    )
+  )
+
+  expect_error(dplyr::summarize(x, q = quantile(z, 0.9)))
+  expect_error(dplyr::summarize(x, q = median(z)))
+
+  # aggregate
+  expect_error(
+    x %>%
+      dplyr::group_by(y) %>%
+      dplyr::summarize(q = quantile(z, 0.9))
+  )
+
+  expect_error(
+    x %>%
+      dplyr::group_by(y) %>%
+      dplyr::summarize(q = median(z))
+  )
+
+  # windowed
+  expect_error(
+    x %>%
+      dplyr::group_by(y) %>%
+      dplyr::mutate(q = quantile(z, 0.9))
+  )
+
+  expect_error(
+    x %>%
+      dplyr::group_by(y) %>%
+      dplyr::mutate(q = median(z))
+  )
+})
