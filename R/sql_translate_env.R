@@ -99,10 +99,10 @@ sql_translate_env.PrestoConnection <- function(con) {
 #' @return error message for \code{f}
 #' @keywords internal
 #' @noRd
-quantile_error_msg <- function(f = "quantile") {
+quantile_error_message <- function(f = "quantile") {
   paste(
     paste0("`", f, "()`"),
     "is not supported in this SQL variant,",
-    "try `approx_percentile()` instead; see Presto docs"
+    "try `approx_percentile()` instead; see Presto documentation."
   )
 }
