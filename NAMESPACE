@@ -2,6 +2,18 @@
 
 
 if (getRversion() >= "3.6.0") {
+  S3method(dbplyr::sql_escape_date,PrestoConnection)
+} else {
+  export(sql_escape_date.PrestoConnection)
+}
+
+if (getRversion() >= "3.6.0") {
+  S3method(dbplyr::sql_escape_datetime,PrestoConnection)
+} else {
+  export(sql_escape_datetime.PrestoConnection)
+}
+
+if (getRversion() >= "3.6.0") {
   S3method(dplyr::copy_to,src_presto)
 } else {
   export(copy_to.src_presto)

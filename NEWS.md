@@ -1,5 +1,7 @@
 # RPresto 1.3.4.9000
 
+- Add custom Date and POSIXct sql translation implementations for dbplyr (#123, thanks to @OssiLehtinen for original implementations).
+
 # RPresto 1.3.4
 
 - Translate `[[` to allow indexing arrays and maps with dplyr (#110).

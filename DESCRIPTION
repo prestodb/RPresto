@@ -72,6 +72,8 @@ Collate:
     'db_query_fields.R'
     'fetch.R'
     'help.R'
+    'sql_escape_date.R'
+    'sql_escape_datetime.R'
     'sql_translate_env.R'
     'tbl.src.presto.R'
 RoxygenNote: 6.1.1

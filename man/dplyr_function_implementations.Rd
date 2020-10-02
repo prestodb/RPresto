@@ -2,7 +2,8 @@
 % Please edit documentation in R/copy.to.src.presto.R,
 %   R/db.data.type.PrestoConnection.R, R/db.explain.PrestoConnection.R,
 %   R/db.query.rows.PrestoConnection.R, R/db_desc.PrestoConnection.R,
-%   R/db_query_fields.R, R/sql_translate_env.R
+%   R/db_query_fields.R, R/sql_escape_date.R, R/sql_escape_datetime.R,
+%   R/sql_translate_env.R
 \name{copy_to.src_presto}
 \alias{copy_to.src_presto}
 \alias{db_data_type.PrestoConnection}
@@ -10,6 +11,8 @@
 \alias{db_query_rows.PrestoConnection}
 \alias{db_desc.PrestoConnection}
 \alias{db_query_fields.PrestoConnection}
+\alias{sql_escape_date.PrestoConnection}
+\alias{sql_escape_datetime.PrestoConnection}
 \alias{sql_translate_env.PrestoConnection}
 \title{S3 implementation of \code{\link[dplyr]{copy_to}} for Presto.}
 \usage{
@@ -25,6 +28,10 @@ db_desc.PrestoConnection(x)
 
 db_query_fields.PrestoConnection(con, sql, ...)
 
+sql_escape_date.PrestoConnection(con, x)
+
+sql_escape_datetime.PrestoConnection(con, x)
+
 sql_translate_env.PrestoConnection(con)
 }
 \description{
@@ -39,6 +46,10 @@ S3 implementation of \code{\link[dplyr]{db_query_rows}} for Presto.
 S3 implementation of \code{db_desc} for Presto.
 
 S3 implementation of \code{db_query_fields} for Presto.
+
+S3 implementation of custom escape method for \link[dbplyr]{sql_escape_date}
+
+S3 implementation of custom escape method for \link[dbplyr]{sql_escape_datetime}
 
 S3 implementation of \code{sql_translate_env} for Presto.
 }
