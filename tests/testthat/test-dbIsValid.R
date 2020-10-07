@@ -23,7 +23,13 @@ test_that('dbIsValid works with live database', {
 
   result <- dbSendQuery(conn, 'SELECT 1 FROM __nonexistent_table__')
   expect_true(dbIsValid(result))
-  expect_error(dbFetch(result))
+  expect_error({
+      while (!dbHasCompleted(result)) {
+        dbFetch(result)
+      }
+    },
+    'Table.*__nonexistent_table__ does not exist'
+  )
   expect_false(dbIsValid(result))
 
   expect_error({
