@@ -19,7 +19,8 @@ setClass('PrestoResult',
   slots=c(
     'statement'='character',
     'connection'='PrestoConnection',
-    'cursor'='PrestoCursor'
+    'cursor'='PrestoCursor',
+    'query.id'='character'
   )
 )
 
@@ -28,12 +29,10 @@ setClass('PrestoResult',
 setMethod('show',
   'PrestoResult',
   function(object) {
-    r <- object@cursor$postResponse()
-    content <- response.to.content(r)
     stats <- object@cursor$stats()
 
     cat(
-      '<PrestoResult: ', content[['id']], '>\n',
+      '<PrestoResult: ', object@query.id, '>\n',
       'Status Code: ', httr::status_code(r), '\n',
       'State: ', object@cursor$state(), '\n',
       'Info URI: ', object@cursor$infoUri(), '\n',

@@ -34,7 +34,8 @@ NULL
       rv <- new('PrestoResult',
         statement=statement,
         connection=conn,
-        cursor=cursor
+        cursor=cursor,
+        query.id=content[['id']]
       )
     }
   } else {

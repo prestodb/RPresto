@@ -53,7 +53,8 @@ test_that('dbGetInfo works with mock', {
         status_code=200,
         state='QUEUED',
         request_body='SELECT n FROM two_rows',
-        next_uri='http://localhost:8000/query_1/1'
+        next_uri='http://localhost:8000/query_1/1',
+        query_id='query_1'
       )
     ),
     `httr::GET`=mock_httr_replies(
@@ -76,6 +77,7 @@ test_that('dbGetInfo works with mock', {
       expect_equal(
         dbGetInfo(result),
         list(
+          query.id='query_1',
           statement='SELECT n FROM two_rows',
           row.count=as.integer(0),
           has.completed=FALSE,
@@ -86,6 +88,7 @@ test_that('dbGetInfo works with mock', {
       expect_equal(
         dbGetInfo(result),
         list(
+          query.id='query_1',
           statement='SELECT n FROM two_rows',
           row.count=as.integer(1),
           has.completed=FALSE,
@@ -96,6 +99,7 @@ test_that('dbGetInfo works with mock', {
       expect_equal(
         dbGetInfo(result),
         list(
+          query.id='query_1',
           statement='SELECT n FROM two_rows',
           row.count=as.integer(2),
           has.completed=TRUE,

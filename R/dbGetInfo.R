@@ -34,6 +34,7 @@ setMethod("dbGetInfo",
 
 .dbGetInfo.PrestoResult <- function(dbObj) {
   return(list(
+    query.id=dbObj@query.id,
     statement=.dbGetStatement(dbObj),
     row.count=.dbGetRowCount(dbObj),
     has.completed=.dbHasCompleted(dbObj),

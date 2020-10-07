@@ -186,7 +186,8 @@ mock_httr_response <- function(
   data,
   extra_content,
   next_uri,
-  info_uri) {
+  info_uri,
+  query_id) {
 
   if (!missing(extra_content)) {
     content <- extra_content
@@ -196,7 +197,11 @@ mock_httr_response <- function(
   if (!missing(state)) {
     content[['stats']] <- list(state=jsonlite::unbox(state))
   }
-  content[['id']] <- jsonlite::unbox(gsub('[:/]', '_', url))
+  if (missing(query_id)) {
+    content[['id']] <- jsonlite::unbox(gsub('[:/]', '_', url))
+  } else {
+    content[['id']] <- jsonlite::unbox(query_id)
+  }
 
   if (!missing(next_uri)) {
     content[['nextUri']] <- jsonlite::unbox(next_uri)
