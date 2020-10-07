@@ -60,7 +60,8 @@ test_that('db_query_fields works with mock', {
           '\\(\\(SELECT 1 AS a, \'t\' AS b\\) AS "a"\\) ',
           'AS "zzz[0-9]+" LIMIT 0$'
         ),
-        next_uri='http://localhost:8000/query_1/1'
+        next_uri='http://localhost:8000/query_1/1',
+        query_id='query_1'
       ),
       mock_httr_response(
         'http://localhost:8000/v1/statement',
@@ -72,7 +73,8 @@ test_that('db_query_fields works with mock', {
             '\\(SELECT 1 AS a, \'t\' AS b\\) "a"',
           '\\) "zzz[0-9]+" WHERE 1 = 0$'
         ),
-        next_uri='http://localhost:8000/query_1/1'
+        next_uri='http://localhost:8000/query_1/1',
+        query_id='query_1'
       ),
       mock_httr_response(
         'http://localhost:8000/v1/statement',
@@ -84,7 +86,8 @@ test_that('db_query_fields works with mock', {
             '\\(SELECT 1 AS a, \'t\' AS b\\) "a"',
           '\\) "q[0-9]+" WHERE 1 = 0$'
         ),
-        next_uri='http://localhost:8000/query_1/1'
+        next_uri='http://localhost:8000/query_1/1',
+        query_id='query_1'
       ),
       mock_httr_response(
         'http://localhost:8000/v1/statement',
@@ -203,7 +206,7 @@ test_that('db_query_fields works with mock', {
     ),
     `httr::DELETE`=function(url, body, ...) {
       mock_httr_response(
-        url='http://localhost:8000/query_1/1',
+        url='http://localhost:8000/v1/query/query_1',
         status_code=200,
         state=''
       )[['response']]

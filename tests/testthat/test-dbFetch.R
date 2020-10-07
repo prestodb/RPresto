@@ -41,7 +41,8 @@ test_that('dbFetch works with mock', {
         state='QUEUED',
         request_body=
           '^SELECT n FROM \\(VALUES \\(1\\), \\(2\\)\\) AS t \\(n\\)$',
-        next_uri='http://localhost:8000/query_1/1'
+        next_uri='http://localhost:8000/query_1/1',
+        query_id='query_1'
       ),
       mock_httr_response(
         'http://localhost:8000/v1/statement',
@@ -100,7 +101,7 @@ test_that('dbFetch works with mock', {
     ),
     `httr::DELETE`=mock_httr_replies(
       mock_httr_response(
-        url='http://localhost:8000/query_1/2',
+        url='http://localhost:8000/v1/query/query_1',
         status_code=200,
         state=''
       )
