@@ -23,30 +23,33 @@ test_that('dbClearResult works with mock', {
         status_code=200,
         state='QUEUED',
         request_body='SELECT 1',
-        next_uri='http://localhost:8000/query_1/1'
+        next_uri='http://localhost:8000/query_1/1',
+        query_id='query_1'
       ),
       mock_httr_response(
         url='http://localhost:8000/v1/statement',
         status_code=200,
         state='QUEUED',
         request_body='SELECT 2',
-        next_uri='http://localhost:8000/query_2/1'
+        next_uri='http://localhost:8000/query_2/1',
+        query_id='query_2'
       ),
       mock_httr_response(
         url='http://localhost:8000/v1/statement',
         status_code=200,
         state='FINISHED',
-        request_body='SELECT 3'
+        request_body='SELECT 3',
+        query_id='query_3'
       )
     ),
     `httr::DELETE`=mock_httr_replies(
       mock_httr_response(
-        url='http://localhost:8000/query_1/1',
+        url='http://localhost:8000/v1/query/query_1',
         status_code=200,
         state=''
       ),
       mock_httr_response(
-        url='http://localhost:8000/query_2/1',
+        url='http://localhost:8000/v1/query/query_2',
         status_code=500,
         state=''
       )

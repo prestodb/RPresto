@@ -152,7 +152,8 @@ test_that('Inconsistent data in chunks fail', {
         status_code=200,
         state='PLANNING',
         request_body='SELECT a, b FROM broken_chunks',
-        next_uri='http://localhost:8000/query_1/1'
+        next_uri='http://localhost:8000/query_1/1',
+        query_id='query_1'
       )
     ),
     `httr::GET`=mock_httr_replies(
@@ -185,7 +186,7 @@ test_that('Inconsistent data in chunks fail', {
     ),
     `httr::DELETE`=mock_httr_replies(
       mock_httr_response(
-        url='http://localhost:8000/query_1/4',
+        url='http://localhost:8000/v1/query/query_1',
         status_code=200,
         state=''
       )

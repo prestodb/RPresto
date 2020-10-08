@@ -26,7 +26,11 @@ setMethod('dbClearResult',
     }
 
     headers <- .request_headers(res@connection)
-    delete.result <- httr::DELETE(uri, config=headers)
+    delete.uri <- paste0(
+      res@connection@host, ':', res@connection@port,
+      '/v1/query/', res@query.id
+    )
+    delete.result <- httr::DELETE(delete.uri, config=headers)
     s <- httr::status_code(delete.result)
     if (s >= 200 && s < 300) {
       res@cursor$state('__KILLED')

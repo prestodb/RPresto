@@ -1,6 +1,8 @@
 # RPresto 1.3.4.9000
 
 - Add custom Date and POSIXct sql translation implementations for dbplyr (#123, thanks to @OssiLehtinen for original implementations).
+- Adapt `dbClearResult` to the API change, we now need to `DELETE` `/v1/query/<query_id>`.
+- Add a `query.id` slot to `PrestoResult`.
 
 # RPresto 1.3.4
 

@@ -44,7 +44,8 @@ test_that('dbListFields works with mock - PrestoConnection', {
         status_code=200,
         state='QUEUED',
         request_body='SELECT \\* FROM "__non_existent_table__" LIMIT 0',
-        next_uri='http://localhost:8000/query_2/1'
+        next_uri='http://localhost:8000/query_2/1',
+        query_id='query_2'
       )
     ),
     `httr::GET`=mock_httr_replies(
@@ -66,7 +67,7 @@ test_that('dbListFields works with mock - PrestoConnection', {
     ),
     `httr::DELETE`=mock_httr_replies(
       mock_httr_response(
-        url='http://localhost:8000/query_2/1',
+        url='http://localhost:8000/v1/query/query_2',
         status_code=200,
         state=''
       )
@@ -107,14 +108,16 @@ test_that('dbListFields works with mock - PrestoResult', {
           '^SELECT \\* FROM \\(SELECT \\* FROM __non_existent_table__\\) ',
           'WHERE 1 = 0$'
         ),
-        next_uri='http://localhost:8000/query_4/1'
+        next_uri='http://localhost:8000/query_4/1',
+        query_id='query_4'
       ),
       mock_httr_response(
         'http://localhost:8000/v1/statement',
         status_code=200,
         state='FINISHED',
         request_body='SELECT \\* FROM empty_table',
-        next_uri='http://localhost:8000/query_3/1'
+        next_uri='http://localhost:8000/query_3/1',
+        query_id='query_4'
       ),
       mock_httr_response(
         'http://localhost:8000/v1/statement',
@@ -131,7 +134,8 @@ test_that('dbListFields works with mock - PrestoResult', {
           '^SELECT \\* FROM \\(SELECT \\* FROM three_columns\\) ',
           'WHERE 1 = 0$'
         ),
-        next_uri='http://localhost:8000/query_6/1'
+        next_uri='http://localhost:8000/query_6/1',
+        query_id='query_6'
       )
     ),
     `httr::GET`=mock_httr_replies(
@@ -185,17 +189,17 @@ test_that('dbListFields works with mock - PrestoResult', {
     ),
     `httr::DELETE`=mock_httr_replies(
       mock_httr_response(
-        url='http://localhost:8000/query_3/1',
+        url='http://localhost:8000/v1/query_3',
         status_code=200,
         state=''
       ),
       mock_httr_response(
-        url='http://localhost:8000/query_4/1',
+        url='http://localhost:8000/v1/query/query_4',
         status_code=200,
         state=''
       ),
       mock_httr_response(
-        url='http://localhost:8000/query_6/2',
+        url='http://localhost:8000/v1/query/query_6',
         status_code=200,
         state=''
       )
