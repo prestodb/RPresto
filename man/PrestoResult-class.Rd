@@ -58,6 +58,8 @@ An S4 class to represent a Presto Result
 
 \item{\code{cursor}}{An internal implementation detail for keeping track of
 what stage a request is in}
+
+\item{\code{query.id}}{Presto id for the query}
 }}
 
 \keyword{internal}
