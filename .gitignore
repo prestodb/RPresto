@@ -4,3 +4,4 @@ tests/testthat/credentials.dcf
 .RData
 *./o
 *./so
+.DS_Store
