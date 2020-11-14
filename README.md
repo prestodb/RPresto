@@ -1,6 +1,6 @@
 # RPresto
 
-RPresto is a [DBI](https://github.com/rstats-db/DBI)-based adapter for
+RPresto is a [DBI](https://github.com/r-dbi/DBI)-based adapter for
 the open source distributed SQL query engine [Presto](https://prestodb.io/)
 for running interactive analytic queries.
 
@@ -63,7 +63,7 @@ iris <- dbGetQuery(con, paste("SELECT * FROM", iris.sql()))
 dbDisconnect(con)
 ```
 
-We also include [dplyr](https://github.com/hadley/dplyr) integration.
+We also include [dplyr](https://github.com/tidyverse/dplyr) integration.
 
 ```R
 library(dplyr)
@@ -90,8 +90,8 @@ iris %>%
 ## How RPresto works
 
 Presto exposes its interface via a REST based API<sup>1</sup>. We utilize the
-[httr](https://github.com/hadley/httr) package to make the API calls and
-use [jsonlite](https://github.com/jeroenooms/jsonlite) to reshape the
+[httr](https://github.com/r-lib/httr) package to make the API calls and
+use [jsonlite](https://github.com/jeroen/jsonlite) to reshape the
 data into a `data.frame`. Note that as of now, only read operations are
 supported.
 
