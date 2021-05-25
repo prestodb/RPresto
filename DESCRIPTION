@@ -2,8 +2,13 @@ Package: RPresto
 Title: DBI Connector to Presto
 Version: 1.3.5
 Authors@R: c(
-    person('Onur Ismail', 'Filiz', , 'onur@fb.com', role=c('aut', 'cre')),
+    person('Onur Ismail', 'Filiz', , 'onur@fb.com', role='aut'),
     person('Sergey', 'Goder', , 'sgoder@fb.com', role='aut'),
+    person(
+        'Thomas J.', 'Leeper', ,
+        'thomasleeper@fb.com',
+        role=c('ctb', 'cre')
+    ),
     person('John Myles', 'White', , 'johnmyleswhite@fb.com', role='ctb')
     )
 Copyright: Facebook, Inc. 2015-present.
