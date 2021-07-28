@@ -1,3 +1,7 @@
+# RPresto 1.3.6.9000
+
+# Fix testing errors caused by Presto changes since last update (#131)
+
 # RPresto 1.3.6
 
 - Change maintainer to Thomas Leeper (thomasleeper@fb.com)

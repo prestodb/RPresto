@@ -37,15 +37,15 @@ test_that('dplyr integration works', {
   )
 
   iris_presto_summary <- as.data.frame(dplyr::collect(
-    dplyr::rename(
-      dplyr::arrange(
+    dplyr::arrange(
+      dplyr::rename(
         dplyr::summarise(
           dplyr::group_by(iris_presto, species),
           mean_sepal_length = mean(as(sepal_length, 0.0), na.rm=TRUE)
         ),
-        species
+        Species=species
       ),
-      Species=species
+      Species
     ),
     n=Inf
   ))
