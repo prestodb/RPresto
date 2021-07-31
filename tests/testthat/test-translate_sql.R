@@ -177,26 +177,26 @@ with_locale(test.locale(), test_that)('`[[` works for char/numeric indices', {
   # a character index should be escaped
   expect_equal(
     translate_sql(x[['a']], con=s[['con']]),
-    dbplyr::sql("\"x\"['a']")
+    dbplyr::sql("ELEMENT_AT(\"x\", 'a')")
   )
   # but a numeric index (for arrays) should not
   expect_equal(
     translate_sql(x[[1]], con=s[['con']]),
-    dbplyr::sql("\"x\"[1]")
+    dbplyr::sql("ELEMENT_AT(\"x\", 1)")
   )
   expect_equal(
     translate_sql(x[[1L]], con=s[['con']]),
-    dbplyr::sql("\"x\"[1]")
+    dbplyr::sql("ELEMENT_AT(\"x\", 1)")
   )
 
   # neither `x` nor `i` should be evaluated locally
   expect_equal(
     translate_sql(dim[['a']], con=s[['con']]),
-    dbplyr::sql("\"dim\"['a']")
+    dbplyr::sql("ELEMENT_AT(\"dim\", 'a')")
   )
   expect_equal(
     translate_sql(x[['dim']], con=s[['con']]),
-    dbplyr::sql("\"x\"['dim']")
+    dbplyr::sql("ELEMENT_AT(\"x\", 'dim')")
   )
 })
 
