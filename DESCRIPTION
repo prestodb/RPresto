@@ -10,6 +10,8 @@ Authors@R: c(
         role=c('ctb', 'cre')
     ),
     person('John Myles', 'White', , 'johnmyleswhite@fb.com', role='ctb')
+    ),
+    person('Jarod G.R.', 'Meng', , 'jarodm@fb.com', role='ctb')
     )
 Copyright: Facebook, Inc. 2015-present.
 Description: Implements a 'DBI' compliant interface to Presto. Presto is
