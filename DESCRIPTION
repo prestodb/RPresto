@@ -1,6 +1,6 @@
 Package: RPresto
 Title: DBI Connector to Presto
-Version: 1.3.5
+Version: 1.3.6.9000
 Authors@R: c(
     person('Onur Ismail', 'Filiz', , 'onur@fb.com', role='aut'),
     person('Sergey', 'Goder', , 'sgoder@fb.com', role='aut'),
@@ -36,7 +36,6 @@ License: BSD_3_clause + file LICENSE
 URL: https://github.com/prestodb/RPresto
 BugReports: https://github.com/prestodb/RPresto/issues
 Encoding: UTF-8
-LazyData: true
 Collate:
     'PrestoDriver.R'
     'Presto.R'

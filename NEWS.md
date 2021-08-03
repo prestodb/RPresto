@@ -1,4 +1,12 @@
-# RPresto 1.3.4.9000
+# RPresto 1.3.6.9000
+
+# Fix testing errors caused by Presto changes since last update (#131)
+
+# RPresto 1.3.6
+
+- Change maintainer to Thomas Leeper (thomasleeper@fb.com)
+
+# RPresto 1.3.5
 
 - Add custom Date and POSIXct sql translation implementations for dbplyr (#123, thanks to @OssiLehtinen for original implementations).
 - Adapt `dbClearResult` to the API change, we now need to `DELETE` `/v1/query/<query_id>`.
