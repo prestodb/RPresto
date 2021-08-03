@@ -72,7 +72,7 @@ sql_translate_env.PrestoConnection <- function(con) {
         if (is.numeric(i) && isTRUE(all.equal(i, as.integer(i)))) {
           i <- as.integer(i)
         }
-        dbplyr::build_sql(x, "[", i, "]")
+        dbplyr::build_sql("ELEMENT_AT(", x, ", ", i, ")")
       }
     ),
     sql_translator(.parent = base_agg,
