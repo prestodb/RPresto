@@ -29,6 +29,7 @@ NULL
   'interval day to second', 'character',
   'array', 'list_unnamed',
   'map', 'list_named',
+  'row', 'list_named',
   'unknown', 'unknown'
 ), byrow=TRUE, ncol=2), stringsAsFactors=FALSE)
 colnames(.presto.to.R) <- c('presto.type', 'R.type')

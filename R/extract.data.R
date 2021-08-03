@@ -21,18 +21,29 @@ NULL
     # name, type, typeSignature
     c(varchar='character', varchar='character', map='list_named')
   )
+  column.names <- purrr::map_chr(column.list, "name")
   # The typeSignature item for each column has a 'rawType' value which
   # corresponds to the Presto data type.
-  presto.types <- vapply(
-    column.info[['typeSignature']],
-    function(x) x[['rawType']],
-    ''
-  )
+  presto.types <- purrr::map_chr(column.info$typeSignature, "rawType")
   r.types <- with(.presto.to.R, R.type[match(presto.types, presto.type)])
   names(r.types) <- presto.types
   rv <- .json.tabular.to.data.frame(data.list, r.types, timezone=timezone)
-  if (!is.null(column.info[['name']])) {
-    colnames(rv) <- column.info[['name']]
+  if (!is.null(column.names)) {
+    colnames(rv) <- column.names
+  }
+  # Use row field names to set names for the named lists in the ROW list-column
+  row.idx <- which(presto.types == "row")
+  if (length(row.idx) > 0) {
+    for (i in seq_along(row.idx)) {
+      row.name <- column.names[row.idx[i]]
+      row.subnames <- unlist(
+        column.list[[row.idx[i]]]$typeSignature$literalArguments
+      )
+      rv[[row.name]] <- purrr::modify(
+        rv[[row.name]],
+        ~purrr::set_names(., row.subnames)
+      )
+    }
   }
   return(rv)
 }
