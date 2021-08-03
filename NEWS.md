@@ -1,6 +1,7 @@
 # RPresto 1.3.6.9000
 
-# Fix testing errors caused by Presto changes since last update (#131)
+- Fix testing errors caused by Presto changes since last update (#131)
+- Change `[[` translation from `[]` subscript operator to `ELEMENT_AT()` (#132)
 
 # RPresto 1.3.6
 
