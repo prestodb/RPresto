@@ -23,7 +23,7 @@ test_that("Queries return the correct primitive types", {
                data_frame(bool = TRUE))
   expect_equal_data_frame(dbGetQuery(conn, "select 1 one"),
                data_frame(one = 1))
-  expect_equal_data_frame(dbGetQuery(conn, "select 1.0 one"),
+  expect_equal_data_frame(dbGetQuery(conn, "select cast(1 as double) one"),
                data_frame(one = 1.0))
   expect_equal_data_frame(dbGetQuery(conn, "select 'one' one"),
                data_frame(one = 'one'))
@@ -155,7 +155,7 @@ test_that("all data types work", {
     type_array_bigint=NA,
     type_map_varchar_bigint=NA
   )
-  attr(e[['type_timestamp_with_timezone']], 'tzone') <- NULL
+  attr(e[['type_timestamp_with_timezone']], 'tzone') <- ""
   attr(e[['type_timestamp']], 'tzone') <- test.timezone()
   e[['type_varbinary']] <- list(NA)
   e[['type_array_bigint']] <- list(NA)
