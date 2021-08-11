@@ -28,7 +28,8 @@ Imports:
     stringi,
     stats,
     Rcpp (>= 0.12.7),
-    utils
+    utils,
+    purrr
 Suggests:
     testthat,
     dplyr (>= 0.7.0),

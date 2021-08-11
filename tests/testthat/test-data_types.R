@@ -72,6 +72,38 @@ test_that("Queries return the correct map types", {
                e)
 })
 
+test_that("Queries return the correct row types", {
+  conn <- setup_live_connection()
+  e <- data_frame(r = NA)
+  e[[1]] <- list(list(x = 1))
+  expect_equal_data_frame(
+    dbGetQuery(conn, "select cast(row(1) as row(x bigint)) r"),
+    e
+  )
+  e[[1]] <- list(list(x = 1, y = "a"))
+  expect_equal_data_frame(
+    dbGetQuery(
+      conn,
+      "select cast(row(1, 'a') as row(x bigint, y varchar)) r"
+    ),
+    e
+  )
+  e <- data_frame(r = rep(NA, 2))
+  e[[1]] <- list(list(x = 1L, y = "a"), list(x = 2L, y = "b"))
+  expect_equal_data_frame(
+    dbGetQuery(
+      conn,
+      "
+        select cast(row(1, 'a') as row(x bigint, y varchar)) r
+        union all
+        select cast(row(2, 'b') as row(x bigint, y varchar)) r
+        order by r.x
+      "
+    ),
+    e
+  )
+})
+
 test_that("all data types work", {
   conn <- setup_live_connection(session.timezone=test.timezone())
   e <- data_frame(

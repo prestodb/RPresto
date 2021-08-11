@@ -2,6 +2,7 @@
 
 - Fix testing errors caused by Presto changes since last update (#131)
 - Change `[[` translation from `[]` subscript operator to `ELEMENT_AT()` (#132)
+- Enable simple ROW type support (#137)
 
 # RPresto 1.3.6
 
