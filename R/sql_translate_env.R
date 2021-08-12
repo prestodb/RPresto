@@ -66,7 +66,7 @@ sql_translate_env.PrestoConnection <- function(con) {
       pmax = sql_prefix("GREATEST"),
       pmin = sql_prefix("LEAST"),
       is.finite = sql_prefix("IS_FINITE"),
-      is.infinite = sql_prefix("IS_FINITE"),
+      is.infinite = sql_prefix("IS_INFINITE"),
       is.nan = sql_prefix("IS_NAN"),
       `[[` = function(x, i) {
         if (is.numeric(i) && isTRUE(all.equal(i, as.integer(i)))) {

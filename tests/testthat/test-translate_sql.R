@@ -332,3 +332,25 @@ with_locale(test.locale(), test_that)('`[[` works for dynamic indices', {
     c("map_2", NA)
   )
 })
+
+with_locale(test.locale(), test_that)('is.[in]finite() works', {
+  if (!requireNamespace('dplyr', quietly=TRUE)) {
+    skip('dplyr not available')
+  }
+
+  translate_sql <- RPresto:::dbplyr_compatible('translate_sql')
+  translate_sql_ <- RPresto:::dbplyr_compatible('translate_sql_')
+
+  s <- setup_mock_dplyr_connection()[['db']]
+
+  expect_equal(
+    translate_sql(is.infinite(x), con = s$con),
+    dplyr::sql("IS_INFINITE(\"x\")")
+  )
+
+  expect_equal(
+    translate_sql(is.finite(x), con = s$con),
+    dplyr::sql("IS_FINITE(\"x\")")
+  )
+})
+
