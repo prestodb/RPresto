@@ -5,9 +5,17 @@
 \alias{tbl.src_presto}
 \title{dplyr integration to connect to a Presto database.}
 \usage{
-src_presto(catalog = NULL, schema = NULL, user = NULL, host = NULL,
-  port = NULL, source = NULL, session.timezone = NULL,
-  parameters = NULL, ...)
+src_presto(
+  catalog = NULL,
+  schema = NULL,
+  user = NULL,
+  host = NULL,
+  port = NULL,
+  source = NULL,
+  session.timezone = NULL,
+  parameters = NULL,
+  ...
+)
 
 tbl.src_presto(src, from, ...)
 }

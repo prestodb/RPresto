@@ -20,7 +20,9 @@ presto_window_functions <- function() {
     all=win_recycled('bool_and'),
     any=win_recycled('bool_or'),
     n_distinct=win_absent('n_distinct'),
-    sd=win_recycled("stddev_samp")
+    sd=win_recycled("stddev_samp"),
+    quantile = function(...) stop(quantile_error_message(), call. = FALSE),
+    median = function(...) stop(quantile_error_message("median"), call. = FALSE)
   ))
 }
 
@@ -73,15 +75,35 @@ sql_translate_env.PrestoConnection <- function(con) {
           i <- as.integer(i)
         }
         dbplyr::build_sql("ELEMENT_AT(", x, ", ", i, ")")
-      }
+      },
+      quantile = function(...) stop(quantile_error_message(), call. = FALSE),
+      median = function(...) stop(quantile_error_message("median"), call. = FALSE)
     ),
     sql_translator(.parent = base_agg,
       n = function() sql("COUNT(*)"),
       sd =  sql_prefix("STDDEV_SAMP"),
       var = sql_prefix("VAR_SAMP"),
       all = sql_prefix("BOOL_AND"),
-      any = sql_prefix("BOOL_OR")
+      any = sql_prefix("BOOL_OR"),
+      quantile = function(...) stop(quantile_error_message(), call. = FALSE),
+      median = function(...) stop(quantile_error_message("median"), call. = FALSE)
     ),
     presto_window_functions()
   ))
 }
+
+#' Create error messages for quantile-like functions
+#'
+#' @param f a string giving the name of the function
+#'
+#' @return error message for \code{f}
+#' @keywords internal
+#' @noRd
+quantile_error_message <- function(f = "quantile") {
+  paste(
+    paste0("`", f, "()`"),
+    "is not supported in this SQL variant,",
+    "try `approx_percentile()` instead; see Presto documentation."
+  )
+}
+

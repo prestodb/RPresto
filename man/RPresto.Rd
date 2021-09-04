@@ -4,7 +4,6 @@
 \name{RPresto}
 \alias{RPresto}
 \alias{package-RPresto}
-\alias{RPresto-package}
 \title{RPresto}
 \description{
 A DBI-compliant interface to Presto.
