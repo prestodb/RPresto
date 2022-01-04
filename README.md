@@ -87,6 +87,27 @@ iris %>%
   collect()
 ```
 
+## Connecting to Trino
+
+To connect to Trino you must set the `use.trino.headers` parameter so `RPresto`
+knows to send the correct headers to the server. Otherwise all the same
+functionality is supported.
+
+```R
+library('DBI')
+
+con <- dbConnect(
+  RPresto::Presto(),
+  use.trino.headers=TRUE,
+  host='http://localhost',
+  port=7777,
+  user=Sys.getenv('USER'),
+  schema='<schema>',
+  catalog='<catalog>',
+  source='<source>'
+)
+```
+
 ## How RPresto works
 
 Presto exposes its interface via a REST based API<sup>1</sup>. We utilize the

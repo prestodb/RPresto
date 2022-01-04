@@ -21,6 +21,7 @@ setClass('PrestoConnection',
     'port'='integer',
     'source'='character',
     'session.timezone'='character',
+    'use.trino.headers'='logical',
     'Id'='character',
     'session'='PrestoSession'
   )

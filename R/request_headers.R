@@ -5,6 +5,17 @@
 # LICENSE file in the root directory of this source tree.
 
 .request_headers <- function(conn) {
+  if (isTRUE(conn@use.trino.headers)) {
+    return(httr::add_headers(
+      "X-Trino-User"= conn@user,
+      "X-Trino-Catalog"= conn@catalog,
+      "X-Trino-Schema"= conn@schema,
+      "X-Trino-Source"= conn@source,
+      "X-Trino-Time-Zone" = conn@session.timezone,
+      "User-Agent"= getPackageName(),
+      "X-Trino-Session"=conn@session$parameterString()
+    ))
+  }
   return(httr::add_headers(
     "X-Presto-User"= conn@user,
     "X-Presto-Catalog"= conn@catalog,
