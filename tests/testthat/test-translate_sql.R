@@ -379,33 +379,37 @@ with_locale(test.locale(), test_that)('quantile() and median() throw errors', {
     )
   )
 
-  expect_error(dplyr::summarize(x, q = quantile(z, 0.9)))
-  expect_error(dplyr::summarize(x, q = median(z)))
+  expect_error(dplyr::summarize(x, q = quantile(z, 0.9)) %>% collect())
+  expect_error(dplyr::summarize(x, q = median(z)) %>% collect())
 
   # aggregate
   expect_error(
     x %>%
       dplyr::group_by(y) %>%
-      dplyr::summarize(q = quantile(z, 0.9))
+      dplyr::summarize(q = quantile(z, 0.9)) %>%
+      collect()
   )
 
   expect_error(
     x %>%
       dplyr::group_by(y) %>%
-      dplyr::summarize(q = median(z))
+      dplyr::summarize(q = median(z)) %>%
+      collect()
   )
 
   # windowed
   expect_error(
     x %>%
       dplyr::group_by(y) %>%
-      dplyr::mutate(q = quantile(z, 0.9))
+      dplyr::mutate(q = quantile(z, 0.9)) %>%
+      collect()
   )
 
   expect_error(
     x %>%
       dplyr::group_by(y) %>%
-      dplyr::mutate(q = median(z))
+      dplyr::mutate(q = median(z)) %>%
+      collect()
   )
 })
 
