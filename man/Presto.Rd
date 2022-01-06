@@ -18,6 +18,7 @@ Presto(...)
   source = getPackageName(),
   session.timezone = "UTC",
   parameters = list(),
+  use.trino.headers = FALSE,
   ...
 )
 
