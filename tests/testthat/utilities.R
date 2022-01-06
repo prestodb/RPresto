@@ -346,7 +346,6 @@ setup_live_dplyr_connection <- function(session.timezone) {
     session.timezone <- ''
   }
   db <- src_presto(
-    RPresto::Presto(),
     schema=credentials$schema,
     catalog=credentials$catalog,
     host=credentials$host,
@@ -378,7 +377,6 @@ setup_mock_dplyr_connection <- function() {
     skip("Skipping dplyr tests because we can't load dplyr")
   }
   db <- src_presto(
-    RPresto::Presto(),
     schema='test',
     catalog='catalog',
     host='http://localhost',
