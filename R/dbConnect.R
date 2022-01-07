@@ -20,6 +20,8 @@ NULL
 #'          zone. See the session.timezone tests for examples.
 #' @param parameters A \code{\link{list}} of extra parameters to be passed in
 #'          the \sQuote{X-Presto-Session} header
+#' @param use.trino.headers A boolean to indicate whether Trino request headers
+#'          should be used. Default to FALSE.
 #' @param ... currently ignored
 #' @return [dbConnect] A \code{\linkS4class{PrestoConnection}} object
 #' @export
