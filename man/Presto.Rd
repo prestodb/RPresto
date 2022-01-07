@@ -49,6 +49,9 @@ zone. See the session.timezone tests for examples.}
 \item{parameters}{A \code{\link{list}} of extra parameters to be passed in
 the \sQuote{X-Presto-Session} header}
 
+\item{use.trino.headers}{A boolean to indicate whether Trino request headers
+should be used. Default to FALSE.}
+
 \item{conn}{A \code{\linkS4class{PrestoConnection}} object}
 }
 \value{
