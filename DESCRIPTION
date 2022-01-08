@@ -49,6 +49,7 @@ Collate:
     'PrestoQuery.R'
     'PrestoResult.R'
     'copy.to.src.presto.R'
+    'create.dummy.tables.R'
     'db.data.type.PrestoConnection.R'
     'db.explain.PrestoConnection.R'
     'db.query.rows.PrestoConnection.R'
