@@ -16,7 +16,7 @@ test_that('dbFetch works with live database', {
     dbFetch(result, 1),
     '.*fetching custom number of rows.*is not supported.*'
   )
-  expect_equal(dbFetch(result, -1), data.frame(n=1))
+  expect_equal(dbFetch(result, -1), tibble::tibble(n=1))
   expect_true(dbHasCompleted(result))
 
   result <- dbSendQuery(conn, 'SELECT 2 AS n')
@@ -28,7 +28,7 @@ test_that('dbFetch works with live database', {
 
   result <- dbSendQuery(conn, 'SELECT 3 AS n LIMIT 0')
   rv <- dbFetch(result, -1)
-  expect_equal(rv, data.frame(n=1L)[FALSE, , drop=FALSE])
+  expect_equal(rv, tibble::tibble(n=1L)[FALSE, , drop=FALSE])
 })
 
 test_that('dbFetch works with mock', {
@@ -70,14 +70,14 @@ test_that('dbFetch works with mock', {
       mock_httr_response(
         'http://localhost:8000/query_1/1',
         status_code=200,
-        data=data.frame(n=1, stringsAsFactors=FALSE),
+        data=tibble::tibble(n=1),
         state='FINISHED',
         next_uri='http://localhost:8000/query_1/2'
       ),
       mock_httr_response(
         'http://localhost:8000/query_1/2',
         status_code=200,
-        data=data.frame(n=2, stringsAsFactors=FALSE),
+        data=tibble::tibble(n=2),
         state='FINISHED'
       ),
       mock_httr_response(
@@ -95,7 +95,7 @@ test_that('dbFetch works with mock', {
       mock_httr_response(
         'http://localhost:8000/query_4/1',
         status_code=200,
-        data=data.frame('_col0'=4)[FALSE, , drop=FALSE],
+        data=tibble::tibble('_col0'=4)[FALSE, , drop=FALSE],
         state='FINISHED'
       )
     ),
@@ -113,7 +113,7 @@ test_that('dbFetch works with mock', {
         dbFetch(result, 1),
         '.*fetching custom number of rows.*is not supported.*'
       )
-      expect_equal(dbFetch(result), data.frame(n=1L))
+      expect_equal(dbFetch(result), tibble::tibble(n=1L))
       expect_true(dbClearResult(result))
       expect_error(
         dbFetch(result),
@@ -122,19 +122,19 @@ test_that('dbFetch works with mock', {
 
       result <- dbSendQuery(conn, "SELECT n FROM (VALUES (1), (2)) AS t (n)")
       expect_equal(dbGetRowCount(result), 0)
-      expect_equal(dbFetch(result), data.frame(n=1L))
+      expect_equal(dbFetch(result), tibble::tibble(n=1L))
       expect_equal(dbGetRowCount(result), 1)
-      expect_equal(dbFetch(result), data.frame(n=2L))
+      expect_equal(dbFetch(result), tibble::tibble(n=2L))
       expect_equal(dbGetRowCount(result), 2)
       expect_true(dbHasCompleted(result))
 
       result <- dbSendQuery(conn, "SELECT n FROM (VALUES (1), (2)) AS t (n)")
-      expect_equal(dbFetch(result, -1), data.frame(n=c(1L, 2L)))
+      expect_equal(dbFetch(result, -1), tibble::tibble(n=c(1L, 2L)))
       expect_equal(dbGetRowCount(result), 2)
 
       result <- dbSendQuery(conn, 'SELECT 2')
       expect_error(
-        dbFetch(result), 
+        dbFetch(result),
         paste0('Cannot fetch .*, error: ',
             'There was a problem with the request and we have exhausted ',
             'our retry limit')
@@ -142,13 +142,13 @@ test_that('dbFetch works with mock', {
 
       result <- dbSendQuery(conn, 'SELECT 3')
       expect_error(
-        dbFetch(result), 
+        dbFetch(result),
         '.*Query .*localhost.8000.query.3.1 failed.*'
       )
 
       result <- dbSendQuery(conn, 'SELECT 4 LIMIT 0')
       rv <- dbFetch(result, -1)
-      ev <- data.frame('_col0'=1L)[FALSE, , drop=FALSE]
+      ev <- tibble::tibble("_col0" = numeric(0))
       expect_equal_data_frame(rv, ev)
     }
   )
@@ -182,7 +182,7 @@ test_that('dbFetch works with mock', {
           'http://localhost:8000/query_4/1',
           status_code=200,
           state='FINISHED',
-          data=data.frame(n=4)
+          data=tibble::tibble(n=4)
         )
       )(url, ...))
     },
@@ -204,7 +204,7 @@ test_that('dbFetch works with mock', {
         v <- dbFetch(result),
         'First request is an error'
       )
-      expect_equal(v, data.frame(n=4))
+      expect_equal(v, tibble::tibble(n=4))
     }
   )
 })
@@ -240,17 +240,24 @@ with_locale(test.locale(), test_that)('dbFetch rbind works correctly', {
     {
       result <- dbSendQuery(conn, 'SELECT * FROM all_types')
 
-      expect_equal_data_frame(
-        dbFetch(result, -1),
-        data.frame.with.all.classes()
-      )
+      x <- dbFetch(result, -1)
+      y <- data.frame.with.all.classes()
+      y$POSIXct_with_time_zone <-
+        lubridate::with_tz(y$POSIXct_with_time_zone, test.timezone())
+      nms <- names(y$list_named[[1]])
+      y$list_named[[1]] <- purrr::flatten_dbl(y$list_named[[1]])
+      names(y$list_named[[1]]) <- nms
+      y$list_named[[2]] <- numeric(0)
+      y$list_unnamed[[1]] <- purrr::flatten_dbl(y$list_unnamed[[1]])
+      y$list_unnamed[[2]] <- numeric(0)
+      expect_equal_data_frame(x, y)
     }
   )
 })
 
 with_locale(test.locale(), test_that)('dbFetch rbind works with zero row chunks', {
   conn <- setup_mock_connection()
-  data <- data.frame(
+  data <- tibble::tibble(
     integer=c(1L, 2L),
     double=c(3.0, 4),
     logical=c(TRUE, NA)
@@ -419,7 +426,8 @@ with_locale(test.locale(), test_that)('dbFetch rbind works with zero row chunks'
       )
 
       result <- dbSendQuery(conn, 'SELECT * FROM all_types')
-
+      full.data$POSIXct_with_time_zone <-
+        lubridate::with_tz(full.data$POSIXct_with_time_zone, test.timezone())
       expect_equal_data_frame(
         dbFetch(result, -1),
         full.data,

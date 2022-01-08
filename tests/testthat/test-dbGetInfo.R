@@ -84,7 +84,7 @@ test_that('dbGetInfo works with mock', {
           stats=list(state='QUEUED')
         )
       )
-      expect_equal(dbFetch(result), data.frame(n=1))
+      expect_equal(dbFetch(result), tibble::tibble(n=1))
       expect_equal(
         dbGetInfo(result),
         list(
@@ -95,7 +95,7 @@ test_that('dbGetInfo works with mock', {
           stats=list(state='FINISHED')
         )
       )
-      expect_equal(dbFetch(result), data.frame(n=2))
+      expect_equal(dbFetch(result), tibble::tibble(n=2))
       expect_equal(
         dbGetInfo(result),
         list(

@@ -23,6 +23,8 @@ This is similar to the PrestoQuery class defined in the Presto Python client
 
 \item{\code{.id}}{The query ID returned after the first POST request}
 
+\item{\code{.bigint}}{How BIGINT fields should be converted to an R class}
+
 \item{\code{.state}}{The query state. This changes every time the query advances to
 the next stage}
 

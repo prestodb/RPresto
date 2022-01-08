@@ -82,42 +82,27 @@ data.frame.with.all.classes <- function(row.indices) {
   Sys.setlocale('LC_CTYPE', test.locale())
   on.exit(Sys.setlocale('LC_CTYPE', old.locale), add=TRUE)
 
-  e <- data.frame(
-    c(TRUE, FALSE),
-    c(1L, 2L),
-    c(0.0, 1.0),
-    c('0', '1.414'),
-    c('', 'z'),
-    rep(NA, 2),
-    as.Date(c('2015-03-01', '2015-03-02')),
-    as.POSIXct(
+  e <- tibble::tibble(
+    logical = c(TRUE, FALSE),
+    integer = c(1L, 2L),
+    numeric = c(0.0, 1.0),
+    character1 = c('0', '1.414'),
+    character2 = c('', 'z'),
+    raw = list(raw(0), raw(0)),
+    Date = as.Date(c('2015-03-01', '2015-03-02')),
+    POSIXct_no_time_zone = as.POSIXct(
       c('2015-03-01 12:00:00', '2015-03-02 12:00:00.321'),
       tz=test.timezone()
     ),
-    as.POSIXct(
+    POSIXct_with_time_zone = as.POSIXct(
       c('2015-03-01 12:00:00', '2015-03-02 12:00:00.321'),
       tz='Europe/Paris'
     ),
     # The first element is 'ıİÖğ' in iso8859-9 encoding,
     # and the second 'Face with tears of joy' in UTF-8
-    c('\xFD\xDD\xD6\xF0', '\u1F602'),
-    rep(NA, 2),
-    rep(NA, 2),
-    stringsAsFactors=FALSE
-  )
-  column.classes <- c('logical', 'integer', 'numeric', 'character', 'character',
-    'raw', 'Date', 'POSIXct_no_time_zone', 'POSIXct_with_time_zone',
-    'character', 'list_unnamed', 'list_named')
-  column.names <- column.classes
-  column.names[length(column.names) - 2] <- '<odd_name>'
-  colnames(e) <- column.names
-  attr(e[['POSIXct_with_time_zone']], 'tzone') <- 'Europe/Paris'
-  attr(e[['POSIXct_no_time_zone']], 'tzone') <- test.timezone()
-  e[['raw']] <- list(charToRaw('a'), charToRaw('bc'))
-  e[['list_unnamed']] <- list(list(1, 2), list())
-  e[['list_named']] <- list(
-    list(a=1, b=2),
-    structure(list(), names=character(0))
+    character3 = c('\xFD\xDD\xD6\xF0', '\u1F602'),
+    list_unnamed = list(list(1, 2), list()),
+    list_named = list(list(a=1, b=2), list())
   )
   if (!missing(row.indices)) {
     rv <- e[row.indices, , drop=FALSE]
@@ -133,13 +118,29 @@ data.to.list <- function(data) {
   on.exit(options(old.digits.secs), add=TRUE)
 
   presto.types <- lapply(data, function(l) {
-    drv <- RPresto::Presto()
     if (is.list(l)) {
       rs.class <- data.class(l[[1]])
       if (rs.class == 'raw') {
         rv <- 'varbinary'
       } else if (rs.class == 'list') {
-        rv <- ifelse(is.null(names(l[[1]])), 'array', 'map')
+        rv <- vector(mode = "character")
+        if (is.null(names(l[[1]]))) {
+          rv[1] <- "array"
+          if (length(l[[1]]) > 0) {
+            rv[2] <- dbDataType(RPresto::Presto(), l[[1]][[1]])
+          } else {
+            rv[2] <- "double"
+          }
+        } else {
+          rv[1] <- "map"
+          if (length(l[[1]]) > 0) {
+            rv[2] <- dbDataType(RPresto::Presto(), names(l[[1]])[1])
+            rv[3] <- dbDataType(RPresto::Presto(), l[[1]][[1]])
+          } else {
+            rv[2] <- "varchar"
+            rv[3] <- "double"
+          }
+        }
       } else {
         stop('Unsupported mock data type: ', rs.class)
       }
@@ -157,17 +158,34 @@ data.to.list <- function(data) {
     )
     column.data[[i]] <- list(
       name=jsonlite::unbox(colnames(data)[i]),
-      type=jsonlite::unbox(presto.type),
+      type=jsonlite::unbox(presto.type[1]),
       typeSignature=list(
-        rawType=jsonlite::unbox(presto.type),
-        typeArguments=list(),
+        rawType=jsonlite::unbox(presto.type[1]),
+        typeArguments=if(length(presto.type) == 1) {
+          list()
+        } else {
+          if (presto.type[1] == "array") {
+            list(
+              list(rawType = jsonlite::unbox(presto.type[2]))
+            )
+          } else {
+            list(
+              list(rawType = jsonlite::unbox(presto.type[2])),
+              list(rawType = jsonlite::unbox(presto.type[3]))
+            )
+          }
+        },
         literalArguments=list()
       )
     )
-    if (presto.type == 'timestamp with time zone' && NROW(data)) {
+    if (
+      length(presto.type) == 1 &&
+        presto.type == 'timestamp with time zone' &&
+        NROW(data)
+    ) {
       # toJSON ignores the timezone attribute
       data[[i]] <- paste(data[[i]], attr(data[[i]], 'tzone'))
-    } else if (presto.type %in% c('array', 'map')) {
+    } else if (presto.type[1] %in% c('array', 'map')) {
       # Lists need to be unboxed
       data[[i]] <- lapply( # Apply to each row
         data[[i]],
@@ -335,29 +353,34 @@ setup_live_connection <- function(session.timezone, parameters, extra.credential
   return(conn)
 }
 
-setup_live_dplyr_connection <- function(session.timezone) {
-  skip_on_cran()
+setup_live_dplyr_connection <-
+  function(
+    session.timezone,
+    bigint = c("integer", "integer64", "numeric", "character")
+  ) {
+    skip_on_cran()
 
-  if(!requireNamespace('dplyr', quietly=TRUE)) {
-    skip("Skipping dplyr tests because we can't load dplyr")
-  }
+    if(!requireNamespace('dplyr', quietly=TRUE)) {
+      skip("Skipping dplyr tests because we can't load dplyr")
+    }
 
-  credentials <- read_credentials()
-  if (missing(session.timezone)) {
-    session.timezone <- ''
+    credentials <- read_credentials()
+    if (missing(session.timezone)) {
+      session.timezone <- ''
+    }
+    db <- src_presto(
+      schema=credentials$schema,
+      catalog=credentials$catalog,
+      host=credentials$host,
+      port=credentials$port,
+      source=credentials$source,
+      user=Sys.getenv('USER'),
+      session.timezone=session.timezone,
+      parameters=list(),
+      bigint=match.arg(bigint)
+    )
+    return(list(db=db, iris_table_name=credentials[['iris_table_name']]))
   }
-  db <- src_presto(
-    schema=credentials$schema,
-    catalog=credentials$catalog,
-    host=credentials$host,
-    port=credentials$port,
-    source=credentials$source,
-    user=Sys.getenv('USER'),
-    session.timezone=session.timezone,
-    parameters=list()
-  )
-  return(list(db=db, iris_table_name=credentials[['iris_table_name']]))
-}
 
 setup_mock_connection <- function() {
   mock.conn <- dbConnect(
@@ -391,7 +414,12 @@ setup_mock_dplyr_connection <- function() {
   return(list(db=db, iris_table_name='iris_table'))
 }
 
+# helper functions
+data_frame <- function(...) {
+  data.frame(..., stringsAsFactors = FALSE)
+}
+
 get_nrow <- function(con, tbl) {
-  df <- dbGetQuery(con, paste('SELECT COUNT(*) AS n FROM', tbl))
+    df <- dbGetQuery(con, paste('SELECT COUNT(*) AS n FROM', tbl))
   return(df$n)
 }

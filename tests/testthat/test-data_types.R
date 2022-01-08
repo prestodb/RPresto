@@ -8,79 +8,94 @@ context('data types')
 
 source('utilities.R')
 
-# helper functions
-data_frame <- function(...) {
-  data.frame(..., stringsAsFactors = FALSE)
-}
-
 test_that("Queries return the correct primitive types", {
   conn <- setup_live_connection()
 
-  expect_error(dbGetQuery(conn, "select null unknown"),
-               '"unknown" column type',
-               label='column of type "unknown"')
   expect_equal_data_frame(dbGetQuery(conn, "select true bool"),
-               data_frame(bool = TRUE))
+               tibble::tibble(bool = TRUE))
   expect_equal_data_frame(dbGetQuery(conn, "select 1 one"),
-               data_frame(one = 1))
+               tibble::tibble(one = 1))
   expect_equal_data_frame(dbGetQuery(conn, "select cast(1 as double) one"),
-               data_frame(one = 1.0))
+               tibble::tibble(one = 1.0))
   expect_equal_data_frame(dbGetQuery(conn, "select 'one' one"),
-               data_frame(one = 'one'))
+               tibble::tibble(one = 'one'))
 })
 
 test_that("Queries return the correct array types", {
   conn <- setup_live_connection()
-  e <- data_frame(arr=NA)
-  e[[1]] <- list(list())
-  expect_equal_data_frame(dbGetQuery(conn, "select array[] arr"), e)
-  e[[1]] <- list(list(NA))
-  expect_equal_data_frame(dbGetQuery(conn, "select array[null] arr"), e)
-  e[[1]] <- list(list(1))
-  expect_equal_data_frame(dbGetQuery(conn, "select array[1] arr"), e)
-  e[[1]] <- list(list('1'))
-  expect_equal_data_frame(dbGetQuery(conn, "select array['1'] arr"), e)
-  e[[1]] <- list(list(1, 2))
-  expect_equal_data_frame(dbGetQuery(conn, "select array[1, 2] arr"), e)
-  e <- data_frame(arr=rep(NA, 2))
-  e[[1]] <- list(list(1), list(1, 2))
-  expect_equal_data_frame(dbGetQuery(conn, "select array[1, 2] arr
-                         union all
-                         select array[1]
-                         order by arr"),
-               e)
+  expect_equal_data_frame(
+    dbGetQuery(conn, "select array[] arr"),
+    tibble::tibble(arr = list(integer(0)))
+  )
+  expect_equal_data_frame(
+    dbGetQuery(conn, "select array[null] arr"),
+    tibble::tibble(arr = list(NA_integer_))
+  )
+  expect_equal_data_frame(
+    dbGetQuery(conn, "select array[1] arr"),
+    tibble::tibble(arr = list(1L))
+  )
+  expect_equal_data_frame(
+    dbGetQuery(conn, "select array['1'] arr"),
+    tibble::tibble(arr = list('1'))
+  )
+  expect_equal_data_frame(
+    dbGetQuery(conn, "select array[1, 2] arr"),
+    tibble::tibble(arr = list(c(1L, 2L)))
+  )
+  expect_equal_data_frame(
+    dbGetQuery(
+      conn,
+      "
+        select array[1, 2] arr
+        union all
+        select array[1]
+        order by arr
+      "
+    ),
+    tibble::tibble(arr = list(c(1L), c(1L, 2L)))
+  )
 })
 
 test_that("Queries return the correct map types", {
   conn <- setup_live_connection()
-  e <- data_frame(m=NA)
-  e[[1]] <- list(list('1'=1))
-  expect_equal_data_frame(dbGetQuery(conn, "select map(array[1], array[1]) m"), e)
-  e[[1]] <- list(list('1'='1'))
-  expect_equal_data_frame(dbGetQuery(conn, "select map(array['1'], array['1']) m"), e)
-  e[[1]] <- list(list('1'=3, '2'=4))
+  expect_equal_data_frame(
+    dbGetQuery(conn, "select map(array[1], array[1]) m"),
+    tibble::tibble(m = list(c(`1` = 1L)))
+  )
+  expect_equal_data_frame(
+    dbGetQuery(conn, "select map(array['1'], array['1']) m"),
+    tibble::tibble(m = list(c(`1` = "1")))
+  )
   expect_equal_data_frame(
     dbGetQuery(conn, "select map(array[1, 2], array[3, 4]) m"),
-    e
+    tibble::tibble(m = list(c(`1` = 3, `2` = 4)))
   )
-  e <- data_frame(m=rep(NA, 2), r=c(1,2))
-  e[[1]] <- list(list('1'=2), list('3'=4))
-  expect_equal_data_frame(dbGetQuery(conn, "select map(array[1], array[2]) m, 1 r
-                         union all
-                         select map(array[3], array[4]) m, 2 r
-                         order by r"),
-               e)
+  expect_equal_data_frame(
+    dbGetQuery(
+      conn,
+      "
+        select map(array[1], array[2]) m, 1 r
+        union all
+        select map(array[3], array[4]) m, 2 r
+        order by r
+      "
+    ),
+    tibble::tibble(
+      m = list(c(`1` = 2), c(`3` = 4)),
+      r = c(1, 2)
+    )
+  )
 })
 
 test_that("Queries return the correct row types", {
   conn <- setup_live_connection()
-  e <- data_frame(r = NA)
-  e[[1]] <- list(list(x = 1))
+  e <- tibble::tibble(r = list(list(x = 1)))
   expect_equal_data_frame(
     dbGetQuery(conn, "select cast(row(1) as row(x bigint)) r"),
     e
   )
-  e[[1]] <- list(list(x = 1, y = "a"))
+  e$r <- list(list(x = 1, y = "a"))
   expect_equal_data_frame(
     dbGetQuery(
       conn,
@@ -88,8 +103,7 @@ test_that("Queries return the correct row types", {
     ),
     e
   )
-  e <- data_frame(r = rep(NA, 2))
-  e[[1]] <- list(list(x = 1L, y = "a"), list(x = 2L, y = "b"))
+  e <- tibble::tibble(r = list(list(x = 1L, y = "a"), list(x = 2L, y = "b")))
   expect_equal_data_frame(
     dbGetQuery(
       conn,
@@ -106,36 +120,6 @@ test_that("Queries return the correct row types", {
 
 test_that("all data types work", {
   conn <- setup_live_connection(session.timezone=test.timezone())
-  e <- data_frame(
-    type_boolean=TRUE,
-    type_tinyint=1L,
-    type_smallint=1L,
-    type_integer=1L,
-    type_bigint=1L,
-    type_real=1.0,
-    type_double=1.0,
-    type_decimal='1.414',
-    type_varchar='a',
-    type_char='a',
-    type_varbinary=NA,
-    type_json='{"a":1}',
-    type_date=as.Date('2015-03-01'),
-    type_time='01:02:03.456',
-    type_time_with_timezone='01:02:03.456 UTC',
-    type_timestamp
-      =as.POSIXct('2001-08-22 03:04:05.321', tz=test.timezone()),
-    type_timestamp_with_timezone
-      =as.POSIXct('2001-08-22 03:04:05.321', tz='UTC'),
-    type_interval_year_to_month='1-1',
-    type_interval_day_to_second='7 06:05:04.321',
-    type_array_bigint=NA,
-    type_map_varchar_bigint=NA
-  )
-  attr(e[['type_timestamp_with_timezone']], 'tzone') <- 'UTC'
-  attr(e[['type_timestamp']], 'tzone') <- test.timezone()
-  e[['type_varbinary']] <- list(charToRaw('a'))
-  e[['type_array_bigint']] <- list(list(1, 2, 3))
-  e[['type_map_varchar_bigint']] <- list(list(a=0))
 
   expect_equal_data_frame(
     dbGetQuery(conn, "
@@ -163,10 +147,35 @@ test_that("all data types work", {
         ARRAY[1,2,3] AS type_array_bigint,
         MAP(ARRAY['a'], ARRAY[0]) AS type_map_varchar_bigint
     "),
-    e
+    tibble::tibble(
+      type_boolean = TRUE,
+      type_tinyint=1L,
+      type_smallint=1L,
+      type_integer=1L,
+      type_bigint=1L,
+      type_real=1.0,
+      type_double=1.0,
+      type_decimal='1.414',
+      type_varchar='a',
+      type_char='a',
+      type_varbinary=list(charToRaw('a')),
+      type_json='{"a":1}',
+      type_date=as.Date('2015-03-01'),
+      type_time=hms::as_hms('01:02:03.456'),
+      type_time_with_timezone=hms::as_hms('06:47:03.456'),
+      type_timestamp
+      =as.POSIXct('2001-08-22 03:04:05.321', tz=test.timezone()),
+      type_timestamp_with_timezone
+      =as.POSIXct('2001-08-22 08:49:05.321', tz=test.timezone()),
+      type_interval_year_to_month=lubridate::duration(13, units = "months"),
+      type_interval_day_to_second=
+        lubridate::duration(626704.321, units = "seconds"),
+      type_array_bigint=list(c(1L, 2L, 3L)),
+      type_map_varchar_bigint=list(c(a=0L))
+    )
   )
 
-  e <- data_frame(
+  e <- tibble::tibble(
     type_boolean=NA,
     type_tinyint=NA_integer_,
     type_smallint=NA_integer_,
@@ -177,21 +186,18 @@ test_that("all data types work", {
     type_decimal=NA_character_,
     type_varchar=NA_character_,
     type_char=NA_character_,
-    type_varbinary=NA,
+    # raw type doesn't have an NA value
+    type_varbinary=list(raw(0)),
     type_json=NA_character_,
     type_date=as.Date(NA),
-    type_time=NA_character_,
-    type_time_with_timezone=NA_character_,
-    type_timestamp=as.POSIXct(NA_character_),
-    type_timestamp_with_timezone=as.POSIXct(NA_character_),
-    type_array_bigint=NA,
-    type_map_varchar_bigint=NA
+    type_time=hms::as_hms(NA_character_),
+    type_time_with_timezone=hms::as_hms(NA_character_),
+    type_timestamp=as.POSIXct(NA_character_, tz = test.timezone()),
+    type_timestamp_with_timezone=
+      as.POSIXct(NA_character_, tz = test.timezone()),
+    type_array_bigint=list(NA_integer_),
+    type_map_varchar_bigint=list(NA_integer_)
   )
-  attr(e[['type_timestamp_with_timezone']], 'tzone') <- ""
-  attr(e[['type_timestamp']], 'tzone') <- test.timezone()
-  e[['type_varbinary']] <- list(NA)
-  e[['type_array_bigint']] <- list(NA)
-  e[['type_map_varchar_bigint']] <- list(NA)
   expect_equal_data_frame(
     dbGetQuery(conn, "
       SELECT

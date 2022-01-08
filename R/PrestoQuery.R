@@ -44,16 +44,17 @@ wait <- function () {
 }
 
 #' Class to encapsulate a Presto query
-#' 
+#'
 #' This reference class (so that the object can be passed by reference and
 #' modified) encapsulates the lifecycle of a Presto query from its inception
 #' (by providing a PrestoConnection and a query statement) to the steps it takes
 #' to execute (i.e. an initial POST request and subsequent GET requests).
-#' 
+#'
 #' This is similar to the PrestoQuery class defined in the Presto Python client
 #' @slot .conn A PrestoConnection object
 #' @slot .statement The query statement
 #' @slot .id The query ID returned after the first POST request
+#' @slot .bigint How BIGINT fields should be converted to an R class
 #' @slot .state The query state. This changes every time the query advances to
 #'       the next stage
 #' @slot .next.uri The URI that specifies the next endpoint to send the GET
@@ -73,6 +74,7 @@ PrestoQuery <- setRefClass('PrestoQuery',
     '.conn',
     '.statement',
     '.id',
+    '.bigint',
     # mutable depending on the stage of the query
     '.state',
     '.next.uri',
@@ -85,13 +87,21 @@ PrestoQuery <- setRefClass('PrestoQuery',
     '.post.data.fetched'
   ),
   methods=list(
-    initialize=function(conn, statement) {
+    initialize=function(conn, statement, ...) {
+      dots <- list(...)
+      if ("bigint" %in% names(dots)) {
+        bigint <- dots$bigint
+        stopifnot(bigint %in% c("integer", "integer64", "numeric", "character"))
+      } else {
+        bigint <- NULL
+      }
       initFields(
         .conn = conn,
         .statement = statement,
         .state = '',
         .fetched.row.count = 0L,
-        .post.data.fetched = NA
+        .post.data.fetched = NA,
+        .bigint = bigint
       )
     },
     # Getter functions
@@ -214,7 +224,8 @@ PrestoQuery <- setRefClass('PrestoQuery',
         'PrestoResult',
         statement = .statement,
         connection = .conn,
-        query = .self
+        query = .self,
+        bigint = .bigint %||% .conn@bigint
       )
       post()
       responseToContent()
@@ -245,7 +256,7 @@ PrestoQuery <- setRefClass('PrestoQuery',
     },
     # Call get() to fetch the next batch of query result and extract the data
     fetch=function() {
-      df <- data.frame()
+      df <- tibble::tibble()
       if (!hasCompleted()) {
         tryCatch(
           get(),
@@ -290,7 +301,11 @@ PrestoQuery <- setRefClass('PrestoQuery',
       }
     },
     extractData=function() {
-      df <- .extract.data(.content, timezone = .conn@session.timezone)
+      df <- extract.data(
+        .content,
+        timezone = .conn@session.timezone,
+        bigint = .bigint %||% .conn@bigint
+      )
       return(df)
     },
     hasCompleted=function() {

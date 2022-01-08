@@ -26,6 +26,13 @@ NULL
 #'          X-Presto-Extra-Credential or X-Trino-Extra-Credential header (
 #'          depending on the value of the use.trino.headers argument). Default
 #'          to an empty string.
+#' @param bigint The R type that Presto's 64-bit integer (`BIGINT`) class should
+#'          be translated to. The default is `"integer"`, which returns R's
+#'          `integer` type, but results in `NA` for values above/below
+#'          +/-2147483647. `"integer64"` returns a [bit64::integer64], which
+#'          allows the full range of 64 bit integers. `"numeric"` coerces into
+#'          R's `double` type but might result in precision loss. Lastly,
+#'          `"character"` casts into R's `character` type.
 #' @param ... currently ignored
 #' @return [dbConnect] A \code{\linkS4class{PrestoConnection}} object
 #' @importMethodsFrom DBI dbConnect
@@ -36,10 +43,11 @@ NULL
 #' \dontrun{
 #'   conn <- dbConnect(Presto(), catalog = 'hive', schema = 'default',
 #'                     user = 'onur', host = 'localhost', port = 8080,
-#'                     session.timezone='US/Eastern')
+#'                     session.timezone='US/Eastern', bigint = 'character')
 #'   dbListTables(conn, '%_iris')
 #'   dbDisconnect(conn)
 #' }
+#' @md
 setMethod('dbConnect',
   'PrestoDriver',
   function(
@@ -54,6 +62,7 @@ setMethod('dbConnect',
     parameters = list(),
     use.trino.headers=FALSE,
     extra.credentials="",
+    bigint = c("integer", "integer64", "numeric", "character"),
     ...
   ) {
     port <- suppressWarnings(as.integer(port))
@@ -71,7 +80,8 @@ setMethod('dbConnect',
       session.timezone=session.timezone,
       use.trino.headers=use.trino.headers,
       session=PrestoSession$new(parameters),
-      extra.credentials=extra.credentials
+      extra.credentials=extra.credentials,
+      bigint=match.arg(bigint)
     )
     return(conn)
   }

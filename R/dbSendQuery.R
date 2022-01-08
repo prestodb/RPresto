@@ -13,7 +13,7 @@ NULL
 #' @export
 setMethod('dbSendQuery', c('PrestoConnection', 'character'),
   function(conn, statement, ...) {
-    query <- PrestoQuery$new(conn, statement)
+    query <- PrestoQuery$new(conn, statement, ...)
     result <- query$execute()
     return(result)
   }

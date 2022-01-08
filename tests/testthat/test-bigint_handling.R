@@ -12,16 +12,61 @@ test_that('Non 32-bit integers give warning', {
   conn <- setup_live_connection()
 
   expect_warning(
-    dbGetQuery(conn, "SELECT 2147483648 AS a, 3 AS b"),
-    'columns \\[1\\] are cast to double'
+    dbGetQuery(conn, "SELECT CAST('2147483648' AS BIGINT)"),
+    'NAs produced by integer overflow'
   )
   expect_warning(
-    dbGetQuery(conn, "SELECT -3 AS d, -2147483649 AS c"),
-    'columns \\[2\\] are cast to double'
+    dbGetQuery(conn, "SELECT CAST('-2147483649' AS BIGINT)"),
+    'NAs produced by integer overflow'
   )
-  rv <- suppressWarnings(dbGetQuery(conn, "SELECT 9223372036854775807 AS number"))
-  expect_false(as.character(rv[['number']]) == "9223372036854775807")
+})
 
-  rv <- dbGetQuery(conn, "SELECT CAST(9223372036854775807 AS VARCHAR) AS string")
-  expect_equal(rv[['string']], "9223372036854775807")
+test_that("BIGINT within [-9007199254740991, 9007199254740991] range works", {
+  conn <- setup_live_connection()
+
+  expect_equal_data_frame(
+    dbGetQuery(
+      conn,
+      "SELECT CAST('9007199254740991' AS BIGINT) AS integer64",
+      bigint = "integer64"
+    ),
+    tibble::tibble(integer64 = bit64::as.integer64("9007199254740991"))
+  )
+  expect_equal_data_frame(
+    dbGetQuery(
+      conn,
+      "SELECT CAST('9007199254740991' AS BIGINT) AS character",
+      bigint = "character"
+    ),
+    tibble::tibble(character = "9007199254740991")
+  )
+  expect_equal_data_frame(
+    db.bigint.numeric <- dbGetQuery(
+      conn,
+      "SELECT CAST('9007199254740991' AS BIGINT) AS numeric",
+      bigint = "numeric"
+    ),
+    tibble::tibble(numeric = as.numeric("9007199254740991"))
+  )
+})
+
+test_that("BIGINT greater than 9007199254740991 gives warning", {
+  conn <- setup_live_connection()
+
+  expect_warning(
+    dbGetQuery(
+      conn,
+      "SELECT CAST('9007199254740992' AS BIGINT)",
+      bigint = "numeric"
+    ),
+    "integer precision lost while converting to double"
+  )
+  expect_warning(
+    dbGetQuery(
+      conn,
+      "SELECT CAST('-9007199254740992' AS BIGINT)",
+      bigint = "numeric"
+    ),
+    "integer precision lost while converting to double"
+  )
 })

@@ -137,7 +137,7 @@ con <- dbConnect(
 Presto exposes its interface via a REST based API<sup>1</sup>. We utilize the
 [httr](https://github.com/r-lib/httr) package to make the API calls and
 use [jsonlite](https://github.com/jeroen/jsonlite) to reshape the
-data into a `data.frame`. Note that as of now, only read operations are
+data into a `tibble`. Note that as of now, only read operations are
 supported.
 
 RPresto has been tested on Presto 0.100.

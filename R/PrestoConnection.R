@@ -25,7 +25,8 @@ setClass('PrestoConnection',
     'use.trino.headers'='logical',
     'Id'='character',
     'session'='PrestoSession',
-    'extra.credentials'='character'
+    'extra.credentials'='character',
+    'bigint'='character'
   )
 )
 
@@ -43,6 +44,7 @@ setMethod('show',
       'Source: ', object@source, '\n',
       'Session Time Zone: ', object@session.timezone, '\n',
       'Extra Credentials: ', object@extra.credentials, '\n',
+      'BIGINT cast to: ', object@bigint, '\n',
       sep=''
     )
     parameters <- object@session$parameters()

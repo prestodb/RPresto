@@ -39,7 +39,7 @@ with_locale(test.locale(), test_that)('dplyr as.<type> works with live database'
     nested=as.integer(as.logical("true"))
   )
 
-  expected <- data.frame(
+  expected <- tibble::tibble(
     null_to_character=NA_character_,
     integer_to_character="1",
     boolean_to_character="false",
@@ -58,16 +58,10 @@ with_locale(test.locale(), test_that)('dplyr as.<type> works with live database'
     integer_to_boolean=FALSE,
     character_to_boolean=TRUE,
     double_to_boolean=TRUE,
-    null_to_varbinary=NA,
-    character_to_varbinary=NA,
-    nested=1L,
-    stringsAsFactors=FALSE
+    null_to_varbinary=list(raw(0)),
+    character_to_varbinary=list(charToRaw('a')),
+    nested=1L
   )
-  expected[['null_to_varbinary']] <- list(NA)
-  expected[['character_to_varbinary']] <- list(charToRaw('a'))
 
-  expect_equal_data_frame(
-    as.data.frame(dplyr::collect(result)),
-    expected
-  )
+  expect_equal_data_frame(dplyr::collect(result), expected)
 })

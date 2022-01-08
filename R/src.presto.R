@@ -16,6 +16,13 @@
 #' @param source Source to specify for the connection
 #' @param session.timezone Time zone for the connection
 #' @param parameters Additional parameters to pass to the connection
+#' @param bigint The R type that Presto's 64-bit integer (`BIGINT`) types should
+#'          be translated to. The default is `"integer"`, which returns R's
+#'          `integer` type, but results in `NA` for values above/below
+#'          +/-2147483647. `"integer64"` returns a [bit64::integer64], which
+#'          allows the full range of 64 bit integers. `"numeric"` coerces into
+#'          R's `double` type but might result in precision loss. Lastly,
+#'          `"character"` casts into R's `character` type.
 #' @param ... For \code{src_presto} other arguments passed on to the underlying
 #'   database connector \code{dbConnect}. For \code{tbl.src_presto}, it is
 #'   included for compatibility with the generic, but otherwise ignored.
@@ -42,6 +49,7 @@ src_presto <- function(
     source=NULL,
     session.timezone=NULL,
     parameters=NULL,
+    bigint = c("integer", "integer64", "numeric", "character"),
     ...
   ) {
   if(!requireNamespace('dplyr', quietly=TRUE)) {
@@ -59,6 +67,7 @@ src_presto <- function(
     source=source %||% character(0),
     session.timezone=session.timezone %||% character(0),
     parameters=parameters %||% list(),
+    bigint=match.arg(bigint) %||% character(0),
     ...
   )
 
@@ -82,6 +91,26 @@ src_presto <- function(
   }
   class(src) <- union('src_presto', class(src))
   return(src)
+}
+
+#' S3 implementation of \code{collect} for Presto.
+#'
+#' @importFrom dplyr collect
+#' @export
+#' @rdname dplyr_function_implementations
+#' @keywords internal
+collect.tbl_presto <- function(x, ..., n = Inf, warn_incomplete = TRUE) {
+  if (identical(n, Inf)) {
+        n <- -1
+    }
+    else {
+        x <- utils::head(x, n)
+    }
+    sql <- dbplyr::db_sql_render(x$src$con, x)
+    out <- dbplyr::db_collect(
+      x$src$con, sql, n = n, warn_incomplete = warn_incomplete, ...
+    )
+    dplyr::grouped_df(out, intersect(dbplyr::op_grps(x), names(out)))
 }
 
 .db.disconnector <- function(con) {

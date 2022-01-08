@@ -60,6 +60,8 @@ An S4 class to represent a Presto Result
 what stage a request is in}
 
 \item{\code{post.data}}{Any data extracted from the POST request response}
+
+\item{\code{bigint}}{How bigint type should be handled}
 }}
 
 \keyword{internal}

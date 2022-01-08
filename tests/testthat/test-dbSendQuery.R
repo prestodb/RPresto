@@ -33,6 +33,22 @@ test_that('dbSendQuery works with live database', {
   expect_equal(result@query$fetchedRowCount(), 0)
   expect_false(result@query$hasCompleted())
   expect_true(dbClearResult(result))
+
+  result <- dbSendQuery(conn, 'SELECT 1')
+  expect_is(result, 'PrestoResult')
+  expect_equal(result@bigint, "integer")
+
+  result <- dbSendQuery(conn, 'SELECT 1', bigint='integer64')
+  expect_is(result, 'PrestoResult')
+  expect_equal(result@bigint, "integer64")
+
+  result <- dbSendQuery(conn, 'SELECT 1', bigint='numeric')
+  expect_is(result, 'PrestoResult')
+  expect_equal(result@bigint, "numeric")
+
+  result <- dbSendQuery(conn, 'SELECT 1', bigint='character')
+  expect_is(result, 'PrestoResult')
+  expect_equal(result@bigint, "character")
 })
 
 test_that('dbSendQuery works with mock - status code 404', {
@@ -217,13 +233,13 @@ test_that('dbSendQuery works with mock - POST data', {
       expect_false(result@query$hasCompleted())
       expect_equal_data_frame(
         dbFetch(result),
-        data.frame(x=1)
+        tibble::tibble(x=1)
       )
       expect_false(result@query$hasCompleted())
       expect_equal(result@query$fetchedRowCount(), 1)
       expect_equal_data_frame(
         dbFetch(result),
-        data.frame()
+        tibble::tibble()
       )
       expect_true(result@query$hasCompleted())
       expect_equal(result@query$fetchedRowCount(), 1)

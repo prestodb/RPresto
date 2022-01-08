@@ -62,4 +62,40 @@ test_that('dbConnect constructs PrestoConnection correctly', {
     'PrestoConnection',
     label='extra parameters'
   )
+
+  expect_equal(
+    dbConnect(
+      RPresto::Presto(),
+      catalog='jmx',
+      schema='test',
+      host='http://localhost',
+      port=8000,
+      source='testsource',
+      session.timezone=test.timezone(),
+      user=Sys.getenv('USER'),
+      bigint='character',
+      parameters=list(
+        experimental_big_query='true'
+      )
+    )@bigint,
+    'character'
+  )
+
+  expect_error(
+    dbConnect(
+      RPresto::Presto(),
+      catalog='jmx',
+      schema='test',
+      host='http://localhost',
+      port=8000,
+      source='testsource',
+      session.timezone=test.timezone(),
+      user=Sys.getenv('USER'),
+      bigint='wrongarg',
+      parameters=list(
+        experimental_big_query='true'
+      )
+    ),
+    'should be one of'
+  )
 })

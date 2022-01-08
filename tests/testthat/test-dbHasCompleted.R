@@ -13,7 +13,7 @@ test_that('dbHasCompleted works with live database', {
 
   result <- dbSendQuery(conn, 'SELECT 1 AS n')
   expect_false(dbHasCompleted(result))
-  expect_equal(dbFetch(result, -1), data.frame(n=1))
+  expect_equal(dbFetch(result, -1), tibble::tibble(n=1))
   expect_true(dbHasCompleted(result))
 })
 
@@ -47,11 +47,11 @@ test_that('dbHasCompleted works with mock', {
     {
       result <- dbSendQuery(conn, 'SELECT n FROM two_rows')
       expect_false(dbHasCompleted(result))
-      expect_equal(dbFetch(result), data.frame(n=1))
+      expect_equal(dbFetch(result), tibble::tibble(n=1))
       expect_false(dbHasCompleted(result))
-      expect_equal(dbFetch(result), data.frame(n=2))
+      expect_equal(dbFetch(result), tibble::tibble(n=2))
       expect_true(dbHasCompleted(result))
-      expect_equal(dbFetch(result), data.frame())
+      expect_equal(dbFetch(result), tibble::tibble())
       expect_true(dbHasCompleted(result))
     }
   )

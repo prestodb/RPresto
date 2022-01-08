@@ -20,6 +20,7 @@ Presto(...)
   parameters = list(),
   use.trino.headers = FALSE,
   extra.credentials = "",
+  bigint = c("integer", "integer64", "numeric", "character"),
   ...
 )
 
@@ -58,12 +59,20 @@ X-Presto-Extra-Credential or X-Trino-Extra-Credential header (
 depending on the value of the use.trino.headers argument). Default
 to an empty string.}
 
+\item{bigint}{The R type that Presto's 64-bit integer (\code{BIGINT}) class should
+be translated to. The default is \code{"integer"}, which returns R's
+\code{integer} type, but results in \code{NA} for values above/below
++/-2147483647. \code{"integer64"} returns a \link[bit64:bit64-package]{bit64::integer64}, which
+allows the full range of 64 bit integers. \code{"numeric"} coerces into
+R's \code{double} type but might result in precision loss. Lastly,
+\code{"character"} casts into R's \code{character} type.}
+
 \item{conn}{A \code{\linkS4class{PrestoConnection}} object}
 }
 \value{
 [Presto] A \code{\linkS4class{PrestoDriver}} object
 
-[dbConnect] A \code{\linkS4class{PrestoConnection}} object
+\link{dbConnect} A \code{\linkS4class{PrestoConnection}} object
 
 [dbDisconnect] A \code{\link{logical}} value indicating success
 }
@@ -74,7 +83,7 @@ Connect to a Presto database
 \dontrun{
   conn <- dbConnect(Presto(), catalog = 'hive', schema = 'default',
                     user = 'onur', host = 'localhost', port = 8080,
-                    session.timezone='US/Eastern')
+                    session.timezone='US/Eastern', bigint = 'character')
   dbListTables(conn, '\%_iris')
   dbDisconnect(conn)
 }

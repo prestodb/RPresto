@@ -13,12 +13,12 @@ test_that('dbGetRowCount works with live database', {
 
   result <- dbSendQuery(conn, 'SELECT 1 AS n')
   expect_equal(dbGetRowCount(result), 0)
-  expect_equal(dbFetch(result, -1), data.frame(n=1))
+  expect_equal(dbFetch(result, -1), tibble::tibble(n=1))
   expect_equal(dbGetRowCount(result), 1)
 
   result <- dbSendQuery(conn, 'SELECT n FROM (VALUES (1), (2)) AS t (n)')
   expect_equal(dbGetRowCount(result), 0)
-  expect_equal(dbFetch(result, -1), data.frame(n=c(1, 2)))
+  expect_equal(dbFetch(result, -1), tibble::tibble(n=c(1, 2)))
   expect_equal(dbGetRowCount(result), 2)
 })
 
@@ -52,11 +52,11 @@ test_that('dbGetRowCount works with mock', {
     {
       result <- dbSendQuery(conn, 'SELECT n FROM two_rows')
       expect_equal(dbGetRowCount(result), 0)
-      expect_equal(dbFetch(result), data.frame(n=1))
+      expect_equal(dbFetch(result), tibble::tibble(n=1))
       expect_equal(dbGetRowCount(result), 1)
-      expect_equal(dbFetch(result), data.frame(n=2))
+      expect_equal(dbFetch(result), tibble::tibble(n=2))
       expect_equal(dbGetRowCount(result), 2)
-      expect_equal(dbFetch(result), data.frame())
+      expect_equal(dbFetch(result), tibble::tibble())
       expect_equal(dbGetRowCount(result), 2)
     }
   )
