@@ -1,0 +1,511 @@
+---
+title: "Primitive Presto data types to R types"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Primitive Presto data types to R types}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+options(pillar.max_dec_width=20)
+```
+
+In this vignette, we introduce how primitive Presto data types are translated
+into R types in the `RPresto` package.
+
+## Package setup
+
+```{r setup}
+library(RPresto)
+```
+
+You can check your `RPresto` version by running the `packageVersion()` function.
+**You need version 1.3.9 or later to have a more comprehensive and robust
+primitive types support.**
+
+```{r version}
+packageVersion("RPresto")
+```
+
+## Overview
+
+Here *primitive types* refer to basic data types that are atomic and non-nested
+(as opposed to structural types such as `ARRAY`, `MAP`, and `ROW`). Refer to the
+[Presto documentation][1] for
+a complete list of Presto data types.
+
+We don't currently support all of Presto's primitive types. Here we summarize
+what's supported and what those supported types map to in R.
+
+| Category | Presto data type | R type |
+|----------|------------------|--------|
+| Boolean | BOOLEAN | logical |
+| Integer | TINYINT | integer |
+| Integer | SMALLINT | integer |
+| Integer | INTEGER | integer |
+| Integer | BIGINT | \{**integer**\|integer64\|numeric\|character\} |
+| Floating-point | REAL | numeric |
+| Floating-point | DOUBLE | numeric |
+| Floating-point | DECIMAL | **not supported** |
+| String | VARCHAR | character |
+| String | CHAR | character |
+| String | VARBINARY | raw |
+| String | JSON | **not supported** |
+| Date and Time | DATE | Date (S3 class) |
+| Date and Time | TIME | difftime (S3 class) |
+| Date and Time | TIME WITH TIME ZONE | difftime (S3 class) |
+| Date and Time | TIMESTAMP | POSIXct (S3 class) |
+| Date and Time | TIMESTAMP WITH TIME ZONE | POSIXct (S3 class) |
+| Date and Time | INTERVAL YEAR TO MONTH | Duration (S4 class) |
+| Date and Time | INTERVAL DAY TO SECOND | Duration (S4 class) |
+
+## Walkthrough preparation
+
+### Local Presto server in memory
+
+We assume that the user already have a Presto server with a memory connector set
+up. If you don't have such a server set up, refer to the
+[Presto documentation][2] for instructions if you want to follow along.
+
+### Presto connection in R
+
+We first create a `PrestoConnection` which will serve as the bridge between the
+Presto server and R.
+
+```{r PrestoConnection}
+con <- DBI::dbConnect(
+  drv = RPresto::Presto(),
+  host = "http://localhost",
+  port = 8080,
+  user = Sys.getenv("USER"),
+  catalog = "memory",
+  schema = "default"
+)
+```
+
+We first issue a simple query to see if the Presto connection is working
+properly.
+
+```{r test}
+DBI::dbGetQuery(con, "SELECT 1+1 AS res")
+```
+
+### Primitive data types table in Presto
+
+To illustrate how those primitive types are mapped to R types in bulk, we first
+create a made-up table with 3 rows and 17 fields (i.e., one column for each
+supported Presto type).
+
+We create the table using an auxiliary
+`create_primitive_types_table()` function included in the package.
+
+```{r primitive-types-table}
+RPresto:::create_primitive_types_table(
+  con, table_name = "presto_primitive_types", verbose = FALSE
+)
+```
+
+We can check if the table now exists in Presto.
+
+```{r check-primitive_types-table}
+DBI::dbExistsTable(con, "presto_primitive_types")
+```
+
+We can list the fields in the table. They are named after the Presto types they
+represent.
+
+```{r primitive-types-table-fields}
+DBI::dbListFields(con, "presto_primitive_types")
+```
+
+## Data types mapping to R
+
+### Boolean
+
+Translating boolean values from Presto to R is fairly straightforward. `true`
+and `false` values are mapped to `TRUE` and `FALSE` in R and `null` is mapped to
+`NA` which is by default a `logical` (i.e., boolean) type in R.
+
+```{r boolean-type}
+(
+  df.boolean <- dbGetQuery(con, "SELECT boolean FROM presto_primitive_types")
+)
+```
+
+We can verify that all three values in R are `logical`.
+
+```{r boolean-check}
+purrr::map_chr(df.boolean$boolean, class)
+```
+
+### Integers
+
+Presto has 4 integer data types.
+
+* [`TINYINT`][3] is 8-bit and ranges from `-2^7` to `2^7-1`.
+
+* [`SMALLINT`][4] is 16-bit and ranges from `-2^15` to `2^15-1`.
+
+* [`INTEGER`][5] is 32-bit and ranges from `-2^31` to `2^31-1`.
+
+* [`BIGINT`][6] is 64-bit and ranges from `-2^63` to `2^63-1`.
+
+| Presto data type | Bits | Minimum value | Maximum value |
+|------------------|:----:|:-------------:|:-------------:|
+| TINYINT | 8 | -128 | 127 |
+| SMALLINT | 16 | -32,768 | 32,767 |
+| INTEGER | 32 | -2,147,483,648 | 2,147,483,647 |
+| BIGINT | 64 | -9,223,372,036,854,775,808 | 9,223,372,036,854,775,807 |
+
+In comparison, base R only ships with one 32-bit integer type, but the range is
+slightly different from Presto. R's integer type ranges from
+`-2^31+1 = -2,147,483,647` to `2^31-1 = 2,147,483,647`. The one number (out of
+~4.3 billion 32-bit integer numbers) that's a valid `INTEGER` in Presto but not
+in R is the range lower bound `-2,147,483,648`.
+
+#### Non-BIGINT integers
+
+Since all `TINYINT`, `SMALLINT`, and `INTEGER` numbers (except `-2,147,483,648`)
+can be fit into R's `integer` type, we translate all of them to `integer`s.
+
+```{r non-bigint-type}
+(
+  df.non_bigint_int <- dbGetQuery(
+    con, "SELECT tinyint, smallint, integer FROM presto_primitive_types"
+  )
+)
+```
+We can verify that all three columns in R are `integer` types.
+
+```{r non-bigint-check}
+purrr::map_chr(df.non_bigint_int, class)
+```
+
+We can also show that mapping the one exception `-2,147,483,648` to R results in
+an error while the query runs correctly in Presto. **Users whose data contains
+the exceptional integer should consider using the `BIGINT` type rather than
+`INTEGER` to encode the data in Presto.**
+
+```{r non-bigint-exception, error=TRUE}
+dbGetQuery(con, "SELECT CAST('-2147483648' AS INTEGER) AS non_bigint_exception")
+```
+
+#### BIGINT integers
+
+Since the Presto `BIGINT` type is 64-bit, its range is clearly much wider than
+base R's `integer` type.
+
+However, by default we still map `BIGINT` integers from Presto to `integer` in
+R, for two reasons.
+
+1. R doesn't have native 64-bit integer support yet. Mapping `BIGINT` to a
+64-bit integer in R will require additional package and add extra dependencies.
+
+1. The 32-bit integer range covers 2+ billion positive integers and 4.3 billion
+integers in total. Most integer values used in data analysis and modeling can be
+well covered in that range.
+
+Besides the default mapping to `integer` (albeit 32-bit) type, we offer three
+other options when it comes `BIGINT` mapping.
+
+1. Firstly, using the `bigint = "character"` argument instructs `RPresto` to
+cast the `BIGINT` value to a `character` type. This is particularly useful when
+`BIGINT` is used to store long IDs rather than large numbers (i.e., the numbers
+are not used in arithmetic computations).
+
+1. Using `bigint = "integer64"` makes `RPresto` translate `BIGINT` values to a
+value of the `integer64` S3 class from the `bit64` package.
+
+1. `bigint = "numeric"` makes `RPresto` store the `BIGINT` value in a `numeric`
+( i.e., `double`) type.
+
+Whenever we map an integer to another numeric type, we always need to consider
+the precision of the mapping, that is, whether there's any precision loss during
+the translation. Among the three translation options above, the first one (i.e.,
+casting `BIGINT` to `character`) doesn't involve any precision translation, so
+we will focus the precision discussion on the other two translations (
+`bit64::integer64` and `numeric`).
+
+On the receiving end, the `bit64::integer64` type has a range from `-2^63+1 = -9,223,372,036,854,775,807` to `2^63-1 = 9,223,372,036,854,775,807`.
+
+```{r integer64-limits}
+bit64::lim.integer64()
+```
+
+Comparing the range to Presto's `BIGINT` range, it seems that in theory the
+`bit64::integer64` range is only infinitesimally smaller than the `BIGINT` range
+by 1 number (again, the lower bound number). However, in practice, the range of
+`BIGINT` values that can be translated into `bit64::integer64` **without
+precision loss** is much smaller.
+
+The limitation comes from how the [Presto REST API][7] communicates data with R.
+It uses the JSON format to encode the query result data and sends it to R for
+`RPresto` to process.
+
+JSON by default encodes integers as `double` numbers, so its [precision is
+limited][8] to `+/-(2^53-1) = +/-9,007,199,254,740,991`. Any integers outside of
+this range will lose precision during the translation.
+
+Since the translation limitation is caused by the JSON format encoding integers
+using `double`, the same limitation applies when `BIGINT` values are mapped to
+`numeric` types in R.
+
+| bigint = | R type | Range without precision loss | Range with possible precision loss |
+|----------|--------|------------------------------|------------------------------------|
+| character | character | NA | NA |
+| integer64 | bit64::integer64 | +/-9,007,199,254,740,991 | +/- 9,223,372,036,854,775,807 |
+| numeric | numeric | +/-9,007,199,254,740,991 | [-9,223,372,036,854,775,808, 9,223,372,036,854,775,807] |
+
+The table created by the `create_primitive_types_table()` function
+has the values from the no-precision-lost range. Below we show how different
+`bigint` arguments change the output R types.
+
+* `bigint = "character"`
+
+```{r bigint-character}
+dbGetQuery(
+  con, "SELECT bigint FROM presto_primitive_types", bigint = "character"
+)
+```
+
+* `bigint = "integer64"`
+
+```{r bigint-integer64}
+dbGetQuery(
+  con, "SELECT bigint FROM presto_primitive_types", bigint = "integer64"
+)
+```
+
+* `bigint = "numeric"`
+
+```{r bigint-numeric}
+dbGetQuery(
+  con, "SELECT bigint FROM presto_primitive_types", bigint = "numeric"
+)
+```
+
+If you attempt to translate integers outside of the no-precision-loss range, a
+warning message will show up.
+
+```{r bigint-out-of-range}
+dbGetQuery(
+  con,
+  "
+  SELECT SIGN(bigint) * (ABS(bigint) + 1) AS bigint_precision_loss
+  FROM presto_primitive_types
+  ",
+  bigint = "numeric"
+)
+```
+
+### Floating numbers
+
+R only has one floating point data type, `double` (its class is `numeric`). All
+floating numbers are stored in double precision format (i.e., 64-bit). This
+matches Presto's [`DOUBLE`][9] type, so translation between Presto and R is
+straightforward.
+
+```{r floating-point-type}
+(
+  df.floating_point <- dbGetQuery(
+    con,
+    "SELECT real, double FROM presto_primitive_types"
+  )
+)
+```
+
+We can verify that both floating point types are translated to `numeric`.
+
+```{r floating-point-check}
+purrr::map_chr(df.floating_point, class)
+```
+
+### Strings
+
+#### `VARCHAR` and `CHAR` types
+
+[`VARCHAR`][10] and [`CHAR`][11] data types in Presto are mapped to R's
+`character` type.
+
+```{r character-types}
+(
+  df.characters <- dbGetQuery(
+    con,
+    "SELECT varchar, char FROM presto_primitive_types"
+  )
+)
+```
+
+We can verify the resulting R types to be `character`.
+
+```{r character-check}
+purrr::map_chr(df.characters, class)
+```
+
+#### `VARBINARY`
+
+Presto's [`VARBINARY`][12] type stores string data in raw bytes. It can be
+nicely mapped to R's `raw` type.
+
+```{r bytes-type}
+(
+  df.bytes <- dbGetQuery(
+    con,
+    "SELECT varbinary FROM presto_primitive_types"
+  )
+)
+```
+
+We can verify all elements in the resulting column are of `raw` data type.
+
+```{r bytes-check}
+purrr::map_chr(df.bytes$varbinary, class)
+```
+
+We can also convert the bytes data back to the string values.
+
+```{r bytes-to-char}
+dplyr::mutate(df.bytes, string = purrr::map_chr(varbinary, rawToChar))
+```
+
+### Date and Time
+
+In R, there are three types of date/time data that refer to an instant in time.
+
+* A **date**. Tibbles print this as `<date>`.
+
+* A **time** within a day. Tibbles print this as `<time>`.
+
+* A **date-time** is a date plus a time: it uniquely identifies an instant in
+time (typically to the nearest second). Tibbles print this as `<dttm>`.
+Elsewhere in R these are called `POSIXct`.
+
+We prefer to use the `lubridate` package to handle date and date-time objects.
+Time objects are not very commonly used and R lacks a strong native support for
+it. In `RPresto`, we uses the `hms` package to handle time objects.
+
+#### `DATE`
+
+The [`DATE`][13] type is by far the most used date-and-time types. Note that a
+`DATE` value isn't tied to any particular time zone, so it isn't associated with
+a unique point in time (i.e., seconds or microseconds since epoch).
+
+We use base R's `Date` S3 class to translate Presto's `DATE` type.
+
+```{r date-type}
+(
+  df.date <- dbGetQuery(
+    con,
+    "SELECT date FROM presto_primitive_types"
+  )
+)
+```
+
+We can verify the R type of the column.
+
+```{r date-check}
+purrr::map_chr(df.date, class)
+```
+
+#### `TIMESTAMP`
+
+The `POSIXct` type values, on the other hand, are associated with a unique point
+in time. That is, they can be translated to a unique numeric value that refers
+to the number of time units (usually seconds, milliseconds, or microseconds)
+elapsed since epoch (i.e., the beginning of time). This is why the mode of a
+`POSIXct` value in R is numeric and you can call the `as.integer()` function on
+it.
+
+```{r posixct-value}
+foo <- lubridate::ymd_hms("2000-01-01 01:02:03", tz = "America/New_York")
+mode(foo)
+as.integer(foo)
+```
+
+In this case, the integer value refers to the number of seconds elapsed since
+1970-01-01 00:00:00 in the UTC time zone.
+
+Presto's [`TIMESTAMP`][14] and [`TIMESTAMP WITH TIME ZONE`][15] types follow the
+same logic and thus can be mapped to the `POSIXct` type. To ensure consistency,
+`RPresto` always translates the timestamp to match the Presto session's
+timezone.
+
+You can check the session time zone by printing the `session.timezone` slot of
+the `PrestoConnection` object.
+
+```{r session-tz}
+con@session.timezone
+```
+
+Here we get the `TIMESTAMP` and `TIMESTAMP WITH TIME ZONE` values from the
+table.
+
+```{r posixct-type}
+(
+  df.posixct <- dbGetQuery(
+    con,
+    "SELECT timestamp, timestamp_with_tz FROM presto_primitive_types"
+  )
+)
+```
+
+We can check the R types of the two columns.
+
+```{r posixct-check}
+purrr::map(df.posixct, class)
+```
+
+We can also verify that the time zone attributes match the session time zone.
+
+```{r posixct-tz}
+purrr::map_chr(df.posixct$timestamp, lubridate::tz)
+purrr::map_chr(df.posixct$timestamp_with_tz, lubridate::tz)
+```
+
+#### `INTERVAL`s
+
+Presto has two `INTERVAL` types: [`INTERVAL YEAR TO MONTH`][16] and [`INTERVAL
+DAY TO SECOND`][17]. We map both of them to `lubridate::Duration-class`.
+
+```{r duration-type}
+(
+  df.duration <- dbGetQuery(
+    con,
+    "
+    SELECT
+      interval_year_to_month,
+      interval_day_to_second
+    FROM presto_primitive_types
+    "
+  )
+)
+```
+
+## Walkthrough wrap-up
+
+```{r close-db}
+DBI::dbDisconnect(con)
+```
+
+[1]: https://prestodb.io/docs/current/language/types.html
+[2]: https://prestodb.io/docs/current/connector/memory.html
+[3]: https://prestodb.io/docs/current/language/types.html#tinyint
+[4]: https://prestodb.io/docs/current/language/types.html#smallint
+[5]: https://prestodb.io/docs/current/language/types.html#integer
+[6]: https://prestodb.io/docs/current/language/types.html#bigint
+[7]: https://prestodb.io/docs/current/develop/client-protocol.html
+[8]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER
+[9]: https://prestodb.io/docs/current/language/types.html#double
+[10]: https://prestodb.io/docs/current/language/types.html#varchar
+[11]: https://prestodb.io/docs/current/language/types.html#char
+[12]: https://prestodb.io/docs/current/language/types.html#varbinary
+[13]: https://prestodb.io/docs/current/language/types.html#date
+[14]: https://prestodb.io/docs/current/language/types.html#timestamp
+[15]: https://prestodb.io/docs/current/language/types.html#timestamp-with-time-zone
+[16]: https://prestodb.io/docs/current/language/types.html#interval-year-to-month
+[17]: https://prestodb.io/docs/current/language/types.html#interval-day-to-second
