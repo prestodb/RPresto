@@ -13,6 +13,7 @@ src_presto(
   source = NULL,
   session.timezone = NULL,
   parameters = NULL,
+  bigint = c("integer", "integer64", "numeric", "character"),
   ...
 )
 }
@@ -32,6 +33,14 @@ src_presto(
 \item{session.timezone}{Time zone for the connection}
 
 \item{parameters}{Additional parameters to pass to the connection}
+
+\item{bigint}{The R type that Presto's 64-bit integer (`BIGINT`) types should
+be translated to. The default is `"integer"`, which returns R's
+`integer` type, but results in `NA` for values above/below
++/-2147483647. `"integer64"` returns a [bit64::integer64], which
+allows the full range of 64 bit integers. `"numeric"` coerces into
+R's `double` type but might result in precision loss. Lastly,
+`"character"` casts into R's `character` type.}
 
 \item{...}{For \code{src_presto} other arguments passed on to the underlying
 database connector \code{dbConnect}. For \code{tbl.src_presto}, it is

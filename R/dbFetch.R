@@ -12,6 +12,7 @@ NULL
     # Preserve attributes for empty data frames
     return(res_list[[1]])
   } else {
+    res_list <- purrr::keep(res_list, ~(ncol(.) > 0))
     # We need to check for the uniqueness of columns because dplyr::bind_rows
     # will drop duplicate column names and we want to preserve all the data
     unique.chunk.column.names <- unique(lapply(
@@ -20,15 +21,11 @@ NULL
     ))
     if (length(unique.chunk.column.names) != 1) {
       stop('Chunk column names are different across chunks: ',
-        jsonlite::toJSON(lapply(res_list, names))
+           jsonlite::toJSON(lapply(res_list, names))
       )
     }
-    column.names <- unique.chunk.column.names[[1]]
-    if (
-      requireNamespace('dplyr', quietly=TRUE) &&
-      length(column.names) == length(unique(column.names))
-    ) {
-      return(as.data.frame(dplyr::bind_rows(res_list)))
+    if (requireNamespace('dplyr', quietly=TRUE)) {
+      return(dplyr::bind_rows(res_list))
     } else {
       return(do.call('rbind', res_list))
     }

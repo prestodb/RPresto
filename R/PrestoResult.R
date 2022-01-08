@@ -13,6 +13,7 @@ NULL
 #' @slot query An internal implementation detail for keeping track of
 #'  what stage a request is in
 #' @slot post.data Any data extracted from the POST request response
+#' @slot bigint How bigint type should be handled
 #' @keywords internal
 #' @importClassesFrom DBI DBIResult
 #' @export
@@ -22,7 +23,8 @@ setClass('PrestoResult',
     'statement'='character',
     'connection'='PrestoConnection',
     'query'='PrestoQuery',
-    'post.data'='ANY'
+    'post.data'='ANY',
+    'bigint'='character'
   )
 )
 
@@ -51,6 +53,7 @@ setMethod('show',
         collapse=' / '
       ), '\n',
       'Session Time Zone: ', object@connection@session.timezone, '\n',
+      'BIGINT cast to: ', object@connection@bigint, '\n',
       sep=''
     )
   }

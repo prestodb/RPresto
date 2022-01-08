@@ -1,3 +1,19 @@
+# RPresto 1.4.0
+
+* Major refactoring of the internal schema and data parsing functions to enable
+more robust mapping between Presto data types and R types
+  * The output is changed from `data.frame` to `tibble` to offer better printing
+    and be more consistent with other DBI-compatible datawarehouse packages
+  * Add more user-friendly R types translation for primitive Presto data types
+    (e.g., DATE types are now translated to `Date` classes in R; TIMESTAMP types
+    are translated to `POSIXct` classes; TIME types are translated to `difftime`
+    classes; INTERVAL types are translated to `Duration` classes)
+  * Enable more choices of BIGINT type handling (i.e., `integer64`, `integer`,
+    `numeric`, or `character`). (#61)
+  * Add complete support for complex Presto types (i.e., ARRAY, MAP, and ROW).
+    They are now translated to typed vectors, lists, or tibbles depending on the
+    types and structure of the data. (#118)
+
 # RPresto 1.3.8
 
 - Fix failing unit tests (#141)

@@ -53,10 +53,9 @@ test_that('dbListFields works with mock - PrestoConnection', {
         'http://localhost:8000/query_1/1',
         status_code=200,
         data=data.frame(
-          column1=1,
-          column2=FALSE,
-          stringsAsFactors=FALSE
-        )[FALSE, ],
+          column1=integer(0),
+          column2=logical(0)
+        ),
         state='FINISHED',
       ),
       mock_httr_response(
@@ -264,15 +263,15 @@ test_that('dbListFields works with mock - PrestoResult - POST data', {
       result <- dbSendQuery(conn, 'SELECT * FROM two_columns')
       expect_true(dbIsValid(result))
       expect_equal(dbListFields(result), c('column1', 'column2'))
-      expect_equal(dbFetch(result), data.frame(column1=3, column2=4))
+      expect_equal(dbFetch(result), tibble::tibble(column1=3, column2=4))
       expect_true(dbHasCompleted(result))
 
       result <- dbSendQuery(conn, 'SELECT * FROM two_rows')
       expect_true(dbIsValid(result))
       expect_equal(dbListFields(result), c('column1', 'column2'))
-      expect_equal(dbFetch(result), data.frame(column1=5, column2=6))
+      expect_equal(dbFetch(result), tibble::tibble(column1=5, column2=6))
       expect_false(dbHasCompleted(result))
-      expect_equal(dbFetch(result), data.frame(column1=7, column2=8))
+      expect_equal(dbFetch(result), tibble::tibble(column1=7, column2=8))
       expect_true(dbHasCompleted(result))
     }
   )
@@ -375,7 +374,7 @@ test_that('dbListFields works with mock - PrestoResult - POST columns', {
       result <- dbSendQuery(conn, 'SELECT * FROM two_columns')
       expect_true(dbIsValid(result))
       expect_equal(dbListFields(result), c('column1', 'column2'))
-      expect_equal(dbFetch(result), data.frame(column1=9, column2=10))
+      expect_equal(dbFetch(result), tibble::tibble(column1=9, column2=10))
       expect_true(dbHasCompleted(result))
 
       result <- dbSendQuery(conn, 'SELECT * FROM other_two_columns')
@@ -383,10 +382,10 @@ test_that('dbListFields works with mock - PrestoResult - POST columns', {
       expect_equal(dbListFields(result), c('column3', 'column4'))
       expect_equal(
         dbFetch(result),
-        data.frame(column3=1, column4=2)[FALSE, , drop=FALSE]
+        tibble::tibble(column3=1, column4=2)[FALSE, , drop=FALSE]
       )
       expect_false(dbHasCompleted(result))
-      expect_equal(dbFetch(result), data.frame(column3=13, column4=14))
+      expect_equal(dbFetch(result), tibble::tibble(column3=13, column4=14))
       expect_true(dbHasCompleted(result))
     }
   )

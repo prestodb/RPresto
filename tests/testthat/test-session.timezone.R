@@ -84,7 +84,7 @@ test_that('session.timezone works', {
       timestamp_1pm
     )
   )
-  ev <- data.frame(
+  ev <- tibble::tibble(
     from_unixtime=istanbul_6am,
     to_unixtime=istanbul_1pm_unixtime,
     unixtime_same=FALSE, # tokyo_1pm_unixtime vs istanbul_1pm_unixtime
@@ -92,8 +92,7 @@ test_that('session.timezone works', {
     dst_timestamp=istanbul_1am, # NOT midnight, due to DST
     tokyo_vs_istanbul=FALSE,
     date_format=tokyo_8pm_timestamp,
-    date_format_before_standard_time=tokyo_6am_timestamp,
-    stringsAsFactors=FALSE
+    date_format_before_standard_time=tokyo_6am_timestamp
   )
   expect_equal_data_frame(rv, ev)
 })

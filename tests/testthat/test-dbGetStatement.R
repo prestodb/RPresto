@@ -13,7 +13,7 @@ test_that('dbGetStatement works with live database', {
 
   result <- dbSendQuery(conn, 'SELECT 1 AS n')
   expect_equal(dbGetStatement(result), 'SELECT 1 AS n')
-  expect_equal(dbFetch(result, -1), data.frame(n=1))
+  expect_equal(dbFetch(result, -1), tibble::tibble(n=1))
   expect_equal(dbGetStatement(result), 'SELECT 1 AS n')
 })
 
@@ -47,9 +47,9 @@ test_that('dbGetStatement works with mock', {
     {
       result <- dbSendQuery(conn, 'SELECT n FROM two_rows')
       expect_equal(dbGetStatement(result), 'SELECT n FROM two_rows')
-      expect_equal(dbFetch(result, -1), data.frame(n=c(1, 2)))
+      expect_equal(dbFetch(result, -1), tibble::tibble(n=c(1, 2)))
       expect_equal(dbGetStatement(result), 'SELECT n FROM two_rows')
-      expect_equal(dbFetch(result), data.frame())
+      expect_equal(dbFetch(result), tibble::tibble())
       expect_equal(dbGetStatement(result), 'SELECT n FROM two_rows')
     }
   )

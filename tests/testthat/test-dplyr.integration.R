@@ -67,4 +67,18 @@ test_that('dplyr integration works', {
   )
 
   expect_equal_data_frame(iris_presto_summary, iris_summary)
+
+  # bigint handling can be specified in collect()
+  iris_presto_bigint <- iris_presto %>%
+    dplyr::mutate(bigint = sql("cast('9007199254740991' as bigint)")) %>%
+    head(1) %>%
+    dplyr::select(bigint)
+  expect_warning(
+    dplyr::collect(iris_presto_bigint),
+    "NAs produced by integer overflow"
+  )
+  expect_equal_data_frame(
+    dplyr::collect(iris_presto_bigint, bigint = "character"),
+    tibble::tibble(bigint = "9007199254740991")
+  )
 })

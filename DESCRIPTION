@@ -1,6 +1,6 @@
 Package: RPresto
 Title: DBI Connector to Presto
-Version: 1.3.8
+Version: 1.4.0
 Authors@R: c(
     person('Onur Ismail', 'Filiz', , 'onur@fb.com', role='aut'),
     person('Sergey', 'Goder', , 'sgoder@fb.com', role='aut'),
@@ -27,13 +27,16 @@ Imports:
     jsonlite,
     stringi,
     stats,
-    Rcpp (>= 0.12.7),
     utils,
     purrr,
     dplyr (>= 0.7.0),
-    dbplyr (>= 2.0.0)
+    dbplyr (>= 2.0.0),
+    tibble,
+    bit64
 Suggests:
-    testthat
+    testthat,
+    hms,
+    lubridate
 License: BSD_3_clause + file LICENSE
 URL: https://github.com/prestodb/RPresto
 BugReports: https://github.com/prestodb/RPresto/issues
@@ -45,7 +48,6 @@ Collate:
     'PrestoConnection.R'
     'PrestoQuery.R'
     'PrestoResult.R'
-    'RcppExports.R'
     'copy.to.src.presto.R'
     'db.data.type.PrestoConnection.R'
     'db.explain.PrestoConnection.R'
@@ -70,14 +72,15 @@ Collate:
     'dbRemoveTable.R'
     'dbSendQuery.R'
     'dbUnloadDriver.R'
+    'db_collect.R'
     'db_desc.PrestoConnection.R'
     'db_query_fields.R'
     'dbplyr_compatible.R'
     'dbplyr_edition.PrestoConnect.R'
-    'extract.data.R'
     'fetch.R'
     'help.R'
-    'json.tabular.to.data.frame.R'
+    'presto.field.R'
+    'presto.field_utilities.R'
     'request_headers.R'
     'sqlCreateTable.R'
     'sqlCreateTableAs.R'
@@ -88,4 +91,3 @@ Collate:
     'src.presto.R'
     'tbl.src.presto.R'
 RoxygenNote: 7.2.1
-LinkingTo: Rcpp

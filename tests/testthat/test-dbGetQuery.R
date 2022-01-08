@@ -12,7 +12,7 @@ with_locale(test.locale(), test_that)('dbGetQuery works with live database', {
   conn <- setup_live_connection()
   expect_equal_data_frame(
     dbGetQuery(conn, 'SELECT n FROM (VALUES (1), (2)) AS t (n)'),
-    data.frame(n=c(1,2))
+    tibble::tibble(n=c(1,2))
   )
 
   # Unicode expression of c('çğıöşü', 'ÇĞİÖŞÜ')
@@ -34,7 +34,7 @@ with_locale(test.locale(), test_that)('dbGetQuery works with live database', {
   r <- dbGetQuery(conn, query)
   expect_equal(Encoding(r[['t']]), c('UTF-8', 'UTF-8'))
 
-  e <- data.frame(t=utf8.tr.characters, stringsAsFactors=FALSE)
+  e <- tibble::tibble(t=utf8.tr.characters)
   expect_equal_data_frame(r, e)
 })
 
@@ -82,18 +82,18 @@ with_locale(test.locale(), test_that)('dbGetQuery works with mock', {
       mock_httr_response(
         'http://localhost:8000/query_2/2',
         status_code=200,
-        data=data.frame(t='ÇĞİÖŞÜ', stringsAsFactors=FALSE),
+        data=data.frame(t='ÇĞİÖŞÜ'),
         state='FINISHED'
       )
     ),
     {
       expect_equal_data_frame(
         dbGetQuery(conn, 'SELECT n FROM two_rows'),
-        data.frame(n=c(1,2))
+        tibble::tibble(n=c(1,2))
       )
       expect_equal_data_frame(
         dbGetQuery(conn, "SELECT t FROM encoding_test"),
-        data.frame(t=c('çğıöşü', 'ÇĞİÖŞÜ'), stringsAsFactors=FALSE)
+        tibble::tibble(t=c('çğıöşü', 'ÇĞİÖŞÜ'))
       )
     }
   )
@@ -131,12 +131,12 @@ test_that('dbGetQuery works with data in POST response', {
     {
       expect_equal_data_frame(
         dbGetQuery(conn, 'SELECT 1 AS x'),
-        data.frame(x=1)
+        tibble::tibble(x=1)
       )
 
       expect_equal_data_frame(
         dbGetQuery(conn, 'SELECT n FROM two_rows'),
-        data.frame(n=c(3, 4))
+        tibble::tibble(n=c(3, 4))
       )
     }
   )

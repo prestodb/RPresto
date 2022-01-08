@@ -13,7 +13,7 @@ test_that('dbIsValid works with live database', {
 
   result <- dbSendQuery(conn, 'SELECT 1 AS n')
   expect_true(dbIsValid(result))
-  expect_equal(dbFetch(result, -1), data.frame(n=1))
+  expect_equal(dbFetch(result, -1), tibble::tibble(n=1))
   expect_true(dbIsValid(result))
 
   result <- dbSendQuery(conn, 'SELECT 1 AS n')
@@ -72,11 +72,11 @@ test_that('dbIsValid works with mock - successful queries', {
     {
       result <- dbSendQuery(conn, 'SELECT n FROM two_rows')
       expect_true(dbIsValid(result))
-      expect_equal(dbFetch(result), data.frame(n=1))
+      expect_equal(dbFetch(result), tibble::tibble(n=1))
       expect_true(dbIsValid(result))
-      expect_equal(dbFetch(result), data.frame(n=2))
+      expect_equal(dbFetch(result), tibble::tibble(n=2))
       expect_true(dbIsValid(result))
-      expect_equal(dbFetch(result), data.frame())
+      expect_equal(dbFetch(result), tibble::tibble())
       expect_true(dbIsValid(result))
     }
   )
@@ -173,7 +173,7 @@ test_that('dbIsValid works with mock - retries and failures', {
         v <- dbFetch(result),
         'First request is an error'
       )
-      expect_equal(v, data.frame(n=2))
+      expect_equal(v, tibble::tibble(n=2))
       expect_true(dbIsValid(result))
       expect_true(dbHasCompleted(result))
 
@@ -184,7 +184,7 @@ test_that('dbIsValid works with mock - retries and failures', {
         v <- dbFetch(result),
         'GET call failed with error: .*\\((HTTP )*404\\).*, retrying.*'
       )
-      expect_equal(v, data.frame(z="text", stringsAsFactors=FALSE))
+      expect_equal(v, tibble::tibble(z="text"))
       expect_true(dbIsValid(result))
       expect_true(dbHasCompleted(result))
 
