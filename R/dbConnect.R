@@ -47,6 +47,7 @@ setMethod('dbConnect',
     session.timezone='UTC',
     parameters = list(),
     use.trino.headers=FALSE,
+    extra.credentials="",
     ...
   ) {
     port <- suppressWarnings(as.integer(port))
@@ -63,7 +64,8 @@ setMethod('dbConnect',
       source=source,
       session.timezone=session.timezone,
       use.trino.headers=use.trino.headers,
-      session=PrestoSession$new(parameters)
+      session=PrestoSession$new(parameters),
+      extra.credentials=extra.credentials
     )
     return(conn)
   }

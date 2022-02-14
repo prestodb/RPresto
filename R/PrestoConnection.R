@@ -23,7 +23,8 @@ setClass('PrestoConnection',
     'session.timezone'='character',
     'use.trino.headers'='logical',
     'Id'='character',
-    'session'='PrestoSession'
+    'session'='PrestoSession',
+    'extra.credentials'='character'
   )
 )
 
@@ -39,6 +40,7 @@ setMethod('show',
       'User: ', object@user, '\n',
       'Source: ', object@source, '\n',
       'Session Time Zone: ', object@session.timezone, '\n',
+      'Extra Credentials: ', object@extra.credentials, '\n',
       sep=''
     )
     parameters <- object@session$parameters()

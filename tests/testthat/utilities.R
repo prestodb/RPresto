@@ -312,7 +312,7 @@ read_credentials <- function() {
   return(credentials)
 }
 
-setup_live_connection <- function(session.timezone, parameters) {
+setup_live_connection <- function(session.timezone, parameters, extra.credentials="", ...) {
   skip_on_cran()
   credentials <- read_credentials()
   if (missing(session.timezone)) {
@@ -329,6 +329,7 @@ setup_live_connection <- function(session.timezone, parameters) {
     source=credentials$source,
     session.timezone=session.timezone,
     parameters=parameters,
+    extra.credentials=extra.credentials,
     user=Sys.getenv('USER')
   )
   return(conn)
