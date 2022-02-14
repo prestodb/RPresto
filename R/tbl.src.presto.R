@@ -19,8 +19,8 @@ NULL
 #'   \code{\link[dplyr]{sql}} described a derived table or compound join.
 #' @examples
 #' \dontrun{
-#' First create a database connection with src_presto, then reference a tbl
-#' within that database
+#' # First create a database connection with src_presto, then reference a tbl
+#' # within that database
 #' my_tbl <- tbl(my_db, "my_table")
 #' }
 #' @rdname src_presto

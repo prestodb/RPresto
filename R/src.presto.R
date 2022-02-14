@@ -20,11 +20,18 @@
 #'   database connector \code{dbConnect}. For \code{tbl.src_presto}, it is
 #'   included for compatibility with the generic, but otherwise ignored.
 #' @export
+#' @name src_presto
 #' @examples
 #' \dontrun{
 #' # To connect to a database
-#' my_db <- src_presto(catalog = "hive", schema = "web", user = "onur",
-#'   host = "localhost", port = 8888, session.timezone='Asia/Kathmandu')
+#' my_db <- src_presto(
+#'   catalog = "memory",
+#'   schema = "default",
+#'   user = Sys.getenv("USER"),
+#'   host = "http://localhost",
+#'   port = 8080,
+#'   session.timezone = "Asia/Kathmandu"
+#' )
 #' }
 src_presto <- function(
     catalog=NULL,

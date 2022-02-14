@@ -56,12 +56,18 @@ administrator for the values of these variables.
 \examples{
 \dontrun{
 # To connect to a database
-my_db <- src_presto(catalog = "hive", schema = "web", user = "onur",
-  host = "localhost", port = 8888, session.timezone='Asia/Kathmandu')
+my_db <- src_presto(
+  catalog = "memory",
+  schema = "default",
+  user = Sys.getenv("USER"),
+  host = "http://localhost",
+  port = 8080,
+  session.timezone = "Asia/Kathmandu"
+)
 }
 \dontrun{
-First create a database connection with src_presto, then reference a tbl
-within that database
+# First create a database connection with src_presto, then reference a tbl
+# within that database
 my_tbl <- tbl(my_db, "my_table")
 }
 }
