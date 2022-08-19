@@ -29,11 +29,11 @@ Imports:
     stats,
     Rcpp (>= 0.12.7),
     utils,
-    purrr
-Suggests:
-    testthat,
+    purrr,
     dplyr (>= 0.7.0),
-    dbplyr
+    dbplyr (>= 2.0.0)
+Suggests:
+    testthat
 License: BSD_3_clause + file LICENSE
 URL: https://github.com/prestodb/RPresto
 BugReports: https://github.com/prestodb/RPresto/issues
@@ -73,14 +73,15 @@ Collate:
     'dbIsValid.R'
     'dbListFields.R'
     'dbUnloadDriver.R'
-    'description_from_info.R'
     'db_desc.PrestoConnection.R'
     'db_query_fields.R'
+    'dbplyr_edition.PrestoConnect.R'
     'fetch.R'
     'help.R'
     'sql_escape_date.R'
     'sql_escape_datetime.R'
-    'sql_translate_env.R'
+    'sql_query_fields.R'
+    'sql_translation.R'
     'tbl.src.presto.R'
-RoxygenNote: 7.1.1
+RoxygenNote: 7.2.1
 LinkingTo: Rcpp

@@ -26,18 +26,13 @@ presto_window_functions <- function() {
   ))
 }
 
-#' S3 implementation of \code{sql_translate_env} for Presto.
+#' S3 implementation of \code{sql_translation} for Presto.
 #'
-#' @rdname dplyr_function_implementations
+#' @importFrom dbplyr sql_translation
+#' @export
+#' @rdname dbplyr_function_implementations
 #' @keywords internal
-#'
-#' @rawNamespace
-#' if (getRversion() >= "3.6.0") {
-#'   S3method(dplyr::sql_translate_env,PrestoConnection)
-#' } else {
-#'   export(sql_translate_env.PrestoConnection)
-#' }
-sql_translate_env.PrestoConnection <- function(con) {
+sql_translation.PrestoConnection <- function(con) {
   sql_variant <- dbplyr_compatible('sql_variant')
   sql_translator <- dbplyr_compatible('sql_translator')
   sql_prefix <- dbplyr_compatible('sql_prefix')

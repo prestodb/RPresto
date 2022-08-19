@@ -1,3 +1,11 @@
+# RPresto 1.3.8
+
+- Fix failing unit tests (#141)
+- Support Trino headers in session (#143)
+- Update copyright headers
+- Migrate RPresto's dplyr interface to use dbplyr 2.0.0 backend (#150)
+* Add documentation on RPresto's DBI and `dplyr` backend implementation
+
 # RPresto 1.3.7
 
 - Fix testing errors caused by Presto changes since last update (#131)

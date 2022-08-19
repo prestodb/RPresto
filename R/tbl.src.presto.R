@@ -14,6 +14,8 @@ NULL
 #' If you're unsure of the arguments to pass, please ask your database
 #' administrator for the values of these variables.
 #'
+#' @importFrom dplyr tbl
+#' @export
 #' @param src A presto src created with \code{src_presto}.
 #' @param from Either a string giving the name of table in database, or
 #'   \code{\link[dplyr]{sql}} described a derived table or compound join.
@@ -23,14 +25,8 @@ NULL
 #' # within that database
 #' my_tbl <- tbl(my_db, "my_table")
 #' }
-#' @rdname src_presto
-#'
-#' @rawNamespace
-#' if (getRversion() >= "3.6.0") {
-#'   S3method(dplyr::tbl,src_presto)
-#' } else {
-#'   export(tbl.src_presto)
-#' }
+#' @rdname dplyr_source_function_implementations
+#' @keywords internal
 tbl.src_presto <- function(src, from, ...) {
   tbl_sql <- dbplyr_compatible('tbl_sql')
   rv <- tbl_sql("presto", src = src, from = from, ...)
