@@ -108,6 +108,30 @@ con <- dbConnect(
 )
 ```
 
+## Passing Extra Credentials to the Connector
+
+To pass extraCredentials that gets added to the `X-Presto-Extra-Credential` header
+use the `extra.credentials` parameter so `RPresto` will add that to the header while
+creating the PrestoConnection.
+
+Set `use.trino.headers` if you want to pass extraCredentials through the
+`X-Trino-Extra-Credential` header.
+
+```R
+library('DBI')
+
+con <- dbConnect(
+  RPresto::Presto(),
+  host='http://localhost',
+  port=7777,
+  user=Sys.getenv('USER'),
+  schema='<schema>',
+  catalog='<catalog>',
+  source='<source>',
+  extra.credentials="test.token.foo=bar",
+)
+```
+
 ## How RPresto works
 
 Presto exposes its interface via a REST based API<sup>1</sup>. We utilize the
