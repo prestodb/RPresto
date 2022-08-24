@@ -106,9 +106,9 @@ with_locale(test.locale(), test_that)('as() works', {
     '\\) "[_0-9a-z]+"$'
   )
   new_expected_query_pattern <- paste0(
-    '^SELECT ',
-      'CAST\\("a" AS VARBINARY\\) AS "b", ' ,
-      'CAST\\("a" AS TIMESTAMP WITH TIME ZONE\\) AS "c", ',
+    '^SELECT\\s*',
+      'CAST\\("a" AS VARBINARY\\) AS "b",\\s*' ,
+      'CAST\\("a" AS TIMESTAMP WITH TIME ZONE\\) AS "c",\\s*',
       'CAST\\("a" AS BOOLEAN\\) AS "d"\n',
     'FROM \\(',
       '\\(SELECT 1\\) "[_0-9a-z]+"',

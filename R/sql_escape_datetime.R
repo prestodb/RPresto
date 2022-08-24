@@ -6,15 +6,10 @@
 
 #' S3 implementation of custom escape method for \link[dbplyr]{sql_escape_datetime}
 #'
-#' @rdname dplyr_function_implementations
+#' @importFrom dbplyr sql_escape_datetime
+#' @export
+#' @rdname dbplyr_function_implementations
 #' @keywords internal
-#'
-#' @rawNamespace
-#' if (getRversion() >= "3.6.0") {
-#'   S3method(dbplyr::sql_escape_datetime,PrestoConnection)
-#' } else {
-#'   export(sql_escape_datetime.PrestoConnection)
-#' }
 sql_escape_datetime.PrestoConnection <- function(con, x) {
   # Use unix time to minimize reliance on time zone particulars.
   paste0('FROM_UNIXTIME(', as.numeric(x), ')')

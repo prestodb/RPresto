@@ -9,15 +9,10 @@ NULL
 
 #' S3 implementation of \code{\link[dplyr]{copy_to}} for Presto.
 #'
-#' @rdname dplyr_function_implementations
+#' @importFrom dplyr copy_to
+#' @export
+#' @rdname dplyr_source_function_implementations
 #' @keywords internal
-#'
-#' @rawNamespace
-#' if (getRversion() >= "3.6.0") {
-#'   S3method(dplyr::copy_to,src_presto)
-#' } else {
-#'   export(copy_to.src_presto)
-#' }
 copy_to.src_presto <- function(dest, df) {
   stop("Not implemented.")
 }

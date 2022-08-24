@@ -9,15 +9,10 @@ NULL
 
 #' S3 implementation of \code{\link[dplyr]{db_query_rows}} for Presto.
 #'
+#' @importFrom dplyr db_query_rows
+#' @export
 #' @rdname dplyr_function_implementations
 #' @keywords internal
-#'
-#' @rawNamespace
-#' if (getRversion() >= "3.6.0") {
-#'   S3method(dplyr::db_query_rows,PrestoConnection)
-#' } else {
-#'   export(db_query_rows.PrestoConnection)
-#' }
 db_query_rows.PrestoConnection <- function(con, sql) {
   # We shouldn't be doing a COUNT(*) over arbitrary tables because Hive tables
   # can be prohibitively long. There may be something smarter we can do for

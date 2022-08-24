@@ -9,21 +9,12 @@ NULL
 
 #' S3 implementation of \code{db_query_fields} for Presto.
 #'
+#' @importFrom dplyr db_query_fields
+#' @export
 #' @rdname dplyr_function_implementations
 #' @keywords internal
-#'
-#' @rawNamespace
-#' if (getRversion() >= "3.6.0") {
-#'   S3method(dplyr::db_query_fields,PrestoConnection)
-#' } else {
-#'   export(db_query_fields.PrestoConnection)
-#' }
 db_query_fields.PrestoConnection <- function(con, sql, ...) {
-  build_sql <- dbplyr_compatible('build_sql')
-  fields <- build_sql(
-    "SELECT * FROM ", dplyr::sql_subquery(con, sql), " WHERE 1 = 0",
-    con = con
-  )
+  fields <- sql_query_fields(con, sql, ...)
   df <- dbGetQuery(con, fields)
   return(colnames(df))
 }
