@@ -164,5 +164,6 @@ for (i in seq_along(.non.complex.types)) {
 #' dbDataType(drv, Sys.time())
 #' # Data types for ARRAY or MAP values can be tricky
 #' all.equal('VARCHAR', dbDataType(drv, list(1, 2, 3L)))
+#' @importMethodsFrom DBI dbDataType
 #' @export
 setMethod('dbDataType', 'PrestoDriver', .dbDataType)

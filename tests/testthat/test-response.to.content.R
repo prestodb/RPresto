@@ -4,12 +4,12 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-context('response.to.content')
+context('.response.to.content')
 
 source('utilities.R')
 
-with_locale(test.locale(), test_that)('response.to.content works', {
-  response.to.content <- RPresto:::response.to.content
+with_locale(test.locale(), test_that)('.response.to.content works', {
+  .response.to.content <- RPresto:::.response.to.content
 
   response <- mock_httr_response(
       'dummy_url',
@@ -24,7 +24,7 @@ with_locale(test.locale(), test_that)('response.to.content works', {
       )
   )[['response']]
   expect_equal(
-    response.to.content(response),
+    .response.to.content(response),
     list(
       extra='content',
       stats=list(state='dummy_state'),

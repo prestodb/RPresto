@@ -40,7 +40,7 @@ The required DBI classes are defined in the following files. Their specific DBI
 Besides, we also define two more classes for their side effects. They are
 defined using reference class (i.e. R5).
 
-* Cursor: `PrestoCursor.R`. It's used in the `PrestoResult` class.
+* Query: `PrestoQuery.R`. It's used in the `PrestoResult` class.
 * Session: `PrestoSession.R`. It's used in the `PrestoConnection` class.
 
 ## `dplyr` remote database backend

@@ -18,7 +18,7 @@ with_locale(test.locale(), test_that)('extract.data works', {
       status_code=0,
       data=data.frame()
     )[['response']]
-  content <- RPresto:::response.to.content(response)
+  content <- RPresto:::.response.to.content(response)
 
   dt <- .extract.data(content, timezone=test.timezone())
   expect_equal(
@@ -41,7 +41,7 @@ with_locale(test.locale(), test_that)('extract.data works', {
       status_code=0,
       data=d,
     )[['response']]
-  content <- RPresto:::response.to.content(response)
+  content <- RPresto:::.response.to.content(response)
   content[['data']] <- NULL
 
   # We need to remove the timezone from the column since without any
@@ -55,7 +55,7 @@ with_locale(test.locale(), test_that)('extract.data works', {
     label='Zero row, multiple columns'
   )
 
-  content <- RPresto:::response.to.content(
+  content <- RPresto:::.response.to.content(
     mock_httr_response(
       'dummy_url',
       state='dummy_state',

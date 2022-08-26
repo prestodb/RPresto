@@ -4,9 +4,6 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-#' @include src.presto.R
-NULL
-
 #' S3 implementation of \code{\link[dplyr]{copy_to}} for Presto.
 #'
 #' @importFrom dplyr copy_to

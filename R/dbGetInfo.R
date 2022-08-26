@@ -9,6 +9,7 @@ NULL
 
 #' Metadata about database objects
 #' @rdname dbGetInfo
+#' @importMethodsFrom DBI dbGetInfo
 #' @export
 setMethod("dbGetInfo",
   "PrestoDriver",
@@ -18,6 +19,7 @@ setMethod("dbGetInfo",
 )
 
 #' @rdname dbGetInfo
+#' @importMethodsFrom DBI dbGetInfo
 #' @export
 setMethod("dbGetInfo",
   "PrestoConnection",
@@ -34,11 +36,11 @@ setMethod("dbGetInfo",
 
 .dbGetInfo.PrestoResult <- function(dbObj) {
   return(list(
-    query.id=dbObj@query.id,
+    query.id=dbObj@query$id(),
     statement=.dbGetStatement(dbObj),
     row.count=.dbGetRowCount(dbObj),
     has.completed=.dbHasCompleted(dbObj),
-    stats=dbObj@cursor$stats()
+    stats=dbObj@query$stats()
   ))
 }
 
@@ -57,6 +59,7 @@ setMethod("dbGetInfo",
 #'     \item{stats}{Current stats on the query}
 #'   }
 #' @rdname dbGetInfo
+#' @importMethodsFrom DBI dbGetInfo
 #' @export
 #' @examples
 #' \dontrun{

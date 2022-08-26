@@ -4,15 +4,12 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-#' @include utility_functions.R
-NULL
-
 #' Internal implementation detail class needed for its side-effects.
 #' When SET/RESET SESSION queries are called, session parameters need to be
 #' maintained by the client and requires an in-place update.
 PrestoSession <- setRefClass('PrestoSession',
   fields=c(
-    '.parameters'='list'
+    '.parameters'
   ),
   methods=list(
     initialize=function(parameters, ...) {

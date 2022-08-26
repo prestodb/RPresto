@@ -15,7 +15,7 @@ Presto(...)
   user,
   host = "localhost",
   port = 8080,
-  source = getPackageName(),
+  source = methods::getPackageName(),
   session.timezone = "UTC",
   parameters = list(),
   use.trino.headers = FALSE,

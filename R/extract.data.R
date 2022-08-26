@@ -4,15 +4,12 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-#' @include json.tabular.to.data.frame.R dbDataType.R
-NULL
-
-.extract.data <- function(response.content, timezone) {
-  data.list <- response.content[['data']]
+.extract.data <- function(content, timezone) {
+  data.list <- content$data
   if (is.null(data.list)) {
     data.list <- list()
   }
-  column.list <- response.content[['columns']]
+  column.list <- content$columns
   if (is.null(column.list)) {
     column.list <- list()
   }

@@ -10,6 +10,7 @@ NULL
 #' S4 implementation of \code{DBIConnection} for Presto.
 #'
 #' @keywords internal
+#' @importClassesFrom DBI DBIConnection
 #' @export
 setClass('PrestoConnection',
   contains='DBIConnection',
@@ -29,6 +30,7 @@ setClass('PrestoConnection',
 )
 
 #' @rdname PrestoConnection-class
+#' @importMethodsFrom methods show
 #' @export
 setMethod('show',
   'PrestoConnection',

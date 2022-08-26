@@ -9,6 +9,7 @@ NULL
 
 #' @param conn A \code{\linkS4class{PrestoConnection}} object
 #' @return [dbDisconnect] A \code{\link{logical}} value indicating success
+#' @importMethodsFrom DBI dbDisconnect
 #' @export
 #' @rdname Presto
 setMethod('dbDisconnect',

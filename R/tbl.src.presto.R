@@ -4,9 +4,6 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-#' @include dbplyr_compatible.R src.presto.R
-NULL
-
 #' dplyr integration to connect to a table in a database.
 #'
 #' Use \code{src_presto} to connect to an existing database,

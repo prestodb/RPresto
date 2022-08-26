@@ -4,10 +4,11 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-#' @include dbListTables.R PrestoConnection.R
+#' @include PrestoConnection.R
 NULL
 
 #' @rdname PrestoConnection-class
+#' @importMethodsFrom DBI dbExistsTable
 #' @export
 setMethod('dbExistsTable',
   c('PrestoConnection', 'character'),

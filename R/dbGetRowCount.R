@@ -8,9 +8,10 @@
 NULL
 
 .dbGetRowCount <- function(res, ...) {
-  return(res@cursor$fetchedRowCount())
+  return(res@query$fetchedRowCount())
 }
 
 #' @rdname PrestoResult-class
+#' @importMethodsFrom DBI dbGetRowCount
 #' @export
 setMethod('dbGetRowCount', 'PrestoResult', .dbGetRowCount)
