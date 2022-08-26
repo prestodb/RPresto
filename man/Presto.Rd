@@ -19,6 +19,7 @@ Presto(...)
   session.timezone = "UTC",
   parameters = list(),
   use.trino.headers = FALSE,
+  extra.credentials = "",
   ...
 )
 
@@ -51,6 +52,11 @@ the \sQuote{X-Presto-Session} header}
 
 \item{use.trino.headers}{A boolean to indicate whether Trino request headers
 should be used. Default to FALSE.}
+
+\item{extra.credentials}{Extra credentials to be passed in the
+X-Presto-Extra-Credential or X-Trino-Extra-Credential header (
+depending on the value of the use.trino.headers argument). Default
+to an empty string.}
 
 \item{conn}{A \code{\linkS4class{PrestoConnection}} object}
 }
