@@ -22,6 +22,10 @@ NULL
 #'          the \sQuote{X-Presto-Session} header
 #' @param use.trino.headers A boolean to indicate whether Trino request headers
 #'          should be used. Default to FALSE.
+#' @param extra.credentials Extra credentials to be passed in the
+#'          X-Presto-Extra-Credential or X-Trino-Extra-Credential header (
+#'          depending on the value of the use.trino.headers argument). Default
+#'          to an empty string.
 #' @param ... currently ignored
 #' @return [dbConnect] A \code{\linkS4class{PrestoConnection}} object
 #' @export
