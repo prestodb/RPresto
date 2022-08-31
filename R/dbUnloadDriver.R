@@ -8,6 +8,7 @@
 NULL
 
 #' @rdname PrestoDriver-class
+#' @importMethodsFrom DBI dbUnloadDriver
 #' @export
 setMethod('dbUnloadDriver',
   'PrestoDriver',

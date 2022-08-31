@@ -8,9 +8,10 @@
 NULL
 
 .dbIsValid <- function(dbObj, ...) {
-  return(!dbObj@cursor$state() %in% c('__KILLED', 'FAILED'))
+  return(!dbObj@query$state() %in% c('__KILLED', 'FAILED'))
 }
 
 #' @rdname PrestoResult-class
+#' @importMethodsFrom DBI dbIsValid
 #' @export
 setMethod('dbIsValid', 'PrestoResult', .dbIsValid)

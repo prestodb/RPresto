@@ -12,7 +12,7 @@
       "X-Trino-Schema"= conn@schema,
       "X-Trino-Source"= conn@source,
       "X-Trino-Time-Zone" = conn@session.timezone,
-      "User-Agent"= getPackageName(),
+      "User-Agent"= methods::getPackageName(),
       "X-Trino-Session"=conn@session$parameterString(),
       "X-Trino-Extra-Credential"=conn@extra.credentials
     ))
@@ -23,7 +23,7 @@
     "X-Presto-Schema"= conn@schema,
     "X-Presto-Source"= conn@source,
     "X-Presto-Time-Zone" = conn@session.timezone,
-    "User-Agent"= getPackageName(),
+    "User-Agent"= methods::getPackageName(),
     "X-Presto-Session"=conn@session$parameterString(),
     "X-Presto-Extra-Credential"=conn@extra.credentials
   ))

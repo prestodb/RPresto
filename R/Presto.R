@@ -12,5 +12,5 @@ NULL
 #' @rdname Presto
 #' @export
 Presto <- function(...) {
-  return(new('PrestoDriver'))
+  return(methods::new('PrestoDriver'))
 }

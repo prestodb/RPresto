@@ -8,15 +8,14 @@
 #' It is used purely for dispatch and \code{dbUnloadDriver} is unnecessary
 #'
 #' @keywords internal
+#' @importClassesFrom DBI DBIDriver
 #' @export
-#' @importFrom methods setClass setGeneric setMethod setRefClass
-#' @importFrom methods show getPackageName new
-#' @import DBI
 setClass('PrestoDriver',
   contains='DBIDriver'
 )
 
 #' @rdname PrestoDriver-class
+#' @importMethodsFrom methods show
 #' @export
 setMethod('show',
   'PrestoDriver',

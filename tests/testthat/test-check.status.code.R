@@ -4,27 +4,27 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-context('check.status.code')
+context('.check.response.status')
 
 source('utilities.R')
 
-check.status.code <- RPresto:::check.status.code
+.check.response.status <- RPresto:::.check.response.status
 
-test_that('check.status.code works', {
+test_that('.check.response.status works', {
   response <- mock_httr_response(
       'dummy_url',
       state='dummy_state',
       status_code=400,
       extra_content=list('failed query')
   )[['response']]
-  expect_error(check.status.code(response), '"failed query"')
+  expect_error(.check.response.status(response), '"failed query"')
 
   response <- mock_httr_response(
       'dummy_url',
       state='dummy_state',
       status_code=200
   )[['response']]
-  expect_equal(check.status.code(response), invisible())
+  expect_equal(.check.response.status(response), invisible())
 
   response <- structure(
     list(
@@ -36,7 +36,7 @@ test_that('check.status.code works', {
     class='response'
   )
   expect_error(
-    check.status.code(response),
+    .check.response.status(response),
     '403',
     class='http_403'
   )

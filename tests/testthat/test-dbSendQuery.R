@@ -23,15 +23,15 @@ test_that('dbSendQuery works with live database', {
   result <- dbSendQuery(conn, 'SELECT * FROM __non_existent_table__')
   expect_is(result, 'PrestoResult')
   expect_equal(result@statement, 'SELECT * FROM __non_existent_table__')
-  expect_equal(result@cursor$fetchedRowCount(), 0)
-  expect_false(result@cursor$hasCompleted())
+  expect_equal(result@query$fetchedRowCount(), 0)
+  expect_false(result@query$hasCompleted())
   expect_true(dbClearResult(result))
 
   result <- dbSendQuery(conn, 'SELECT 1')
   expect_is(result, 'PrestoResult')
   expect_equal(result@statement, 'SELECT 1')
-  expect_equal(result@cursor$fetchedRowCount(), 0)
-  expect_false(result@cursor$hasCompleted())
+  expect_equal(result@query$fetchedRowCount(), 0)
+  expect_false(result@query$hasCompleted())
   expect_true(dbClearResult(result))
 })
 
@@ -160,7 +160,7 @@ test_that('dbSendQuery works with mock - status code 500', {
     {
       expect_error(
         dbSendQuery(conn, 'SELECT 1'),
-        'Unknown error, status code:500, response:'
+        'Received error response \\(HTTP 500\\):.*'
       )
     }
   )
@@ -182,8 +182,8 @@ test_that('dbSendQuery works with mock - regular', {
       result <- dbSendQuery(conn, 'SELECT 1')
       expect_is(result, 'PrestoResult')
       expect_equal(result@statement, 'SELECT 1')
-      expect_equal(result@cursor$fetchedRowCount(), 0)
-      expect_false(result@cursor$hasCompleted())
+      expect_equal(result@query$fetchedRowCount(), 0)
+      expect_false(result@query$hasCompleted())
     }
   )
 })
@@ -213,22 +213,20 @@ test_that('dbSendQuery works with mock - POST data', {
       result <- dbSendQuery(conn, 'SELECT 1 AS x')
       expect_is(result, 'PrestoResult')
       expect_equal(result@statement, 'SELECT 1 AS x')
-      expect_equal(result@cursor$fetchedRowCount(), 0)
-      expect_false(result@cursor$hasCompleted())
-      expect_false(result@cursor$postDataParsed())
+      expect_equal(result@query$fetchedRowCount(), 0)
+      expect_false(result@query$hasCompleted())
       expect_equal_data_frame(
         dbFetch(result),
         data.frame(x=1)
       )
-      expect_true(result@cursor$postDataParsed())
-      expect_false(result@cursor$hasCompleted())
-      expect_equal(result@cursor$fetchedRowCount(), 1)
+      expect_false(result@query$hasCompleted())
+      expect_equal(result@query$fetchedRowCount(), 1)
       expect_equal_data_frame(
         dbFetch(result),
         data.frame()
       )
-      expect_true(result@cursor$hasCompleted())
-      expect_equal(result@cursor$fetchedRowCount(), 1)
+      expect_true(result@query$hasCompleted())
+      expect_equal(result@query$fetchedRowCount(), 1)
       expect_true(dbHasCompleted(result))
     }
   )

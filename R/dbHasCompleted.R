@@ -8,9 +8,10 @@
 NULL
 
 .dbHasCompleted <- function(res, ...) {
-  return(res@cursor$hasCompleted())
+  return(res@query$hasCompleted())
 }
 
 #' @rdname PrestoResult-class
+#' @importMethodsFrom DBI dbHasCompleted
 #' @export
 setMethod('dbHasCompleted', 'PrestoResult', .dbHasCompleted)

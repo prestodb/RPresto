@@ -28,6 +28,8 @@ NULL
 #'          to an empty string.
 #' @param ... currently ignored
 #' @return [dbConnect] A \code{\linkS4class{PrestoConnection}} object
+#' @importMethodsFrom DBI dbConnect
+#' @importFrom methods new
 #' @export
 #' @rdname Presto
 #' @examples
@@ -47,7 +49,7 @@ setMethod('dbConnect',
     user,
     host = 'localhost',
     port = 8080,
-    source = getPackageName(),
+    source = methods::getPackageName(),
     session.timezone='UTC',
     parameters = list(),
     use.trino.headers=FALSE,
@@ -59,7 +61,7 @@ setMethod('dbConnect',
       stop("Please specify a port as an integer")
     }
 
-    conn <- new('PrestoConnection',
+    conn <- methods::new('PrestoConnection',
       catalog=catalog,
       schema=schema,
       user=user,

@@ -4,6 +4,9 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
+#' @include PrestoConnection.R
+NULL
+
 #' S3 implementation of \code{sql_query_fields} for Presto.
 #'
 #' @importFrom dbplyr sql_query_fields
