@@ -390,3 +390,8 @@ setup_mock_dplyr_connection <- function() {
 
   return(list(db=db, iris_table_name='iris_table'))
 }
+
+get_nrow <- function(con, tbl) {
+  df <- dbGetQuery(con, paste('SELECT COUNT(*) AS n FROM', tbl))
+  return(df$n)
+}
