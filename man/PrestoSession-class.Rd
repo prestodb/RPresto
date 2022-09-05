@@ -4,12 +4,18 @@
 \name{PrestoSession-class}
 \alias{PrestoSession-class}
 \alias{PrestoSession}
-\title{Internal implementation detail class needed for its side-effects.
-When SET/RESET SESSION queries are called, session parameters need to be
-maintained by the client and requires an in-place update.}
+\title{Class to encapsulate a Presto session}
 \description{
 Internal implementation detail class needed for its side-effects.
 When SET/RESET SESSION queries are called, session parameters need to be
 maintained by the client and requires an in-place update.
 }
+\section{Slots}{
 
+\describe{
+\item{\code{.parameters}}{List of Presto session parameters to be added to the
+X-Presto-Session header.}
+}}
+
+
+\keyword{internal}
