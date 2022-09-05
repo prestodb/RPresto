@@ -4,9 +4,15 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
+#' Class to encapsulate a Presto session
+#' 
 #' Internal implementation detail class needed for its side-effects.
 #' When SET/RESET SESSION queries are called, session parameters need to be
 #' maintained by the client and requires an in-place update.
+#'
+#' @slot .parameters List of Presto session parameters to be added to the
+#'         X-Presto-Session header.
+#' @keywords internal
 PrestoSession <- setRefClass('PrestoSession',
   fields=c(
     '.parameters'
