@@ -75,6 +75,7 @@ Collate:
     'dbRemoveTable.R'
     'dbSendQuery.R'
     'dbUnloadDriver.R'
+    'dbWriteTable.R'
     'db_collect.R'
     'db_desc.PrestoConnection.R'
     'db_query_fields.R'
