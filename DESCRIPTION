@@ -36,7 +36,9 @@ Imports:
 Suggests:
     testthat,
     hms,
-    lubridate
+    lubridate,
+    knitr,
+    rmarkdown
 License: BSD_3_clause + file LICENSE
 URL: https://github.com/prestodb/RPresto
 BugReports: https://github.com/prestodb/RPresto/issues
@@ -49,6 +51,7 @@ Collate:
     'PrestoQuery.R'
     'PrestoResult.R'
     'copy.to.src.presto.R'
+    'create.dummy.tables.R'
     'db.data.type.PrestoConnection.R'
     'db.explain.PrestoConnection.R'
     'db.query.rows.PrestoConnection.R'
@@ -91,3 +94,4 @@ Collate:
     'src.presto.R'
     'tbl.src.presto.R'
 RoxygenNote: 7.2.1
+VignetteBuilder: knitr

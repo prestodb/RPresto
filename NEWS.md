@@ -13,6 +13,7 @@ more robust mapping between Presto data types and R types
   * Add complete support for complex Presto types (i.e., ARRAY, MAP, and ROW).
     They are now translated to typed vectors, lists, or tibbles depending on the
     types and structure of the data. (#118)
+* Add vignettes on Presto-R type translations
 
 # RPresto 1.3.8
 

@@ -1,0 +1,381 @@
+---
+title: "Translating complex Presto data types"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Translating complex Presto data types}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+In this vignette, we demonstrate how complex structural types in Presto can be
+translated into R types (e.g., vectors, list, and tibbles).
+
+## Package setup
+
+```{r setup}
+library(RPresto)
+```
+
+You can check your `RPresto` version by running the `packageVersion()` function.
+**You need version 1.3.9 or later to have a more comprehensive and robust
+complex types support.**
+
+```{r version}
+packageVersion("RPresto")
+```
+
+## Overview
+
+Complex types refer to [structural types][1] including `ARRAY`, `MAP` and `ROW`.
+Those data types are basically containers to hold other data types (hence
+*complex*).
+
+We summarize the similarities and differences between the complex types below.
+
+| Type | Is atomic? | Has names/keys? |
+|------|:----------:|:---------------:|
+| ARRAY | Yes | No |
+| MAP | Yes | Yes |
+| ROW | No | Yes |
+
+Atomic here means all elements in the container share the same type (usually
+primitive types, but can be complex types too). For example, an `ARRAY` of
+integer can only hold integer type elements whereas a `ROW` can have elements of
+different types (e.g., one element is integer and the other boolean).
+
+## Walkthrough preparation
+
+### Local Presto server in memory
+
+We assume that the user already have a Presto server with a memory connector set
+up. If you don't have such a server set up, refer to the
+[Presto documentation][2] for instructions if you want to follow along.
+
+### Presto connection in R
+
+We first create a `PrestoConnection` which will serve as the bridge between the
+Presto server and R.
+
+```{r PrestoConnection}
+con <- DBI::dbConnect(
+  drv = RPresto::Presto(),
+  host = "http://localhost",
+  port = 8080,
+  user = Sys.getenv("USER"),
+  catalog = "memory",
+  schema = "default"
+)
+```
+
+We first issue a simple query to see if the Presto connection is working
+properly.
+
+```{r test}
+DBI::dbGetQuery(con, "SELECT 1+1 AS res")
+```
+
+## Atomic structural types that contain primitive types
+
+| Presto type | R type |
+|-------------|:------:|
+| ARRAY | unnamed typed vector |
+| MAP | named typed vector |
+
+### `ARRAY`s
+
+Given the atomic and unnamed nature of `ARRAY`s, we map them to **unnamed typed
+vectors** in R.
+
+#### Create a table with `ARRAY`s of primitive types
+
+We first create a table with `ARRAY`s of all supported primitive Presto data
+types using the `create_primitive_arrays_table()` function included
+in the `RPresto` package.
+
+```{r primitive-arrays-table}
+RPresto:::create_primitive_arrays_table(
+  con, table_name = "presto_primitive_arrays", verbose = FALSE
+)
+```
+
+We can check if the table now exists in Presto.
+
+```{r check-primitive_arrays-table}
+DBI::dbExistsTable(con, "presto_primitive_arrays")
+```
+
+We can list the fields in the table. They are named after the Presto types they
+represent.
+
+```{r primitive-arrays-table-fields}
+DBI::dbListFields(con, "presto_primitive_arrays")
+```
+
+#### Translate `ARRAY`s to R vectors
+
+```{r array-of-primitive-types}
+(
+  df.array_of_primitive_types <- dbGetQuery(
+    con,
+    "SELECT * FROM presto_primitive_arrays",
+    bigint = "integer64"
+  )
+)
+```
+
+We can verify the R types of each column.
+
+```{r array-of-primitive-type-check}
+tibble::enframe(purrr::map_chr(df.array_of_primitive_types, ~class(.[[1]])[1]))
+```
+
+All vectors are unnamed.
+
+```{r array-of-primitive-name-check}
+purrr::every(df.array_of_primitive_types, ~is.null(names(.[[1]])))
+```
+
+We can also call functions such as `length()` on each of the columns to get the
+`ARRAY` cardinality. It shows that all `ARRAY`s have 3 elements in them.
+
+```{r array-cardinality}
+tibble::enframe(purrr::map_int(df.array_of_primitive_types, ~length(.[[1]])))
+```
+
+### `MAP`s
+
+A `MAP` in Presto can be thought as a combination of two same-length `ARRAY`s.
+The first `ARRAY` contains the keys of the `MAP` and the second contains the
+values of the `MAP`. In fact, that's exactly how `MAP` literals are created in
+Presto (e.g., `MAP(ARRAY[1, 2], ARRAY['a', 'b'])` creates a 2-element `MAP`).
+
+Following the logic, we translate `MAP`s to **named typed vectors** in R.
+
+#### Create a table with `MAP`S of primitive types
+
+We first create a table with `MAPS`s of all supported primitive Presto data
+types using the `create_primitive_maps_table()` function included
+in the `RPresto` package.
+
+```{r primitive-maps-table}
+RPresto:::create_primitive_maps_table(
+  con, table_name = "presto_primitive_maps", verbose = FALSE
+)
+```
+
+We can check if the table now exists in Presto.
+
+```{r check-primitive_maps-table}
+DBI::dbExistsTable(con, "presto_primitive_maps")
+```
+
+We can list the fields in the table. They are named after the Presto types they
+represent.
+
+```{r primitive-maps-table-fields}
+DBI::dbListFields(con, "presto_primitive_maps")
+```
+
+#### Translate `MAP`s to R vectors
+
+```{r map-of-primitive-types}
+(
+  df.map_of_primitive_types <- dbGetQuery(
+    con,
+    "SELECT * FROM presto_primitive_maps",
+    bigint = "integer64"
+  )
+)
+```
+
+We can verify the R types of each column.
+
+```{r map-of-primitive-type-check}
+tibble::enframe(purrr::map_chr(df.map_of_primitive_types, ~class(.[[1]])[1]))
+```
+
+All vectors are named.
+
+```{r map-of-primitive-name-check}
+purrr::none(df.map_of_primitive_types, ~is.null(names(.[[1]])))
+```
+
+### Repeated `ARRAY`s and `MAP`s
+
+It's possible to have repeated `ARRAY`s and `MAP`s in Presto in the form of
+`ARRAY`s of `ARRAY`s and `ARRAY`s of `MAP`s.
+
+| Repeated Presto type | R type |
+|----------------------|--------|
+| ARRAY of ARRAY | **not supported** |
+| ARRAY of MAP | unnamed list of named typed vectors |
+
+We are not supporting nested `ARRAY`s at the moment although it's technically
+possible in Presto.
+
+For `ARRAY`s of `MAP`s, we translate the `ARRAY` container into an unnamed list
+and each of the `MAP` element into a named typed vector.
+
+We first create an **array-of-maps** table by using the
+`create_array_of_maps_table()` function.
+
+```{r array-of-maps-table}
+RPresto:::create_array_of_maps_table(
+  con, table_name = "presto_array_of_maps", verbose = FALSE
+)
+```
+
+We can check if the table now exists in Presto.
+
+```{r check-array-of-maps-table}
+DBI::dbExistsTable(con, "presto_array_of_maps")
+```
+
+We can list the fields in the table.
+
+```{r array-of-maps-table-fields}
+DBI::dbListFields(con, "presto_array_of_maps")
+```
+
+Let's import all the data into R.
+
+```{r array-of-maps}
+(
+  df.array_of_maps <- dbGetQuery(
+    con,
+    "SELECT * FROM presto_primitive_maps",
+    bigint = "integer64"
+  )
+)
+```
+
+We need to pry open the wrapping unnamed list to reveal the types of the vectors
+underneath.
+
+```{r array-of-map-check}
+tibble::enframe(purrr::map_chr(df.array_of_maps, ~class(.[[1]][[1]])[1]))
+```
+
+## `ROW` type
+
+The easiest way to think about the `ROW` type in Presto is to think of it
+literally as a *row* of a table. Just as a table can have multiple columns of
+different data types, a `ROW` can have multiple elements of different types. And
+just like a table having a name for each column, every element of a `ROW` has a
+name associated with the value.
+
+Depending on whether the `ROW` type is repeated (i.e., wrapped in an `ARRAY`),
+the translation into R is different.
+
+* We translate single `ROW` value to a named list in R.
+
+* Rather than interpret repeated `ROW`s (i.e., `ARRAY` of `ROW`s) as a list of
+named lists, we translate the collection of `ROW`s into a tibble.
+
+| Presto type | R type |
+|-------------|--------|
+| Single ROW | named list |
+| Repeated ROWs | tibble |
+
+### Single `ROW` translation
+
+To demonstrate how `ROW` types are translated into R types, we first create a
+table using an auxiliary `create_primitive_rows_table()` function
+included in the package. The resulting table has only 1 column named
+`row_primitive_types` which is a `ROW` that includes 17 sub-columns representing
+all supported primitive types.
+
+```{r primitive-rows-table}
+RPresto:::create_primitive_rows_table(
+  con, table_name = "presto_primitive_rows", verbose = FALSE
+)
+```
+
+We can check if the table now exists in Presto.
+
+```{r check-primitive_rows-table}
+DBI::dbExistsTable(con, "presto_primitive_rows")
+```
+
+We can list the fields in the table.
+
+```{r primitive-rows-table-fields}
+DBI::dbListFields(con, "presto_primitive_rows")
+```
+
+We can then retrieve all the data from the table.
+
+```{r row-of-primitive}
+(
+  df.row_of_primitive <- dbGetQuery(
+    con,
+    "SELECT row_primitive_types FROM presto_primitive_rows",
+    bigint = "integer64"
+  )
+)
+```
+
+We can check the R types of each element in the named list.
+
+```{r row-of-primitive-check}
+tibble::enframe(
+  purrr::map_chr(df.row_of_primitive$row_primitive_types[[1]], ~class(.)[1])
+)
+```
+
+### Repeated `ROW`s translation
+
+To construct a repeated `ROW` column, we use the auxiliary
+`create_array_of_rows_table()` function.
+
+```{r arrays-of-rows-table}
+RPresto:::create_array_of_rows_table(
+  con, table_name = "presto_array_of_rows", verbose = FALSE
+)
+```
+
+We can check if the table now exists in Presto and the field name.
+
+```{r check-array-of-rows-table}
+DBI::dbExistsTable(con, "presto_array_of_rows")
+```
+
+```{r array-of-rows-table-fields}
+DBI::dbListFields(con, "presto_array_of_rows")
+```
+
+We can import the whole data into R.
+
+```{r array-of-rows}
+(
+  df.array_of_rows <- dbGetQuery(
+    con,
+    "SELECT array_of_rows FROM presto_array_of_rows",
+    bigint = "integer64"
+  )
+)
+```
+
+We can verify the tibble's column types.
+
+```{r array-of-row-check}
+tibble::enframe(
+  purrr::map_chr(df.array_of_rows$array_of_rows[[1]], ~class(.)[1])
+)
+```
+
+## Walkthrough wrap-up
+
+```{r close-db}
+DBI::dbDisconnect(con)
+```
+
+[1]: https://prestodb.io/docs/current/language/types.html#structural
+[2]: https://prestodb.io/docs/current/connector/memory.html

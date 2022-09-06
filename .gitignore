@@ -5,3 +5,4 @@ tests/testthat/credentials.dcf
 *./o
 *./so
 .DS_Store
+inst/doc
