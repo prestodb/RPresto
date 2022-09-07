@@ -18,7 +18,7 @@ NULL
 .dbWriteTable <- function(
   conn, name, value,
   overwrite = FALSE, ...,
-  append = FALSE, field.types = NULL, temporary = FALSE, row.names = NA
+  append = FALSE, field.types = NULL, temporary = FALSE, row.names = FALSE
 ) {
   stopifnot(
     length(overwrite) == 1 &&
@@ -36,7 +36,7 @@ NULL
   if (!identical(temporary, FALSE)) {
     stop('Temporary tables not supported by RPresto', call. = FALSE)
   }
-  if (!is.na(row.names)) {
+  if (!identical(row.names, FALSE)) {
     stop('row.names not supported by RPresto', call. = FALSE)
   }
 
