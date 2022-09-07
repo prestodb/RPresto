@@ -2,7 +2,7 @@
 % Please edit documentation in R/sqlCreateTableAs.R
 \name{sqlCreateTableAs}
 \alias{sqlCreateTableAs}
-\title{#' Compose query to create a simple table using a statement}
+\title{Compose query to create a simple table using a statement}
 \usage{
 sqlCreateTableAs(con, table, statement, with = NULL, ...)
 }
@@ -24,5 +24,5 @@ sqlCreateTableAs(con, table, statement, with = NULL, ...)
 \item{...}{Other arguments used by individual methods.}
 }
 \description{
-#' Compose query to create a simple table using a statement
+Compose query to create a simple table using a statement
 }
