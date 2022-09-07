@@ -1,0 +1,244 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# RPresto
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+RPresto is a [DBI](https://dbi.r-dbi.org/)-based adapter for
+the open source distributed SQL query engine [Presto](https://prestodb.io/)
+for running interactive analytic queries.
+
+## Installation
+
+RPresto is both on [CRAN](https://cran.r-project.org/package=RPresto)
+and [github](https://github.com/prestodb/RPresto).
+
+For the CRAN version, you can use
+
+```{r install_cran, eval = FALSE}
+install.packages("RPresto")
+```
+
+You can install the development version of RPresto from
+[GitHub](https://github.com/) with:
+
+```{r install_github, eval = FALSE}
+# install.packages("devtools")
+devtools::install_github("prestodb/RPresto")
+```
+
+## Usage
+
+**The following examples assume that you have a in-memory Presto server set up
+locally.** It's the simplest server which stores all data and metadata in RAM on
+workers and both are discarded when Presto restarts. If you don't have one set
+up, please refer to the [memory connector documentation][1].
+
+```{r setup, eval = TRUE}
+# Load libaries and connect to Presto
+library(RPresto)
+library(DBI)
+
+con <- DBI::dbConnect(
+  drv = RPresto::Presto(),
+  host = "http://localhost",
+  port = 8080,
+  user = Sys.getenv("USER"),
+  catalog = "memory",
+  schema = "default"
+)
+```
+
+There are two levels of APIs: `DBI` and `dplyr`.
+
+### `DBI` APIs
+
+The easiest and most flexible way of executing a `SELECT` query is using a
+[`dbGetQuery()`][2] call. It returns the query result in a [`tibble`][3].
+
+```{r dbGetQuery, eval=TRUE}
+DBI::dbGetQuery(con, "SELECT CAST(3.14 AS DOUBLE) AS pi")
+```
+
+[`dbWriteTable()`][4] can be used to write a small data frame into a Presto
+table.
+
+```{r dbWriteTable_pre_hook, eval = TRUE, echo = FALSE}
+if (DBI::dbExistsTable(con, "mtcars")) {
+  DBI::dbRemoveTable(con, "mtcars")
+}
+```
+
+```{r dbWriteTable, eval = TRUE}
+# Writing mtcars data frame into Presto
+DBI::dbWriteTable(con, "mtcars", mtcars)
+```
+
+[`dbExistsTable()`][5] checks if a table exists.
+
+```{r dbExistsTable, eval = TRUE}
+DBI::dbExistsTable(con, "mtcars")
+```
+
+[`dbReadTable()`][6] reads the entire table into R. It's essentially a `SELECT *`
+query on the table.
+
+```{r dbReadTable, eval = TRUE}
+DBI::dbReadTable(con, "mtcars")
+```
+
+[`dbRemoveTable()`][7] drops the table from Presto.
+
+```{r dbRemoveTable, eval = TRUE}
+DBI::dbRemoveTable(con, "mtcars")
+```
+
+You can execute a statement and returns the number of rows affected using
+[`dbExecute()`][8].
+
+```{r dbExecute_1_pre_hook, eval = TRUE, echo = FALSE}
+if (DBI::dbExistsTable(con, "testing_table")) {
+  DBI::dbRemoveTable(con, "testing_table")
+}
+```
+
+```{r dbExecute_1, eval = TRUE}
+# Create an empty table using CREATE TABLE
+DBI::dbExecute(
+  con, "CREATE TABLE testing_table (field1 BIGINT, field2 VARCHAR)"
+)
+```
+
+`dbExecute()` returns the number of rows affected by the statement. Since a
+`CREATE TABLE` statement creates an empty table, it returns 0.
+
+```{r dbExecute_2, eval = TRUE}
+DBI::dbExecute(
+  con,
+  "INSERT INTO testing_table VALUES (1, 'abc'), (2, 'xyz')"
+)
+```
+
+Since 2 rows are inserted into the table, it returns 2.
+
+```{r check_dbExecute, eval = TRUE}
+# Check the previous INSERT statment works
+DBI::dbReadTable(con, "testing_table")
+```
+
+### `dplyr` APIs
+
+We also include `dplyr` database backend integration (which is mainly
+implemented using the [`dbplyr` package][9]).
+
+```{r dplyr_setup, eval = TRUE, message = FALSE}
+# Load packages
+library(dplyr)
+library(dbplyr)
+
+# Add iris to Presto
+if (!DBI::dbExistsTable(con, "iris")) {
+  DBI::dbWriteTable(con, "iris", iris)
+}
+```
+
+[`dplyr::tbl()`][10] can work directly on `PrestoConnection` object.
+
+```{r dplyr_tbl, eval = TRUE}
+# Treat "iris" in Presto as a remote data source that dplyr can now manipulate
+tbl.iris <- dplyr::tbl(con, "iris")
+
+# colnames() gives the column names
+tbl.iris %>% colnames()
+
+# dplyr verbs can be applied onto the remote data source
+tbl.iris %>%
+  group_by(species) %>%
+  summarize(
+    mean_sepal_length = mean(sepal.length, na.rm = TRUE)
+  ) %>%
+  arrange(species) %>%
+  collect()
+```
+
+## Connecting to Trino
+
+To connect to Trino you must set the `use.trino.headers` parameter so `RPresto`
+knows to send the correct headers to the server. Otherwise all the same
+functionality is supported.
+
+```{r, eval=FALSE}
+con.trino <- DBI::dbConnect(
+  RPresto::Presto(),
+  use.trino.headers=TRUE,
+  host="http://localhost",
+  port=7777,
+  user=Sys.getenv("USER"),
+  schema="<schema>",
+  catalog="<catalog>",
+  source="<source>"
+)
+```
+
+## Passing extra credentials to the connector
+
+To pass extraCredentials that gets added to the `X-Presto-Extra-Credential`
+header use the `extra.credentials` parameter so `RPresto` will add that to the
+header while creating the `PrestoConnection`.
+
+Set `use.trino.headers` if you want to pass extraCredentials through the
+`X-Trino-Extra-Credential` header.
+
+```{r, eval=FALSE}
+con <- DBI::dbConnect(
+  RPresto::Presto(),
+  host="http://localhost",
+  port=7777,
+  user=Sys.getenv("USER"),
+  schema="<schema>",
+  catalog="<catalog>",
+  source="<source>",
+  extra.credentials="test.token.foo=bar",
+)
+```
+
+## How RPresto works
+
+Presto exposes its interface via a REST based API[^1]. We utilize the
+[httr](https://github.com/r-lib/httr) package to make the API calls and
+use [jsonlite](https://github.com/jeroen/jsonlite) to reshape the
+data into a `tibble`. Note that as of now, only read operations are
+supported.
+
+RPresto has been tested on Presto 0.100.
+
+## License
+RPresto is BSD-licensed.
+
+[^1]: See <https://github.com/prestodb/presto/wiki/HTTP-Protocol> for a
+description of the API.
+
+[1]: https://prestodb.io/docs/current/connector/memory.html
+[2]: https://dbi.r-dbi.org/reference/dbgetquery
+[3]: https://tibble.tidyverse.org/
+[4]: https://dbi.r-dbi.org/reference/dbwritetable
+[5]: https://dbi.r-dbi.org/reference/dbexiststable
+[6]: https://dbi.r-dbi.org/reference/dbreadtable
+[7]: https://dbi.r-dbi.org/reference/dbremovetable
+[8]: https://dbi.r-dbi.org/reference/dbexecute
+[9]: https://dbplyr.tidyverse.org/
+[10]: https://dplyr.tidyverse.org/reference/tbl.html

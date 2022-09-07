@@ -22,6 +22,11 @@ The required DBI classes are defined in the following files. Their specific DBI
   * The `dbExistsTable()` method is implemented in `dbExistsTable.R`.
   * The `dbGetQuery()` method is implemented in `dbGetQuery.R`.
   * The `dbListTables()` method is implemented in `dbListTables.R`.
+  * The `dbCreateTable()` method is implemented in `sqlCreateTable.R` and
+    `dbCreateTable.R`.
+  * The `dbCreateTableAs()` method is implemented in `sqlCreateTableAs.R` and
+    `dbCreateTableAs.R`.
+  * The `dbWriteTable()` method is implemented in `dbWriteTable.R`.
 * `PrestoResult`: `PrestoResult.R`
   * The `dbSendQuery()` method is implemented in `dbSendQuery.R`.
   * The `dbClearResult()` method is implemented in `dbClearResult.R`.
@@ -61,11 +66,13 @@ around a DBI database connection object (i.e. `PrestoConnection`).
 * The `dplyr::copy_to()` method is explicitly not implemented in
 `copy.to.src.presto.R`.
 * The `dplyr::tbl()` method is implemented in `tbl.src.presto.R`.
+* The `dplyr::collect()` method is implemented in `src.presto.R`.
 
 The `dplyr` database backend also relies on implementation of a few `dbplyr`
 methods.
 * The `dbplyr::dbplyr_edition()` method is implemented in
   `dbplyr.edition.PrestoConnection.R`.
+* The `dbplyr::db_collect()` method is implemented in `db_collect.R`.
 * The `dbplyr::sql_escape_date()` method is implemented in
   `sql_escape_date.R`.
 * The `dbplyr::sql_escape_datetime()` method is implemented in
