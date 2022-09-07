@@ -61,7 +61,7 @@
   append = FALSE,
   field.types = NULL,
   temporary = FALSE,
-  row.names = NA
+  row.names = FALSE
 )
 
 \S4method{sqlCreateTable}{PrestoConnection}(
