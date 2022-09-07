@@ -7,7 +7,7 @@
 #' @include PrestoConnection.R
 NULL
 
-#' #' Compose query to create a simple table using a statement
+#' Compose query to create a simple table using a statement
 #'
 #' @param con A database connection.
 #' @param table The table name, passed on to [dbQuoteIdentifier()]. Options are:
