@@ -13,9 +13,9 @@ parse.presto.type <- function(presto_type) {
     return("PRESTO_INTEGER")
   } else if (presto_type %in% c("bigint")) {
     return("PRESTO_BIGINT")
-  } else if (presto_type %in% c("real", "double")) {
+  } else if (presto_type %in% c("real", "double", "decimal")) {
     return("PRESTO_FLOAT")
-  } else if (presto_type %in% c("decimal", "json", "varchar", "char")) {
+  } else if (presto_type %in% c("json", "varchar", "char")) {
     return("PRESTO_STRING")
   } else if (presto_type == "varbinary") {
     return("PRESTO_BYTES")

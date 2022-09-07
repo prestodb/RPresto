@@ -25,6 +25,8 @@ more robust mapping between Presto data types and R types
   * It supports all primitive and complex data types for Trino too. (#176)
 * Add vignettes on Presto-R type translations (see `vignette("primitive-types")`
   and `vignette("complex-types")`)
+* Correctly import DECIMAL type to numeric in R rather than coerce to character
+  (#162)
 * `dbExistsTable()` error when quoted identifier is supplied as `name` is fixed
   (#167)
 * Add a few `dplyr` and `dbplyr` method implementations. See

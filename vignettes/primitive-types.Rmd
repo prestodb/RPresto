@@ -52,7 +52,7 @@ what's supported and what those supported types map to in R.
 | Integer | BIGINT | \{**integer**\|integer64\|numeric\|character\} |
 | Floating-point | REAL | numeric |
 | Floating-point | DOUBLE | numeric |
-| Floating-point | DECIMAL | **not supported** |
+| Floating-point | DECIMAL | numeric |
 | String | VARCHAR | character |
 | String | CHAR | character |
 | String | VARBINARY | raw |

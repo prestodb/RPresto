@@ -163,7 +163,7 @@ test_that("all data types work", {
       type_bigint = 1L,
       type_real = 1.0,
       type_double = 1.0,
-      type_decimal = "1.414",
+      type_decimal=1.414,
       type_varchar = "a",
       type_char = "a",
       type_varbinary = list(charToRaw("a")),
@@ -193,7 +193,7 @@ test_that("all data types work", {
     type_bigint = NA_integer_,
     type_real = NA_real_,
     type_double = NA_real_,
-    type_decimal = NA_character_,
+    type_decimal=NA_real_,
     type_varchar = NA_character_,
     type_char = NA_character_,
     # raw type doesn't have an NA value
