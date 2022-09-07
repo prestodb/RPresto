@@ -7,3 +7,4 @@
 ^\.travis\.yml$
 ^CRAN-RELEASE$
 ^backend-implementations.md
+^README\.Rmd$
