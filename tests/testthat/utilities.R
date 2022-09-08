@@ -330,15 +330,15 @@ read_credentials <- function() {
   return(credentials)
 }
 
-setup_live_connection <- function(session.timezone, parameters, extra.credentials="", ...) {
+setup_live_connection <- function(
+  session.timezone='',
+  parameters=list(),
+  extra.credentials='',
+  bigint = c('integer', 'integer64', 'numeric', 'character'),
+  ...
+) {
   skip_on_cran()
   credentials <- read_credentials()
-  if (missing(session.timezone)) {
-    session.timezone <- ''
-  }
-  if (missing(parameters)) {
-    parameters <- list()
-  }
   conn <- dbConnect(RPresto::Presto(),
     schema=credentials$schema,
     catalog=credentials$catalog,
@@ -348,39 +348,33 @@ setup_live_connection <- function(session.timezone, parameters, extra.credential
     session.timezone=session.timezone,
     parameters=parameters,
     extra.credentials=extra.credentials,
-    user=Sys.getenv('USER')
+    user=Sys.getenv('USER'),
+    bigint=bigint
   )
   return(conn)
 }
 
-setup_live_dplyr_connection <-
-  function(
-    session.timezone,
-    bigint = c("integer", "integer64", "numeric", "character")
-  ) {
-    skip_on_cran()
+setup_live_dplyr_connection <- function(
+  session.timezone='',
+  parameters=list(),
+  extra.credentials='',
+  bigint = c('integer', 'integer64', 'numeric', 'character'),
+  ...
+) {
+  skip_on_cran()
 
-    if(!requireNamespace('dplyr', quietly=TRUE)) {
-      skip("Skipping dplyr tests because we can't load dplyr")
-    }
-
-    credentials <- read_credentials()
-    if (missing(session.timezone)) {
-      session.timezone <- ''
-    }
-    db <- src_presto(
-      schema=credentials$schema,
-      catalog=credentials$catalog,
-      host=credentials$host,
-      port=credentials$port,
-      source=credentials$source,
-      user=Sys.getenv('USER'),
-      session.timezone=session.timezone,
-      parameters=list(),
-      bigint=match.arg(bigint)
+  credentials <- read_credentials()
+  db <- src_presto(
+    con = setup_live_connection(
+      session.timezone,
+      parameters,
+      extra.credentials,
+      bigint,
+      ...
     )
-    return(list(db=db, iris_table_name=credentials[['iris_table_name']]))
-  }
+  )
+  return(list(db=db, iris_table_name=credentials[['iris_table_name']]))
+}
 
 setup_mock_connection <- function() {
   mock.conn <- dbConnect(

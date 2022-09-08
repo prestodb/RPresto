@@ -2,30 +2,61 @@
 % Please edit documentation in R/src.presto.R
 \name{tbl.src_presto}
 \alias{tbl.src_presto}
+\alias{tbl.PrestoConnection}
 \alias{copy_to.src_presto}
 \title{dplyr integration to connect to a table in a database.}
 \usage{
 \method{tbl}{src_presto}(src, from, ...)
+
+\method{tbl}{PrestoConnection}(conn, from, ...)
 
 \method{copy_to}{src_presto}(dest, df)
 }
 \arguments{
 \item{src}{A presto src created with \code{src_presto}.}
 
-\item{from}{Either a string giving the name of table in database, or
-\code{\link[dplyr]{sql}} described a derived table or compound join.}
+\item{from}{Either a string (giving a table name) or a literal
+\code{\link[dbplyr:sql]{dbplyr::sql()}} string.}
+
+\item{...}{Passed on to \code{\link[dbplyr:tbl_sql]{dbplyr::tbl_sql()}}}
+
+\item{conn}{A \code{PrestoConnection} object produced by \code{DBI::dbConnect()}.}
 }
 \description{
 Use \code{src_presto} to connect to an existing database,
 and \code{tbl} to connect to tables within that database.
 If you're unsure of the arguments to pass, please ask your database
 administrator for the values of these variables.
+
+Automatically create a Presto remote database source to wrap aroudn the
+\code{PrestoConnection} object via which DBI APIs can be called.
 }
 \examples{
 \dontrun{
 # First create a database connection with src_presto, then reference a tbl
 # within that database
+my_db <- src_presto(
+  catalog = "memory",
+  schema = "default",
+  user = Sys.getenv("USER"),
+  host = "http://localhost",
+  port = 8080,
+  session.timezone = "Asia/Kathmandu"
+)
 my_tbl <- tbl(my_db, "my_table")
+}
+\dontrun{
+# First create a database connection, then reference a tbl within that
+# database
+my_con <- DBI::dbConnect(
+  catalog = "memory",
+  schema = "default",
+  user = Sys.getenv("USER"),
+  host = "http://localhost",
+  port = 8080,
+  session.timezone = "Asia/Kathmandu"
+)
+my_tbl <- tbl(my_con, "my_table")
 }
 }
 \keyword{internal}
