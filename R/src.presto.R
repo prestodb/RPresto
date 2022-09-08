@@ -107,6 +107,10 @@ collect.tbl_presto <- function(x, ..., n = Inf, warn_incomplete = TRUE) {
         x <- utils::head(x, n)
     }
     sql <- dbplyr::db_sql_render(x$src$con, x)
+    # This is the one place whereby this implementation is different from the
+    # default dbplyr::collect.tbl_sql()
+    # We pass ... to db_collect() here so that bigint can be used in collect()
+    # to specify the BIGINT treatment
     out <- dbplyr::db_collect(
       x$src$con, sql, n = n, warn_incomplete = warn_incomplete, ...
     )
