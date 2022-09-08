@@ -2,7 +2,7 @@
 % Please edit documentation in R/db.data.type.PrestoConnection.R,
 %   R/db.explain.PrestoConnection.R, R/db.query.rows.PrestoConnection.R,
 %   R/db_collect.R, R/db_desc.PrestoConnection.R, R/db_query_fields.R,
-%   R/src.presto.R
+%   R/tbl.src.presto.R
 \name{db_data_type.PrestoConnection}
 \alias{db_data_type.PrestoConnection}
 \alias{db_explain.PrestoConnection}

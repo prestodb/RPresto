@@ -74,15 +74,17 @@ Important methods:
 | db_data_type | PrestoConnection | Implemented | db.data.type.PrestoConnection.R |
 | db_explain | PrestoConnection | Implemented | db.explain.PrestoConnection.R |
 | db_query_rows | PrestoConnection | Not implemented | db.query.rows.PrestoConnection.R |
+| tbl | PrestoConnection | Implemented | src.presto.R |
+| copy_to | PrestoConnection | Implemented | src.presto.R |
 
 `dplyr` remote database source functions:
 
 | Function | Default | Primary class | Status | File |
 | -------- | ----------- | ------------- | ------ | ---- |
 | src_presto | src_dbi | | Implemented | src.presto.R |
-| tbl.src_presto | tbl.src_dbi | src_presto | Implemented | tbl.src.presto.R |
-| collect.tbl_presto | collect.tbl_sql | tbl_presto | Implemented | src.presto.R |
-| copy_to.src_presto | copy_to.src_sql | src_presto | Not implemented | copy.to.src.presto.R |
+| tbl.src_presto | tbl.src_dbi | src_presto | Implemented | src.presto.R |
+| collect.tbl_presto | collect.tbl_sql | tbl_presto | Implemented | tbl.src.presto.R |
+| copy_to.src_presto | copy_to.src_sql | src_presto | Implemented | src.presto.R |
 
 `dbplyr` generics:
 
