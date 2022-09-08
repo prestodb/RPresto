@@ -14,6 +14,8 @@ more robust mapping between Presto data types and R types
     They are now translated to typed vectors, lists, or tibbles depending on the
     types and structure of the data. (#118)
 * Add vignettes on Presto-R type translations
+* `dbExistsTable()` error when quoted identifier is supplied as `name` is fixed
+  (#167)
 
 # RPresto 1.3.8
 
