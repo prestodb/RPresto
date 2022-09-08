@@ -16,6 +16,7 @@ more robust mapping between Presto data types and R types
 * Add vignettes on Presto-R type translations
 * `dbExistsTable()` error when quoted identifier is supplied as `name` is fixed
   (#167)
+* Add `dplyr::copy_to()` methods for `src_presto` and `PrestoConnection`
 
 # RPresto 1.3.8
 

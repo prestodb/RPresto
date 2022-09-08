@@ -4,13 +4,16 @@
 \alias{tbl.src_presto}
 \alias{tbl.PrestoConnection}
 \alias{copy_to.src_presto}
+\alias{copy_to.PrestoConnection}
 \title{dplyr integration to connect to a table in a database.}
 \usage{
 \method{tbl}{src_presto}(src, from, ...)
 
 \method{tbl}{PrestoConnection}(conn, from, ...)
 
-\method{copy_to}{src_presto}(dest, df)
+\method{copy_to}{src_presto}(dest, df, name = deparse(substitute(df)), overwrite = FALSE)
+
+\method{copy_to}{PrestoConnection}(dest, df, name = deparse(substitute(df)), overwrite = FALSE)
 }
 \arguments{
 \item{src}{A presto src created with \code{src_presto}.}
@@ -21,6 +24,16 @@
 \item{...}{Passed on to \code{\link[dbplyr:tbl_sql]{dbplyr::tbl_sql()}}}
 
 \item{conn}{A \code{PrestoConnection} object produced by \code{DBI::dbConnect()}.}
+
+\item{dest}{remote data source}
+
+\item{df}{local data frame}
+
+\item{name}{name for new remote table.}
+
+\item{overwrite}{If \code{TRUE}, will overwrite an existing table with
+name \code{name}. If \code{FALSE}, will throw an error if \code{name} already
+exists.}
 }
 \description{
 Use \code{src_presto} to connect to an existing database,

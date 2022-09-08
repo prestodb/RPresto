@@ -78,33 +78,33 @@ DBI::dbGetQuery(con, "SELECT CAST(3.14 AS DOUBLE) AS pi")
 table.
 
 ```{r dbWriteTable_pre_hook, eval = TRUE, echo = FALSE}
-if (DBI::dbExistsTable(con, "mtcars")) {
-  DBI::dbRemoveTable(con, "mtcars")
+if (DBI::dbExistsTable(con, "iris")) {
+  DBI::dbRemoveTable(con, "iris")
 }
 ```
 
 ```{r dbWriteTable, eval = TRUE}
-# Writing mtcars data frame into Presto
-DBI::dbWriteTable(con, "mtcars", mtcars)
+# Writing iris data frame into Presto
+DBI::dbWriteTable(con, "iris", iris)
 ```
 
 [`dbExistsTable()`][5] checks if a table exists.
 
 ```{r dbExistsTable, eval = TRUE}
-DBI::dbExistsTable(con, "mtcars")
+DBI::dbExistsTable(con, "iris")
 ```
 
 [`dbReadTable()`][6] reads the entire table into R. It's essentially a `SELECT *`
 query on the table.
 
 ```{r dbReadTable, eval = TRUE}
-DBI::dbReadTable(con, "mtcars")
+DBI::dbReadTable(con, "iris")
 ```
 
 [`dbRemoveTable()`][7] drops the table from Presto.
 
 ```{r dbRemoveTable, eval = TRUE}
-DBI::dbRemoveTable(con, "mtcars")
+DBI::dbRemoveTable(con, "iris")
 ```
 
 You can execute a statement and returns the number of rows affected using
@@ -149,20 +149,30 @@ implemented using the [`dbplyr` package][9]).
 # Load packages
 library(dplyr)
 library(dbplyr)
-
-# Add iris to Presto
-if (!DBI::dbExistsTable(con, "iris")) {
-  DBI::dbWriteTable(con, "iris", iris)
-}
 ```
 
-[`dplyr::tbl()`][10] can work directly on `PrestoConnection` object.
+We can use [`dplyr::copy_to()`][11] to write a local data frame to a
+`PrestoConnection` and immediately create a remote table on it.
+
+```{r dplyr_copyto, eval = TRUE}
+# Add mtcars to Presto
+if (DBI::dbExistsTable(con, "mtcars")) {
+  DBI::dbRemoveTable(con, "mtcars")
+}
+tbl.mtcars <- dplyr::copy_to(dest = con, df = mtcars, name = "mtcars")
+# colnames() gives the column names
+tbl.mtcars %>% colnames()
+```
+
+[`dplyr::tbl()`][10] also work directly on the `PrestoConnection`.
 
 ```{r dplyr_tbl, eval = TRUE}
 # Treat "iris" in Presto as a remote data source that dplyr can now manipulate
+if (!DBI::dbExistsTable(con, "iris")) {
+  DBI::dbWriteTable(con, "iris", iris)
+}
 tbl.iris <- dplyr::tbl(con, "iris")
 
-# colnames() gives the column names
 tbl.iris %>% colnames()
 
 # dplyr verbs can be applied onto the remote data source
@@ -242,3 +252,4 @@ description of the API.
 [8]: https://dbi.r-dbi.org/reference/dbexecute
 [9]: https://dbplyr.tidyverse.org/
 [10]: https://dplyr.tidyverse.org/reference/tbl.html
+[11]: https://dplyr.tidyverse.org/reference/copy_to.html

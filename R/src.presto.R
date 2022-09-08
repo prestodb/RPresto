@@ -157,12 +157,39 @@ tbl.PrestoConnection <- function(conn, from, ...) {
   dplyr::tbl(src_presto(con = conn), from = from, ...)
 }
 
-#' S3 implementation of \code{\link[dplyr]{copy_to}} for Presto.
+#' S3 implementation of \code{\link[dplyr]{copy_to}} for remote Presto source
 #'
 #' @importFrom dplyr copy_to
 #' @export
+#' @inheritParams dplyr::copy_to
 #' @rdname dplyr_source_function_implementations
 #' @keywords internal
-copy_to.src_presto <- function(dest, df) {
-  stop("Not implemented.")
+copy_to.src_presto <- function(
+  dest, df, name = deparse(substitute(df)), overwrite = FALSE
+) {
+  # Use the default copy_to.src_sql implementation in dbplyr, but with a few
+  # arguments fixed at acceptable default values
+  copy_to.src_sql <- utils::getFromNamespace("copy_to.src_sql", "dbplyr")
+  copy_to.src_sql(
+    dest, df, name, overwrite,
+    types = NULL, temporary = FALSE, analyze = FALSE, in_transaction = FALSE
+  )
+}
+
+#' S3 implementation of \code{\link[dplyr]{copy_to}} for PrestoConnection 
+#'
+#' @importFrom dplyr copy_to
+#' @export
+#' @inheritParams dplyr::copy_to
+#' @rdname dplyr_source_function_implementations
+#' @keywords internal
+copy_to.PrestoConnection <- function(
+  dest, df, name = deparse(substitute(df)), overwrite = FALSE
+) {
+  copy_to(
+    dest = src_presto(con = dest),
+    df = df,
+    name = name,
+    overwrite = overwrite
+  )
 }

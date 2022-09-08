@@ -72,15 +72,15 @@ DBI::dbGetQuery(con, "SELECT CAST(3.14 AS DOUBLE) AS pi")
 used to write a small data frame into a Presto table.
 
 ``` r
-# Writing mtcars data frame into Presto
-DBI::dbWriteTable(con, "mtcars", mtcars)
+# Writing iris data frame into Presto
+DBI::dbWriteTable(con, "iris", iris)
 ```
 
 [`dbExistsTable()`](https://dbi.r-dbi.org/reference/dbexiststable)
 checks if a table exists.
 
 ``` r
-DBI::dbExistsTable(con, "mtcars")
+DBI::dbExistsTable(con, "iris")
 #> [1] TRUE
 ```
 
@@ -88,28 +88,28 @@ DBI::dbExistsTable(con, "mtcars")
 entire table into R. It’s essentially a `SELECT *` query on the table.
 
 ``` r
-DBI::dbReadTable(con, "mtcars")
-#> # A tibble: 32 × 11
-#>      mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb
-#>    <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>
-#>  1  21       6  160    110  3.9   2.62  16.5     0     1     4     4
-#>  2  21       6  160    110  3.9   2.88  17.0     0     1     4     4
-#>  3  22.8     4  108     93  3.85  2.32  18.6     1     1     4     1
-#>  4  21.4     6  258    110  3.08  3.22  19.4     1     0     3     1
-#>  5  18.7     8  360    175  3.15  3.44  17.0     0     0     3     2
-#>  6  18.1     6  225    105  2.76  3.46  20.2     1     0     3     1
-#>  7  14.3     8  360    245  3.21  3.57  15.8     0     0     3     4
-#>  8  24.4     4  147.    62  3.69  3.19  20       1     0     4     2
-#>  9  22.8     4  141.    95  3.92  3.15  22.9     1     0     4     2
-#> 10  19.2     6  168.   123  3.92  3.44  18.3     1     0     4     4
-#> # … with 22 more rows
+DBI::dbReadTable(con, "iris")
+#> # A tibble: 150 × 5
+#>    sepal.length sepal.width petal.length petal.width species
+#>           <dbl>       <dbl>        <dbl>       <dbl> <chr>  
+#>  1          5.1         3.5          1.4         0.2 setosa 
+#>  2          4.9         3            1.4         0.2 setosa 
+#>  3          4.7         3.2          1.3         0.2 setosa 
+#>  4          4.6         3.1          1.5         0.2 setosa 
+#>  5          5           3.6          1.4         0.2 setosa 
+#>  6          5.4         3.9          1.7         0.4 setosa 
+#>  7          4.6         3.4          1.4         0.3 setosa 
+#>  8          5           3.4          1.5         0.2 setosa 
+#>  9          4.4         2.9          1.4         0.2 setosa 
+#> 10          4.9         3.1          1.5         0.1 setosa 
+#> # … with 140 more rows
 ```
 
 [`dbRemoveTable()`](https://dbi.r-dbi.org/reference/dbremovetable) drops
 the table from Presto.
 
 ``` r
-DBI::dbRemoveTable(con, "mtcars")
+DBI::dbRemoveTable(con, "iris")
 ```
 
 You can execute a statement and returns the number of rows affected
@@ -156,21 +156,35 @@ package](https://dbplyr.tidyverse.org/)).
 # Load packages
 library(dplyr)
 library(dbplyr)
-
-# Add iris to Presto
-if (!DBI::dbExistsTable(con, "iris")) {
-  DBI::dbWriteTable(con, "iris", iris)
-}
 ```
 
-[`dplyr::tbl()`](https://dplyr.tidyverse.org/reference/tbl.html) can
-work directly on `PrestoConnection` object.
+We can use
+[`dplyr::copy_to()`](https://dplyr.tidyverse.org/reference/copy_to.html)
+to write a local data frame to a `PrestoConnection` and immediately
+create a remote table on it.
+
+``` r
+# Add mtcars to Presto
+if (DBI::dbExistsTable(con, "mtcars")) {
+  DBI::dbRemoveTable(con, "mtcars")
+}
+tbl.mtcars <- dplyr::copy_to(dest = con, df = mtcars, name = "mtcars")
+# colnames() gives the column names
+tbl.mtcars %>% colnames()
+#>  [1] "mpg"  "cyl"  "disp" "hp"   "drat" "wt"   "qsec" "vs"   "am"   "gear"
+#> [11] "carb"
+```
+
+[`dplyr::tbl()`](https://dplyr.tidyverse.org/reference/tbl.html) also
+work directly on the `PrestoConnection`.
 
 ``` r
 # Treat "iris" in Presto as a remote data source that dplyr can now manipulate
+if (!DBI::dbExistsTable(con, "iris")) {
+  DBI::dbWriteTable(con, "iris", iris)
+}
 tbl.iris <- dplyr::tbl(con, "iris")
 
-# colnames() gives the column names
 tbl.iris %>% colnames()
 #> [1] "sepal.length" "sepal.width"  "petal.length" "petal.width"  "species"
 
