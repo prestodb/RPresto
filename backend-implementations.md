@@ -7,75 +7,90 @@ mainly using [`dbplyr`](https://dbplyr.tidyverse.org/).
 
 ## `DBI` backend
 
-RPresto implements the latest DBI interface between R and Presto.
+Important classes:
 
-The required DBI classes are defined in the following files. Their specific DBI
-`dbX` generics implementations are listed under each class.
+| Class | Implementation type | File |
+| ----- | ------------------- | ---- |
+| PrestoDriver| S4 | PrestoDriver.R |
+| PrestoConnection | S4 | PrestoConnection.R |
+| PrestoResult | S4 | PrestoResult.R |
+| PrestoQuery | RefClass | PrestoQuery.R |
+| PrestoSession | RefClass | PrestoSession.R |
 
-* Initialization function: `Presto.R`
-* `PrestoDriver`: `PrestoDriver.R`
-  * The `dbUnloadDriver()` method is implemented in `dbUnloadDriver.R`.
-  * The `dbDataType()` method is implemented in `dbDataType.R`.
-* `PrestoConnection`: `PrestoConnection.R`
-  * The `dbConnect()` method is implemented in `dbConnect.R`.
-  * The `dbDisconnect()` method is implemented in `dbDisconnect.R`.
-  * The `dbExistsTable()` method is implemented in `dbExistsTable.R`.
-  * The `dbGetQuery()` method is implemented in `dbGetQuery.R`.
-  * The `dbListTables()` method is implemented in `dbListTables.R`.
-  * The `dbCreateTable()` method is implemented in `sqlCreateTable.R` and
-    `dbCreateTable.R`.
-  * The `dbCreateTableAs()` method is implemented in `sqlCreateTableAs.R` and
-    `dbCreateTableAs.R`.
-  * The `dbWriteTable()` method is implemented in `dbWriteTable.R`.
-* `PrestoResult`: `PrestoResult.R`
-  * The `dbSendQuery()` method is implemented in `dbSendQuery.R`.
-  * The `dbClearResult()` method is implemented in `dbClearResult.R`.
-  * The `dbFetch()` method is implemented in `dbFetch.R`.
-  * The `dbHasCompleted()` method is implemented in `dbHasCompleted.R`.
-  * The `dbIsValid()` method is implemented in `dbIsValud.R`.
-  * The `dbGetStatement()` method is implemented in `dbGetStatement.R`.
-  * The `dbGetRowCount()` method is implemented in `dbGetRowCount.R`.
-* Methods available for multiple classes
-  * The `show()` method is defined for all classes in their class definition
-    files.
-  * The `dbGetInfo()` method is defined for all classes in `dbGetInfo.R`.
-  * The `dbListFields()` method is defined for `PrestoConnection` and
-    `PrestoResult` classes in `dbListFields.R`.
+Important methods:
 
-Besides, we also define two more classes for their side effects. They are
-defined using reference class (i.e. R5).
-
-* Query: `PrestoQuery.R`. It's used in the `PrestoResult` class.
-* Session: `PrestoSession.R`. It's used in the `PrestoConnection` class.
+| Method | Class | Status | File |
+| ------ | ----- | ------ | ---- |
+| dbGetInfo | PrestoDriver | Implemented | dbGetInfo.R |
+| dbDataType | PrestoDriver | Implemented | dbDataType.R |
+| dbUnloadDriver | PrestoDriver | Implemented | dbUnloadDriver.R |
+| dbConnect | PrestoDriver | Implemented | dbConnect.R |
+| dbGetInfo | PrestoConnection | Implemented | dbGetInfo.R |
+| dbDisconnect | PrestoConnection | Implemented | dbDisconnect.R |
+| dbQuoteIdentifier | PrestoConnection | Default | |
+| dbUnquoteIdentifier | PrestoConnection | Default | |
+| dbQuoteString | PrestoConnection | Default | |
+| dbQuoteLiteral | PrestoConnection | Default | |
+| dbListTables | PrestoConnection | Implemented | dbListTables.R |
+| dbExistsTable | PrestoConnection | Implemented | dbExistsTable.R |
+| dbSendQuery | PrestoConnection | Implemented | dbSendQuery.R |
+| dbSendStatement | PrestoConnection | Default | |
+| dbGetQuery | PrestoConnection | Implemented | dbGetQuery.R |
+| dbExecute | PrestoConnection | Default | |
+| dbCreateTable | PrestoConnection | Implemented | dbCreateTable.R |
+| sqlCreateTable | PrestoConnection | Implemented | sqlCreateTable.R |
+| dbCreateTableAs | PrestoConnection | Created | dbCreateTableAs.R |
+| sqlCreateTableAs | PrestoConnection | Created | sqlCreateTableAs.R |
+| dbWriteTable | PrestoConnection | Implemented | dbWriteTable.R |
+| dbRemoveTable | PrestoConnection | Implemented | dbRemoveTable.R |
+| dbReadTable | PrestoConnection | Default | |
+| dbAppendtable | PrestoConnection | Not implemented | |
+| dbListFields | PrestoConnection | Implemented | dbListFields.R |
+| dbBegin | PrestoConnection | Not implemented | |
+| dbCommit | PrestoConnection | Not implemented | |
+| dbRollback | PrestoConnection | Not implemented | |
+| dbBreak | PrestoConnection | Not implemented | |
+| dbWithTransaction | PrestoConnection | Not implemented | |
+| dbGetInfo | PrestoResult | Implemented | dbGetInfo.R |
+| dbClearResult | PrestoResult | Implemented | dbClearResult.R |
+| dbFetch | PrestoResult | Implemented | dbFetch.R |
+| fetch | PrestoResult | Implemented | fetch.R |
+| dbHasCompleted | PrestoResult | Implemented | dbHasCompleted.R |
+| dbIsValid | PrestoResult | Implemented | dbIsValid.R |
+| dbGetStatement | PrestoResult | Implemented | dbGetStatement.R |
+| dbGetRowCount | PrestoResult | Implemented | dbGetRowCount.R |
+| dbGetRowsAffected | PrestoResult | Implemented | dbGetRowsAffected.R |
+| dbListFields | PrestoResult | Implemented | dbListFields.R |
+| dbBind | PrestoResult | Not implemented | |
+| dbColumnInfo | PrestoResult | Not implemented | |
 
 ## `dplyr` remote database backend
 
-RPresto implements a number of `dplyr`'s `db_` generics that execute actions on
-the underlying database.
-* The `dplyr::db_desc()` method is implemented in `db_desc.PrestoConnection.R`.
-* The `dplyr::db_data_type()` method is implemented in
-  `db.data.type.PrestoConnection.R`.
-* The `dplyr::db_explain()` method is implemented in
-  `db.explain.PrestoConnection.R`.
-* The `dplyr::db_query_rows()` method is explicitly not implemented in
-  `db.query.rows.PrestoConnection.R`.
+`dplyr` generics:
 
-`dplyr` has a concept called "remote database source" that's basically a wrapper
-around a DBI database connection object (i.e. `PrestoConnection`).
-* The `src_presto` object is defined in `src.presto.R`.
-* The `dplyr::copy_to()` method is explicitly not implemented in
-`copy.to.src.presto.R`.
-* The `dplyr::tbl()` method is implemented in `tbl.src.presto.R`.
-* The `dplyr::collect()` method is implemented in `src.presto.R`.
+| Method | Primary class | Status | File |
+| ------ | ------------- | ------ | ---- |
+| db_desc | PrestoConnection | Implemented | db_desc.PrestoConnection.R |
+| db_data_type | PrestoConnection | Implemented | db.data.type.PrestoConnection.R |
+| db_explain | PrestoConnection | Implemented | db.explain.PrestoConnection.R |
+| db_query_rows | PrestoConnection | Not implemented | db.query.rows.PrestoConnection.R |
 
-The `dplyr` database backend also relies on implementation of a few `dbplyr`
-methods.
-* The `dbplyr::dbplyr_edition()` method is implemented in
-  `dbplyr.edition.PrestoConnection.R`.
-* The `dbplyr::db_collect()` method is implemented in `db_collect.R`.
-* The `dbplyr::sql_escape_date()` method is implemented in
-  `sql_escape_date.R`.
-* The `dbplyr::sql_escape_datetime()` method is implemented in
-  `sql_escape_datetime.R`.
-* The `dbplyr::sql_translation()` method is implemented in
-  `sql_translation.R`.
+`dplyr` remote database source functions:
+
+| Function | Default | Primary class | Status | File |
+| -------- | ----------- | ------------- | ------ | ---- |
+| src_presto | src_dbi | | Implemented | src.presto.R |
+| tbl.src_presto | tbl.src_dbi | src_presto | Implemented | tbl.src.presto.R |
+| collect.tbl_presto | collect.tbl_sql | tbl_presto | Implemented | src.presto.R |
+| copy_to.src_presto | copy_to.src_sql | src_presto | Not implemented | copy.to.src.presto.R |
+
+`dbplyr` generics:
+
+| Method | Primary class | Status | File |
+| ------ | ------------- | ------ | ---- |
+| dbplyr_edition | PrestoConnection | Implemented | dbplyr.edition.PrestoConnection.R |
+| db_collect | PrestoConnection | Implemented | db_collect.R |
+| sql_query_fields | PrestoConnection | Implemented | sql_query_fields.R |
+| sql_escape_date | PrestoConnection | Implemented | sql_escape_date.R |
+| sql_escape_datetime | PrestoConnection | Implemented | sql_escape_datetime.R |
+| sql_translation | PrestoConnection | Implemented | sql_translation.R |
