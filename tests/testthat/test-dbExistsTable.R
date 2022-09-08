@@ -49,5 +49,8 @@ test_that('dbExistsTable works with mock', {
     {
       expect_false(dbExistsTable(conn, '_non_existent_table_'))
       expect_true(dbExistsTable(conn, 'existing_table'))
+      expect_true(
+        dbExistsTable(conn, dbQuoteIdentifier(conn, 'existing_table'))
+      )
     })
 })

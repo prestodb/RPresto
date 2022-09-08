@@ -13,6 +13,10 @@ NULL
 setMethod('dbExistsTable',
   c('PrestoConnection', 'character'),
   function(conn, name, ...) {
-    return(tolower(name) %in% tolower(dbListTables(conn, pattern=name)))
+    # This is necessary because name might be a quoted identifier rather than
+    # just a string (see #167)
+    name = DBI::dbQuoteIdentifier(conn, name)
+    id = DBI::dbUnquoteIdentifier(conn, name)[[1]]@name
+    return(tolower(id) %in% tolower(dbListTables(conn, pattern=id)))
   }
 )
