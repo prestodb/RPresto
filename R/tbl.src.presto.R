@@ -4,31 +4,26 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-#' dplyr integration to connect to a table in a database.
+#' S3 implementation of \code{collect} for Presto.
 #'
-#' Use \code{src_presto} to connect to an existing database,
-#' and \code{tbl} to connect to tables within that database.
-#' If you're unsure of the arguments to pass, please ask your database
-#' administrator for the values of these variables.
-#'
-#' @importFrom dplyr tbl
+#' @importFrom dplyr collect
 #' @export
-#' @param src A presto src created with \code{src_presto}.
-#' @param from Either a string giving the name of table in database, or
-#'   \code{\link[dplyr]{sql}} described a derived table or compound join.
-#' @examples
-#' \dontrun{
-#' # First create a database connection with src_presto, then reference a tbl
-#' # within that database
-#' my_tbl <- tbl(my_db, "my_table")
-#' }
-#' @rdname dplyr_source_function_implementations
+#' @rdname dplyr_function_implementations
 #' @keywords internal
-tbl.src_presto <- function(src, from, ...) {
-  tbl_sql <- dbplyr_compatible('tbl_sql')
-  rv <- tbl_sql("presto", src = src, from = from, ...)
-  if (!inherits(rv, 'tbl_presto')) {
-    class(rv) <- c('tbl_presto', class(rv))
-  }
-  return(rv)
+collect.tbl_presto <- function(x, ..., n = Inf, warn_incomplete = TRUE) {
+  if (identical(n, Inf)) {
+        n <- -1
+    }
+    else {
+        x <- utils::head(x, n)
+    }
+    sql <- dbplyr::db_sql_render(x$src$con, x)
+    # This is the one place whereby this implementation is different from the
+    # default dbplyr::collect.tbl_sql()
+    # We pass ... to db_collect() here so that bigint can be used in collect()
+    # to specify the BIGINT treatment
+    out <- dbplyr::db_collect(
+      x$src$con, sql, n = n, warn_incomplete = warn_incomplete, ...
+    )
+    dplyr::grouped_df(out, intersect(dbplyr::op_grps(x), names(out)))
 }

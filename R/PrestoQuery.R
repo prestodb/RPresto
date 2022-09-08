@@ -4,6 +4,8 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
+"%||%" <- function(x, y) if (is.null(x)) return(y) else return(x)
+
 wait <- function () {
   # sleep 50 - 100 ms
   Sys.sleep(stats::runif(n = 1, min = 50, max = 100) / 1000)

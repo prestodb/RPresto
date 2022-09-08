@@ -80,9 +80,9 @@ Important methods:
 | Function | Default | Primary class | Status | File |
 | -------- | ----------- | ------------- | ------ | ---- |
 | src_presto | src_dbi | | Implemented | src.presto.R |
-| tbl.src_presto | tbl.src_dbi | src_presto | Implemented | tbl.src.presto.R |
-| collect.tbl_presto | collect.tbl_sql | tbl_presto | Implemented | src.presto.R |
-| copy_to.src_presto | copy_to.src_sql | src_presto | Not implemented | copy.to.src.presto.R |
+| tbl.src_presto | tbl.src_dbi | src_presto | Implemented | src.presto.R |
+| collect.tbl_presto | collect.tbl_sql | tbl_presto | Implemented | tbl.src.presto.R |
+| copy_to.src_presto | copy_to.src_sql | src_presto | Not implemented | src.presto.R |
 
 `dbplyr` generics:
 
