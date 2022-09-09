@@ -25,3 +25,29 @@ db_list_tables.PrestoConnection <- function(con) {
 db_has_table.PrestoConnection <- function(con, table) {
   DBI::dbExistsTable(con, table)
 }
+
+#' @rdname dbplyr-db
+#' @param types Not used. Only NULL is accpeted.
+#' @param values A `data.frame`.
+#' @param temporary If a temporary table should be used. Not supported. Only
+#'   FALSE is accepted.
+#' @param overwrite If an existing table should be overwritten.
+#' @param with An optional WITH clause for the CREATE TABLE statement.
+#' @importFrom dplyr db_write_table
+#' @export
+db_write_table.PrestoConnection  <- function(
+  con, table, types, values, temporary = FALSE, overwrite = FALSE,
+  ..., with = NULL
+) {
+  dbWriteTable(
+    conn = con,
+    name = table,
+    value = values,
+    field.types = types,
+    temporary = temporary,
+    overwrite = overwrite,
+    with = with,
+    ...
+  )
+  table
+}
