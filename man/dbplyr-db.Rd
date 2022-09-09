@@ -5,6 +5,7 @@
 \alias{db_has_table.PrestoConnection}
 \alias{db_write_table.PrestoConnection}
 \alias{db_copy_to.PrestoConnection}
+\alias{db_compute.PrestoConnection}
 \title{dbplyr database methods}
 \usage{
 \method{db_list_tables}{PrestoConnection}(con)
@@ -36,6 +37,18 @@
   in_transaction = TRUE,
   with = NULL
 )
+
+\method{db_compute}{PrestoConnection}(
+  con,
+  table,
+  sql,
+  temporary = TRUE,
+  unique_indexes = list(),
+  indexes = list(),
+  analyze = TRUE,
+  with = NULL,
+  ...
+)
 }
 \arguments{
 \item{con}{A \code{PrestoConnection} as returned by \code{dbConnect()}.}
@@ -57,6 +70,8 @@ FALSE is accepted.}
 
 \item{unique_indexes, indexes, analyze, in_transaction}{Ignored. Included
 for compatibility with generics.}
+
+\item{sql}{A SQL statement.}
 }
 \description{
 dbplyr database methods

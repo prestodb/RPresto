@@ -105,6 +105,7 @@ Important methods:
 | dbplyr_edition | PrestoConnection | Implemented | dbplyr.edition.PrestoConnection.R |
 | db_collect | PrestoConnection | Implemented | db_collect.R |
 | db_copy_to | PrestoConnection | Implemented | dbplyr-db.R |
+| db_compute | PrestoConnection | Implemented | dbplyr-db.R |
 | sql_query_fields | PrestoConnection | Implemented | sql_query_fields.R |
 | sql_escape_date | PrestoConnection | Implemented | sql_escape_date.R |
 | sql_escape_datetime | PrestoConnection | Implemented | sql_escape_datetime.R |
