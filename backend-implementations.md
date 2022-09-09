@@ -70,13 +70,11 @@ Important methods:
 
 | Method | Primary class | Status | File |
 | ------ | ------------- | ------ | ---- |
-| db_desc | PrestoConnection | Implemented | db_desc.PrestoConnection.R |
-| db_data_type | PrestoConnection | Implemented | db.data.type.PrestoConnection.R |
-| db_explain | PrestoConnection | Implemented | db.explain.PrestoConnection.R |
-| db_query_rows | PrestoConnection | Not implemented | db.query.rows.PrestoConnection.R |
+| db_desc | PrestoConnection | Implemented | dbplyr-db.R |
+| db_data_type | PrestoConnection | Implemented | dbplyr-db.R |
+| db_explain | PrestoConnection | Implemented | dbplyr-db.R |
+| db_query_rows | PrestoConnection | Not implemented | dbplyr-db.R |
 | db_query_fields | PrestoConnection | Default | |
-| tbl | PrestoConnection | Implemented | src.presto.R |
-| copy_to | PrestoConnection | Implemented | src.presto.R |
 | db_save_query | PrestoConnection | Default | |
 | db_list_tables | PrestoConnection | Implemented | dbplyr-db.R |
 | db_has_table | PrestoConnection | Implemented | dbplyr-db.R |
@@ -93,23 +91,25 @@ Important methods:
 
 | Function | Default | Primary class | Status | File |
 | -------- | ----------- | ------------- | ------ | ---- |
-| src_presto | src_dbi | | Implemented | src.presto.R |
-| tbl.src_presto | tbl.src_dbi | src_presto | Implemented | src.presto.R |
-| collect.tbl_presto | collect.tbl_sql | tbl_presto | Implemented | tbl.src.presto.R |
-| copy_to.src_presto | copy_to.src_sql | src_presto | Implemented | src.presto.R |
+| src_presto | src_dbi | | Implemented | dbplyr-src.R |
+| tbl | | PrestoConnection | Implemented | dbplyr-src.R |
+| copy_to | | PrestoConnection | Implemented | dbplyr-src.R |
+| tbl.src_presto | tbl.src_dbi | src_presto | Implemented | dbplyr-src.R |
+| copy_to.src_presto | copy_to.src_sql | src_presto | Implemented | dbplyr-src.R |
+| collect.tbl_presto | collect.tbl_sql | tbl_presto | Implemented | dbplyr-src.R |
 
 [`dbplyr` generics][2]:
 
 | Method | Primary class | Status | File |
 | ------ | ------------- | ------ | ---- |
-| dbplyr_edition | PrestoConnection | Implemented | dbplyr.edition.PrestoConnection.R |
-| db_collect | PrestoConnection | Implemented | db_collect.R |
+| dbplyr_edition | PrestoConnection | Implemented | dbplyr-db.R |
+| db_collect | PrestoConnection | Implemented | dbplyr-db.R |
 | db_copy_to | PrestoConnection | Implemented | dbplyr-db.R |
 | db_compute | PrestoConnection | Implemented | dbplyr-db.R |
-| sql_query_fields | PrestoConnection | Implemented | sql_query_fields.R |
-| sql_escape_date | PrestoConnection | Implemented | sql_escape_date.R |
-| sql_escape_datetime | PrestoConnection | Implemented | sql_escape_datetime.R |
-| sql_translation | PrestoConnection | Implemented | sql_translation.R |
+| sql_query_fields | PrestoConnection | Implemented | dbplyr-sql.R |
+| sql_escape_date | PrestoConnection | Implemented | dbplyr-sql.R |
+| sql_escape_datetime | PrestoConnection | Implemented | dbplyr-sql.R |
+| sql_translation | PrestoConnection | Implemented | dbplyr-sql.R |
 | sql_query_save | PrestoConnection | Implemented | dbplyr-sql.R |
 
 [1]: https://dplyr.tidyverse.org/reference/backend_dbplyr.html
