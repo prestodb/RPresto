@@ -78,6 +78,7 @@ Important methods:
 | copy_to | PrestoConnection | Implemented | src.presto.R |
 | db_save_query | PrestoConnection | Default | |
 | db_list_tables | PrestoConnection | Implemented | dbplyr-db.R |
+| db_has_table | PrestoConnection | Implemented | dbplyr-db.R |
 
 `dplyr` remote database source functions:
 
