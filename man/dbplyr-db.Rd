@@ -3,16 +3,41 @@
 \name{db_list_tables.PrestoConnection}
 \alias{db_list_tables.PrestoConnection}
 \alias{db_has_table.PrestoConnection}
+\alias{db_write_table.PrestoConnection}
 \title{dbplyr database methods}
 \usage{
 \method{db_list_tables}{PrestoConnection}(con)
 
 \method{db_has_table}{PrestoConnection}(con, table)
+
+\method{db_write_table}{PrestoConnection}(
+  con,
+  table,
+  types,
+  values,
+  temporary = FALSE,
+  overwrite = FALSE,
+  ...,
+  with = NULL
+)
 }
 \arguments{
 \item{con}{A \code{PrestoConnection} as returned by \code{dbConnect()}.}
 
 \item{table}{Table name}
+
+\item{types}{Not used. Only NULL is accpeted.}
+
+\item{values}{A `data.frame`.}
+
+\item{temporary}{If a temporary table should be used. Not supported. Only
+FALSE is accepted.}
+
+\item{overwrite}{If an existing table should be overwritten.}
+
+\item{...}{Extra arguments to be passed to individual methods.}
+
+\item{with}{An optional WITH clause for the CREATE TABLE statement.}
 }
 \description{
 dbplyr database methods
