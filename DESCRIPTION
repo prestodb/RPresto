@@ -78,6 +78,7 @@ Collate:
     'db_collect.R'
     'db_desc.PrestoConnection.R'
     'db_query_fields.R'
+    'dbplyr-db.R'
     'dbplyr-sql.R'
     'dbplyr_compatible.R'
     'dbplyr_edition.PrestoConnect.R'
