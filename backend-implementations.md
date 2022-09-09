@@ -80,6 +80,13 @@ Important methods:
 | db_list_tables | PrestoConnection | Implemented | dbplyr-db.R |
 | db_has_table | PrestoConnection | Implemented | dbplyr-db.R |
 | db_write_table | PrestoConnection | Implemented | dbplyr-db.R |
+| db_create_table | PrestoConnection | Not implemented | |
+| db_insert_into | PrestoConnection | Not implemented | |
+| db_drop_table | PrestoConnection | Not implemented | |
+| db_begin | PrestoConnection | Not implemented | |
+| db_rollback | PrestoConnection | Not implemented | |
+| db_commit | PrestoConnection | Not implemented | |
+| db_analyze | PrestoConnection | Not implemented | |
 
 `dplyr` remote database source functions:
 
