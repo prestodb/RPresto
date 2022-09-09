@@ -74,6 +74,7 @@ Important methods:
 | db_data_type | PrestoConnection | Implemented | db.data.type.PrestoConnection.R |
 | db_explain | PrestoConnection | Implemented | db.explain.PrestoConnection.R |
 | db_query_rows | PrestoConnection | Not implemented | db.query.rows.PrestoConnection.R |
+| db_query_fields | PrestoConnection | Default | |
 | tbl | PrestoConnection | Implemented | src.presto.R |
 | copy_to | PrestoConnection | Implemented | src.presto.R |
 | db_save_query | PrestoConnection | Default | |
