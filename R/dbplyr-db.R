@@ -17,3 +17,11 @@ NULL
 db_list_tables.PrestoConnection <- function(con) {
   DBI::dbListTables(con)
 }
+
+#' @rdname dbplyr-db
+#' @param table Table name
+#' @importFrom dplyr db_has_table
+#' @export
+db_has_table.PrestoConnection <- function(con, table) {
+  DBI::dbExistsTable(con, table)
+}

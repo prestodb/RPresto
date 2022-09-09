@@ -2,12 +2,17 @@
 % Please edit documentation in R/dbplyr-db.R
 \name{db_list_tables.PrestoConnection}
 \alias{db_list_tables.PrestoConnection}
+\alias{db_has_table.PrestoConnection}
 \title{dbplyr database methods}
 \usage{
 \method{db_list_tables}{PrestoConnection}(con)
+
+\method{db_has_table}{PrestoConnection}(con, table)
 }
 \arguments{
 \item{con}{A \code{PrestoConnection} as returned by \code{dbConnect()}.}
+
+\item{table}{Table name}
 }
 \description{
 dbplyr database methods
