@@ -70,3 +70,24 @@ db_copy_to.PrestoConnection  <- function(
   )
   table
 }
+
+#' @rdname dbplyr-db
+#' @param sql A SQL statement.
+#' @importFrom dbplyr db_compute
+#' @export
+db_compute.PrestoConnection  <- function(
+  con, table, sql, temporary = TRUE, unique_indexes = list(), indexes = list(),
+  analyze = TRUE, with = NULL,
+  ...
+) {
+  if (!identical(temporary, FALSE)) {
+    stop(
+      'Temporary table is not supported. ',
+      'Use temporary = FALSE to create a permanent table.',
+      call. = FALSE)
+  }
+  table <- dplyr::db_save_query(
+    con, sql, table, temporary = temporary, with = with, ...
+  )
+  table
+}
