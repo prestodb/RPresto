@@ -4,7 +4,7 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-context('dbListTables')
+context('dbListTables and db_list_tables')
 
 source('utilities.R')
 
@@ -12,6 +12,7 @@ test_that('dbListTables works with live database', {
   conn <- setup_live_connection()
 
   expect_gt(length(dbListTables(conn)), 0)
+  expect_gt(length(db_list_tables(conn)), 0)
   expect_equal(
     dbListTables(conn, pattern='__non_existent_table__'),
     character(0)
