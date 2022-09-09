@@ -18,7 +18,8 @@ NULL
 .dbWriteTable <- function(
   conn, name, value,
   overwrite = FALSE, ...,
-  append = FALSE, field.types = NULL, temporary = FALSE, row.names = FALSE
+  append = FALSE, field.types = NULL, temporary = FALSE, row.names = FALSE,
+  with = NULL
 ) {
   stopifnot(
     length(overwrite) == 1 &&
@@ -62,7 +63,7 @@ NULL
       )
       tryCatch(
         {
-          dbCreateTableAs(conn, name, sql)
+          dbCreateTableAs(conn, name, sql, with = with)
         },
         error = function(e) {
           # In case of error, revert the original table's name
@@ -85,7 +86,7 @@ NULL
       )
     }
   } else {
-    dbCreateTableAs(conn, name, sql)
+    dbCreateTableAs(conn, name, sql, with = with)
   }
   invisible(TRUE)
 }
