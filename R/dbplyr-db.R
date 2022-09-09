@@ -7,6 +7,77 @@
 #' @include PrestoConnection.R
 NULL
 
+#' Inform the dbplyr version used in this package
+#'
+#' @importFrom dbplyr dbplyr_edition
+#' @export
+#' @param con A DBIConnection object.
+dbplyr_edition.PrestoConnection <- function(con) 2L
+
+.description_from_info <- function(info) {
+  return(paste0(
+    'presto ',
+    ' [',
+    info[['schema']],
+    ':',
+    info[['catalog']],
+    ' | ',
+    info[['user']],
+    '@',
+    info[['host']],
+    ':',
+    info[['port']],
+    ']'
+  ))
+}
+
+#' S3 implementation of \code{db_desc} for Presto.
+#'
+#' @importFrom dplyr db_desc
+#' @export
+#' @rdname dplyr_function_implementations
+#' @keywords internal
+db_desc.PrestoConnection <- function(x) {
+  info <- dbGetInfo(x)
+  return(.description_from_info(info))
+}
+
+#' S3 implementation of \code{\link[dplyr]{db_data_type}} for Presto.
+#'
+#' @importFrom dplyr db_data_type
+#' @export
+#' @rdname dplyr_function_implementations
+#' @keywords internal
+db_data_type.PrestoConnection <- function(con, fields, ...) {
+  return(sapply(fields, function(field) dbDataType(Presto(), field)))
+}
+
+#' S3 implementation of \code{\link[dplyr]{db_explain}} for Presto.
+#'
+#' @importFrom dplyr db_explain
+#' @export
+#' @rdname dplyr_function_implementations
+#' @keywords internal
+db_explain.PrestoConnection <- function(con, sql, ...) {
+  build_sql <- dbplyr_compatible('build_sql')
+  explain.sql <- build_sql("EXPLAIN ", sql, con = con)
+  explanation <- DBI::dbGetQuery(con, explain.sql)
+  return(paste(explanation[[1]], collapse = "\n"))
+}
+
+#' S3 implementation of \code{\link[dplyr]{db_query_rows}} for Presto.
+#'
+#' @importFrom dplyr db_query_rows
+#' @export
+#' @rdname dplyr_function_implementations
+#' @keywords internal
+db_query_rows.PrestoConnection <- function(con, sql) {
+  # We shouldn't be doing a COUNT(*) over arbitrary tables because Hive tables
+  # can be prohibitively long. There may be something smarter we can do for
+  # smaller tables though.
+  return(NA)
+}
+
 #' dbplyr database methods
 #' 
 #' @rdname dbplyr-db
@@ -90,4 +161,26 @@ db_compute.PrestoConnection  <- function(
     con, sql, table, temporary = temporary, with = with, ...
   )
   table
+}
+
+#' S3 implementation of \code{db_collect} for Presto.
+#'
+#' @importFrom dbplyr db_collect
+#' @export
+#' @rdname dplyr_function_implementations
+#' @keywords internal
+db_collect.PrestoConnection <- function(
+  con, sql, n = -1, warn_incomplete = TRUE, ...
+) {
+  # This is the one difference between this implementation and the default
+  # dbplyr::db_collect.DBIConnection()
+  # We pass ... to dbSendQuery() so that bigint can be specified for individual
+  # db_collect() calls
+  res <- dbSendQuery(con, sql, ...)
+  tryCatch({
+      out <- dbFetch(res, n = n)
+  }, finally = {
+      dbClearResult(res)
+  })
+  out
 }
