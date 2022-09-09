@@ -162,18 +162,37 @@ tbl.PrestoConnection <- function(conn, from, ...) {
 #' @importFrom dplyr copy_to
 #' @export
 #' @inheritParams dplyr::copy_to
+#' @param with An optional WITH clause for the CREATE TABLE statement.
 #' @rdname dplyr_source_function_implementations
 #' @keywords internal
 copy_to.src_presto <- function(
-  dest, df, name = deparse(substitute(df)), overwrite = FALSE
+  dest, df, name = deparse(substitute(df)), overwrite = FALSE,
+  ...,
+  with = NULL
 ) {
-  # Use the default copy_to.src_sql implementation in dbplyr, but with a few
-  # arguments fixed at acceptable default values
-  copy_to.src_sql <- utils::getFromNamespace("copy_to.src_sql", "dbplyr")
-  copy_to.src_sql(
-    dest, df, name, overwrite,
-    types = NULL, temporary = FALSE, analyze = FALSE, in_transaction = FALSE
-  )
+  name <- dbplyr::as.sql(name, con = dest$con)
+  if (inherits(df, "tbl_sql") && dplyr::same_src(df$src, dest)) {
+    out <- dplyr::compute(df,
+      name = name,
+      temporary = FALSE,
+      analyze = FALSE,
+      ...
+    )
+  } else {
+    df <- as.data.frame(dplyr::collect(df))
+    name <- dbplyr::db_copy_to(dest$con, name, df,
+      overwrite = overwrite,
+      types = NULL,
+      temporary = FALSE,
+      analyze = FALSE,
+      in_transaction = FALSE,
+      with = with,
+      ...
+    )
+    vars <- names(df)
+    out <- dplyr::tbl(dest, name, vars)
+  }
+  invisible(out)
 }
 
 #' S3 implementation of \code{\link[dplyr]{copy_to}} for PrestoConnection 
