@@ -14,26 +14,28 @@ test_that('sqlCreateTableAs works', {
   expect_equal(
     sqlCreateTableAs(
       conn, test_table_name,
-      statement = 'SELECT * FROM iris'
+      sql = 'SELECT * FROM iris'
     ),
     DBI::SQL(
       paste0(
-        'CREATE TABLE ', dbQuoteIdentifier(conn, test_table_name), ' AS\n',
-        'SELECT * FROM iris\n'
+        'CREATE TABLE ', dbQuoteIdentifier(conn, test_table_name), '\n',
+        'AS\n',
+        'SELECT * FROM iris'
       )
     )
   )
   expect_equal(
     sqlCreateTableAs(
       conn, test_table_name,
-      statement = 'SELECT * FROM iris',
+      sql = 'SELECT * FROM iris',
       with = 'WITH (format = \'ORC\')'
     ),
     DBI::SQL(
       paste0(
-        'CREATE TABLE ', dbQuoteIdentifier(conn, test_table_name), ' AS\n',
-        'SELECT * FROM iris\n',
-        'WITH (format = \'ORC\')'
+        'CREATE TABLE ', dbQuoteIdentifier(conn, test_table_name), '\n',
+        'WITH (format = \'ORC\')\n',
+        'AS\n',
+        'SELECT * FROM iris'
       )
     )
   )

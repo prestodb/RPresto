@@ -66,7 +66,7 @@ Important methods:
 
 ## `dplyr` remote database backend
 
-`dplyr` generics:
+[`dplyr` generics][1]:
 
 | Method | Primary class | Status | File |
 | ------ | ------------- | ------ | ---- |
@@ -76,6 +76,7 @@ Important methods:
 | db_query_rows | PrestoConnection | Not implemented | db.query.rows.PrestoConnection.R |
 | tbl | PrestoConnection | Implemented | src.presto.R |
 | copy_to | PrestoConnection | Implemented | src.presto.R |
+| db_save_query | PrestoConnection | Default | |
 
 `dplyr` remote database source functions:
 
@@ -96,3 +97,6 @@ Important methods:
 | sql_escape_date | PrestoConnection | Implemented | sql_escape_date.R |
 | sql_escape_datetime | PrestoConnection | Implemented | sql_escape_datetime.R |
 | sql_translation | PrestoConnection | Implemented | sql_translation.R |
+| sql_query_save | PrestoConnection | Implemented | dbplyr-sql.R |
+
+[1]: https://dplyr.tidyverse.org/reference/backend_dbplyr.html
