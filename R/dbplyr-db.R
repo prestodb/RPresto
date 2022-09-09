@@ -51,3 +51,22 @@ db_write_table.PrestoConnection  <- function(
   )
   table
 }
+
+#' @rdname dbplyr-db
+#' @param unique_indexes,indexes,analyze,in_transaction Ignored. Included
+#'   for compatibility with generics.
+#' @param ... Extra arguments to be passed to individual methods.
+#' @importFrom dbplyr db_copy_to
+#' @export
+db_copy_to.PrestoConnection  <- function(
+  con, table, values, overwrite = FALSE, types = NULL, temporary = TRUE,
+  unique_indexes = NULL, indexes = NULL, analyze = TRUE, ...,
+  in_transaction = TRUE, with = NULL
+) {
+  table <- dplyr::db_write_table(
+    con, table, types = types, values = values,
+    temporary = temporary, overwrite = overwrite, with = with,
+    ...
+  )
+  table
+}
