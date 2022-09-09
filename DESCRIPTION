@@ -75,7 +75,6 @@ Collate:
     'dbplyr-db.R'
     'dbplyr-sql.R'
     'dbplyr-src.R'
-    'dbplyr_compatible.R'
     'fetch.R'
     'help.R'
     'presto.field.R'
