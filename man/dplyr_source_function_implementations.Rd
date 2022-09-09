@@ -11,7 +11,14 @@
 
 \method{tbl}{PrestoConnection}(conn, from, ...)
 
-\method{copy_to}{src_presto}(dest, df, name = deparse(substitute(df)), overwrite = FALSE)
+\method{copy_to}{src_presto}(
+  dest,
+  df,
+  name = deparse(substitute(df)),
+  overwrite = FALSE,
+  ...,
+  with = NULL
+)
 
 \method{copy_to}{PrestoConnection}(dest, df, name = deparse(substitute(df)), overwrite = FALSE)
 }
@@ -34,6 +41,8 @@
 \item{overwrite}{If \code{TRUE}, will overwrite an existing table with
 name \code{name}. If \code{FALSE}, will throw an error if \code{name} already
 exists.}
+
+\item{with}{An optional WITH clause for the CREATE TABLE statement.}
 }
 \description{
 Use \code{src_presto} to connect to an existing database,
