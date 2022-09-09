@@ -38,7 +38,7 @@
   temporary = FALSE
 )
 
-\S4method{dbCreateTableAs}{PrestoConnection}(conn, name, statement, with = NULL, ...)
+\S4method{dbCreateTableAs}{PrestoConnection}(conn, name, sql, with = NULL, ...)
 
 \S4method{dbExistsTable}{PrestoConnection,character}(conn, name, ...)
 
@@ -74,7 +74,7 @@
   ...
 )
 
-\S4method{sqlCreateTableAs}{PrestoConnection}(con, table, statement, with = NULL, ...)
+\S4method{sqlCreateTableAs}{PrestoConnection}(con, name, sql, with = NULL, ...)
 }
 \arguments{
 \item{conn}{A \linkS4class{DBIConnection} object, as returned by
@@ -103,7 +103,7 @@ A data frame: field types are generated using
 
 \item{...}{Other parameters passed on to methods.}
 
-\item{statement}{a character string containing SQL.}
+\item{sql}{a character string containing SQL statement.}
 
 \item{pattern}{optional SQL pattern for filtering table names,
 e.g. \sQuote{\%test\%}}

@@ -10,30 +10,34 @@ NULL
 #' Compose query to create a simple table using a statement
 #'
 #' @param con A database connection.
-#' @param table The table name, passed on to [dbQuoteIdentifier()]. Options are:
+#' @param name The table name, passed on to [dbQuoteIdentifier()]. Options are:
 #'   - a character string with the unquoted DBMS table name,
 #'     e.g. `"table_name"`,
 #'   - a call to [Id()] with components to the fully qualified table name,
 #'     e.g. `Id(schema = "my_schema", table = "table_name")`
 #'   - a call to [SQL()] with the quoted and fully qualified table name
 #'     given verbatim, e.g. `SQL('"my_schema"."table_name"')`
-#' @param statement a character string containing SQL.
+#' @param sql a character string containing SQL statement.
 #' @param with An optional WITH clause for the CREATE TABLE statement.
 #' @param ... Other arguments used by individual methods.
 #' @export
+#' @md
 setGeneric("sqlCreateTableAs",
-  def = function(con, table, statement, with = NULL, ...) {
+  def = function(con, name, sql, with = NULL, ...) {
     standardGeneric("sqlCreateTableAs")
   }
 )
 
 #' @rdname PrestoConnection-class
 #' @usage NULL
-.sqlCreateTableAs <- function(con, table, statement, with = NULL, ...) {
-    table <- DBI::dbQuoteIdentifier(con, table)
+.sqlCreateTableAs <- function(con, name, sql, with = NULL, ...) {
+    name <- DBI::dbQuoteIdentifier(con, name)
 
     DBI::SQL(paste0(
-      'CREATE TABLE ', table, ' AS\n', statement, '\n', with
+      'CREATE TABLE ', name, '\n',
+      if (!is.null(with)) paste0(with, '\n'),
+      'AS\n',
+      sql
     ))
 }
 

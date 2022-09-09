@@ -13,21 +13,21 @@ NULL
 #' @inheritParams sqlCreateTableAs
 #' @export
 setGeneric("dbCreateTableAs",
-  def = function(conn, name, statement, with = NULL, ...) {
+  def = function(conn, name, sql, with = NULL, ...) {
     standardGeneric("dbCreateTableAs")
   }
 )
 
 #' @rdname PrestoConnection-class
-#' @param statement a character string containing SQL.
+#' @param sql a character string containing SQL statement.
 #' @usage NULL
-.dbCreateTableAs <- function(conn, name, statement, with = NULL, ...) {
-  stopifnot(is.character(statement), length(statement) == 1)
+.dbCreateTableAs <- function(conn, name, sql, with = NULL, ...) {
+  stopifnot(is.character(sql), length(sql) == 1)
 
   query <- sqlCreateTableAs(
     con = conn,
-    table = name,
-    statement = statement,
+    name = name,
+    sql = sql,
     with = with,
     ...
   )

@@ -4,7 +4,7 @@
 \alias{dbCreateTableAs}
 \title{Create a table in database using a statement}
 \usage{
-dbCreateTableAs(conn, name, statement, with = NULL, ...)
+dbCreateTableAs(conn, name, sql, with = NULL, ...)
 }
 \arguments{
 \item{conn}{A \linkS4class{DBIConnection} object, as returned by
@@ -20,7 +20,7 @@ e.g. \code{Id(schema = "my_schema", table = "table_name")}
 given verbatim, e.g. \code{SQL('"my_schema"."table_name"')}
 }}
 
-\item{statement}{a character string containing SQL.}
+\item{sql}{a character string containing SQL statement.}
 
 \item{with}{An optional WITH clause for the CREATE TABLE statement.}
 
