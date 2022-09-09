@@ -4,6 +4,7 @@
 \alias{db_list_tables.PrestoConnection}
 \alias{db_has_table.PrestoConnection}
 \alias{db_write_table.PrestoConnection}
+\alias{db_copy_to.PrestoConnection}
 \title{dbplyr database methods}
 \usage{
 \method{db_list_tables}{PrestoConnection}(con)
@@ -18,6 +19,21 @@
   temporary = FALSE,
   overwrite = FALSE,
   ...,
+  with = NULL
+)
+
+\method{db_copy_to}{PrestoConnection}(
+  con,
+  table,
+  values,
+  overwrite = FALSE,
+  types = NULL,
+  temporary = TRUE,
+  unique_indexes = NULL,
+  indexes = NULL,
+  analyze = TRUE,
+  ...,
+  in_transaction = TRUE,
   with = NULL
 )
 }
@@ -38,6 +54,9 @@ FALSE is accepted.}
 \item{...}{Extra arguments to be passed to individual methods.}
 
 \item{with}{An optional WITH clause for the CREATE TABLE statement.}
+
+\item{unique_indexes, indexes, analyze, in_transaction}{Ignored. Included
+for compatibility with generics.}
 }
 \description{
 dbplyr database methods

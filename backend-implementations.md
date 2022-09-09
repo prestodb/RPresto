@@ -98,12 +98,13 @@ Important methods:
 | collect.tbl_presto | collect.tbl_sql | tbl_presto | Implemented | tbl.src.presto.R |
 | copy_to.src_presto | copy_to.src_sql | src_presto | Implemented | src.presto.R |
 
-`dbplyr` generics:
+[`dbplyr` generics][2]:
 
 | Method | Primary class | Status | File |
 | ------ | ------------- | ------ | ---- |
 | dbplyr_edition | PrestoConnection | Implemented | dbplyr.edition.PrestoConnection.R |
 | db_collect | PrestoConnection | Implemented | db_collect.R |
+| db_copy_to | PrestoConnection | Implemented | dbplyr-db.R |
 | sql_query_fields | PrestoConnection | Implemented | sql_query_fields.R |
 | sql_escape_date | PrestoConnection | Implemented | sql_escape_date.R |
 | sql_escape_datetime | PrestoConnection | Implemented | sql_escape_datetime.R |
@@ -111,3 +112,4 @@ Important methods:
 | sql_query_save | PrestoConnection | Implemented | dbplyr-sql.R |
 
 [1]: https://dplyr.tidyverse.org/reference/backend_dbplyr.html
+[2]: https://dbplyr.tidyverse.org/reference/db-io.html
