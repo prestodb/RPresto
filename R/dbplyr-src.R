@@ -236,3 +236,20 @@ copy_to.PrestoConnection <- function(
     overwrite = overwrite
   )
 }
+
+#' S3 implementation of \code{compute} for Presto.
+#'
+#' @importFrom dplyr compute
+#' @importFrom dplyr %>%
+#' @importFrom rlang !!!
+#' @export
+#' @param x A lazy data frame backed by a database query.
+#' @rdname dplyr_function_implementations
+compute.tbl_presto <- function(x, name, temporary = FALSE, ...) {
+  name <- unname(name)
+  sql <- dbplyr::db_sql_render(x$src$con, x$lazy_query)
+  name <- dbplyr::db_compute(x$src$con, name, sql, temporary = temporary, ...)
+  dplyr::tbl(x$src, dbplyr::as.sql(name), colnames(x)) %>%
+    dplyr::group_by(!!!rlang::syms(dbplyr::op_grps(x))) %>%
+    dbplyr::window_order(!!!dbplyr::op_sort(x))
+}

@@ -14,43 +14,27 @@ test_that('dplyr integration works', {
   tablename <- parts[['iris_table_name']]
 
   expect_that(db, is_a("src_sql"))
-
   iris_presto <- dplyr::tbl(db, tablename)
-
-
-  expect_that(
-    nrow(as.data.frame(iris_presto, n=Inf)),
-    equals(nrow(iris))
-  )
+  expect_that(iris_presto, is_a('tbl_presto'))
   expect_that(ncol(iris_presto), equals(5))
 
-  expect_that(iris_presto, is_a('tbl_presto'))
-
-  # collapse forces the tbl to be a subquery, therefore tests the
-  # db_query_fields path that has `sql` as a subselect as opposed
-  # to a table name. There is some behavioral change between dplyr
-  # 0.4.3 vs 0.5.0 that no longer wraps the former in parentheses
-  # so it should be tested.
+  # collect() works
   expect_that(
-    nrow(as.data.frame(dplyr::collapse(iris_presto), n=Inf)),
+    nrow(dplyr::collect(iris_presto, n=Inf)),
     equals(nrow(iris))
   )
 
-  iris_presto_summary <- as.data.frame(dplyr::collect(
-    dplyr::arrange(
-      dplyr::rename(
-        dplyr::summarise(
-          dplyr::group_by(iris_presto, species),
-          mean_sepal_length = mean(as(sepal_length, 0.0), na.rm=TRUE)
-        ),
-        Species=species
+  iris_presto_summary <- dplyr::arrange(
+    dplyr::rename(
+      dplyr::summarise(
+        dplyr::group_by(iris_presto, species),
+        mean_sepal_length = mean(as(sepal_length, 0.0), na.rm=TRUE)
       ),
-      Species
+      Species=species
     ),
-    n=Inf
-  ))
-
-  iris_summary <- as.data.frame(
+    Species
+  )
+  iris_summary <- tibble::as_tibble(
     dplyr::arrange(
       dplyr::summarise(
         dplyr::group_by(
@@ -65,8 +49,7 @@ test_that('dplyr integration works', {
       Species
     )
   )
-
-  expect_equal_data_frame(iris_presto_summary, iris_summary)
+  expect_equal_data_frame(dplyr::collect(iris_presto_summary), iris_summary)
 
   # bigint handling can be specified in collect()
   iris_presto_bigint <- iris_presto %>%
@@ -81,4 +64,21 @@ test_that('dplyr integration works', {
     dplyr::collect(iris_presto_bigint, bigint = "character"),
     tibble::tibble(bigint = "9007199254740991")
   )
+
+  # collapse forces the tbl to be a subquery, therefore tests the
+  # db_query_fields path that has `sql` as a subselect as opposed
+  # to a table name. There is some behavioral change between dplyr
+  # 0.4.3 vs 0.5.0 that no longer wraps the former in parentheses
+  # so it should be tested.
+  expect_that(
+    nrow(dplyr::collect(dplyr::collapse(iris_presto), n=Inf)),
+    equals(nrow(iris))
+  )
+
+  # compute() collapses a lazy query into a table
+  iris_presto_summary_saved <-
+    dplyr::compute(iris_presto_summary, "iris_presto_summary")
+  expect_is(iris_presto_summary_saved, "tbl_presto")
+  expect_true(dplyr::db_has_table(db$con, "iris_presto_summary"))
+  expect_true(DBI::dbRemoveTable(db$con, "iris_presto_summary"))
 })

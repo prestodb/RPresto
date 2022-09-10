@@ -32,7 +32,8 @@ Imports:
     dplyr (>= 0.7.0),
     dbplyr (>= 2.0.0),
     tibble,
-    bit64
+    bit64,
+    rlang
 Suggests:
     testthat,
     hms,
