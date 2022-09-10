@@ -7,6 +7,7 @@
 \alias{db_query_rows.PrestoConnection}
 \alias{db_collect.PrestoConnection}
 \alias{collect.tbl_presto}
+\alias{compute.tbl_presto}
 \title{S3 implementation of \code{db_desc} for Presto.}
 \usage{
 \method{db_desc}{PrestoConnection}(x)
@@ -20,6 +21,11 @@
 \method{db_collect}{PrestoConnection}(con, sql, n = -1, warn_incomplete = TRUE, ...)
 
 \method{collect}{tbl_presto}(x, ..., n = Inf, warn_incomplete = TRUE)
+
+\method{compute}{tbl_presto}(x, name, temporary = FALSE, ...)
+}
+\arguments{
+\item{x}{A lazy data frame backed by a database query.}
 }
 \description{
 S3 implementation of \code{db_desc} for Presto.
@@ -33,5 +39,7 @@ S3 implementation of \code{\link[dplyr]{db_query_rows}} for Presto.
 S3 implementation of \code{db_collect} for Presto.
 
 S3 implementation of \code{collect} for Presto.
+
+S3 implementation of \code{compute} for Presto.
 }
 \keyword{internal}

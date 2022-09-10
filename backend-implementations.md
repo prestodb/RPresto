@@ -97,6 +97,8 @@ Important methods:
 | tbl.src_presto | tbl.src_dbi | src_presto | Implemented | dbplyr-src.R |
 | copy_to.src_presto | copy_to.src_sql | src_presto | Implemented | dbplyr-src.R |
 | collect.tbl_presto | collect.tbl_sql | tbl_presto | Implemented | dbplyr-src.R |
+| compute.tbl_presto | compute.tbl_sql | tbl_presto | Implemented | dbplyr-src.R |
+| collapse.tbl_presto | collapse.tbl_sql | tbl_presto | Default | |
 
 [`dbplyr` generics][2]:
 
