@@ -41,25 +41,40 @@ test_that('sqlCreateTableAs works', {
   )
 })
 
+test_equal_tables <- function(conn, test_table_name, test_origin_table) {
+  expect_equal(
+    dbListFields(conn, test_table_name),
+    dbListFields(conn, test_origin_table)
+  )
+  expect_equal(
+    get_nrow(conn, test_table_name),
+    get_nrow(conn, test_origin_table)
+  )
+}
+
 test_that('dbCreateTableAS works with live database', {
   conn <- setup_live_connection()
   test_table_name <- 'test_createtableas'
+  test_origin_table <- 'iris'
+  test_statement <- paste0('SELECT * FROM ', test_origin_table)
   if (dbExistsTable(conn, test_table_name)) {
     dbRemoveTable(conn, test_table_name)
   }
   expect_false(dbExistsTable(conn, test_table_name))
-  expect_true(dbCreateTableAs(conn, test_table_name, 'SELECT * FROM iris'))
+  expect_true(dbCreateTableAs(conn, test_table_name, test_statement))
   expect_true(dbExistsTable(conn, test_table_name))
-  expect_equal(
-    dbListFields(conn, test_table_name),
-    dbListFields(conn, 'iris')
-  )
-  expect_equal(
-    get_nrow(conn, test_table_name),
-    get_nrow(conn, 'iris')
-  )
+  test_equal_tables(conn, test_table_name, test_origin_table)
   expect_error(
-    dbCreateTableAs(conn, test_table_name, 'SELECT * FROM iris'),
-    'Destination table .* already exists'
+    dbCreateTableAs(conn, test_table_name, test_statement),
+    'The table .* exists but overwrite is set to FALSE'
   )
+  expect_message(
+    res <- dbCreateTableAs(
+      conn, test_table_name, test_statement, overwrite = TRUE
+    ),
+    'is overwritten'
+  )
+  expect_true(res)
+  expect_true(dbExistsTable(conn, test_table_name))
+  test_equal_tables(conn, test_table_name, test_origin_table)
 })

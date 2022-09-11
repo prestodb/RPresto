@@ -21,11 +21,6 @@ NULL
   append = FALSE, field.types = NULL, temporary = FALSE, row.names = FALSE,
   with = NULL
 ) {
-  stopifnot(
-    length(overwrite) == 1 &&
-      is.logical(overwrite) &&
-      !is.na(overwrite)
-  )
   stopifnot(is.data.frame(value))
 
   if (!identical(append, FALSE)) {
@@ -48,47 +43,7 @@ NULL
     ),
     con = conn
   )
-  if (dbExistsTable(conn, name)) {
-    if (identical(overwrite, TRUE)) {
-      # Rename the existing table to a temporary random name
-      # Create the table using the name
-      # Remove the existing table and let the user know that the table is
-      # overwritten
-      rn <- paste0(
-        'temp_', paste(sample(letters, 10, replace = TRUE), collapse = '')
-      )
-      DBI::dbExecute(
-        conn,
-        dbplyr::sql(paste('ALTER TABLE', name, 'RENAME TO', rn))
-      )
-      tryCatch(
-        {
-          dbCreateTableAs(conn, name, sql, with = with)
-        },
-        error = function(e) {
-          # In case of error, revert the original table's name
-          DBI::dbExecute(
-            conn,
-            dbplyr::sql(paste('ALTER TABLE', rn, 'RENAME TO', name))
-          )
-          stop(
-            'Overwriting table ', name, ' failed with error: "',
-            conditionMessage(e), '".', call. = FALSE
-          )
-        }
-      )
-      dbRemoveTable(conn, rn)
-      message('The table ', name, ' is overwritten.')
-    } else {
-      stop(
-        'The table ', name, ' exists but overwrite is set to FALSE.',
-        call. = FALSE
-      )
-    }
-  } else {
-    dbCreateTableAs(conn, name, sql, with = with)
-  }
-  invisible(TRUE)
+  dbCreateTableAs(conn, name, sql, overwrite, with, ...)
 }
 
 #' @rdname PrestoConnection-class
