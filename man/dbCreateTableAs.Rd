@@ -4,7 +4,7 @@
 \alias{dbCreateTableAs}
 \title{Create a table in database using a statement}
 \usage{
-dbCreateTableAs(conn, name, sql, with = NULL, ...)
+dbCreateTableAs(conn, name, sql, overwrite = FALSE, with = NULL, ...)
 }
 \arguments{
 \item{conn}{A \linkS4class{DBIConnection} object, as returned by
@@ -21,6 +21,9 @@ given verbatim, e.g. \code{SQL('"my_schema"."table_name"')}
 }}
 
 \item{sql}{a character string containing SQL statement.}
+
+\item{overwrite}{A boolean indicating if an existing table should be
+overwritten. Default to FALSE.}
 
 \item{with}{An optional WITH clause for the CREATE TABLE statement.}
 

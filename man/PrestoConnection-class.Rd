@@ -38,7 +38,7 @@
   temporary = FALSE
 )
 
-\S4method{dbCreateTableAs}{PrestoConnection}(conn, name, sql, with = NULL, ...)
+\S4method{dbCreateTableAs}{PrestoConnection}(conn, name, sql, overwrite = FALSE, with = NULL, ...)
 
 \S4method{dbExistsTable}{PrestoConnection,character}(conn, name, ...)
 
@@ -104,7 +104,8 @@ A data frame: field types are generated using
 
 \item{...}{Other parameters passed on to methods.}
 
-\item{sql}{a character string containing SQL statement.}
+\item{overwrite}{a logical specifying whether to overwrite an existing table
+or not. Its default is `FALSE`.}
 
 \item{pattern}{optional SQL pattern for filtering table names,
 e.g. \sQuote{\%test\%}}
@@ -113,9 +114,6 @@ e.g. \sQuote{\%test\%}}
 table doesn't exist.}
 
 \item{value}{a \link{data.frame} (or coercible to data.frame).}
-
-\item{overwrite}{a logical specifying whether to overwrite an existing table
-or not. Its default is `FALSE`.}
 
 \item{append, field.types, temporary, row.names}{Ignored. Included for
 compatibility with
