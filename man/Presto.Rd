@@ -18,6 +18,7 @@ Presto(...)
   source = methods::getPackageName(),
   session.timezone = "UTC",
   parameters = list(),
+  request.config = httr::config(),
   use.trino.headers = FALSE,
   extra.credentials = "",
   bigint = c("integer", "integer64", "numeric", "character"),
@@ -50,6 +51,9 @@ zone. See the session.timezone tests for examples.}
 
 \item{parameters}{A \code{\link{list}} of extra parameters to be passed in
 the \sQuote{X-Presto-Session} header}
+
+\item{request.config}{An optional config list, as returned by
+\code{httr::config()}, to be sent with every HTTP request.}
 
 \item{use.trino.headers}{A boolean to indicate whether Trino request headers
 should be used. Default to FALSE.}

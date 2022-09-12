@@ -27,6 +27,8 @@ more robust mapping between Presto data types and R types
   * `dplyr::tbl()` method for `PrestoConnection`
   * `dbplyr::db_compute()`
   * `dplyr::compute()`
+* `PrestoConnection` gains a `request.config` slot whereby users can set extra
+  Curl configs (as returned by `httr::config()` to GET/POST requests. (#173)
 
 # RPresto 1.3.8
 
