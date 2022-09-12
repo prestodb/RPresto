@@ -7,6 +7,10 @@
 #' @include PrestoSession.R
 NULL
 
+# Register request as a valid S3 class so that it can be used to specify the
+# request.config slot in PrestoConnection below.
+setOldClass('request')
+
 #' S4 implementation of \code{DBIConnection} for Presto.
 #'
 #' @keywords internal
@@ -25,6 +29,7 @@ setClass('PrestoConnection',
     'use.trino.headers'='logical',
     'Id'='character',
     'session'='PrestoSession',
+    'request.config'='request',
     'extra.credentials'='character',
     'bigint'='character'
   )

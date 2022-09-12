@@ -81,6 +81,21 @@ test_that('dbConnect constructs PrestoConnection correctly', {
     'character'
   )
 
+  expect_true(
+    dbConnect(
+      RPresto::Presto(),
+      catalog='jmx',
+      schema='test',
+      host='http://localhost',
+      port=8000,
+      source='testsource',
+      session.timezone=test.timezone(),
+      user=Sys.getenv('USER'),
+      bigint='character',
+      request.config=httr::verbose()
+    )@request.config$options$verbose
+  )
+
   expect_error(
     dbConnect(
       RPresto::Presto(),

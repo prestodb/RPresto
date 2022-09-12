@@ -20,6 +20,8 @@ NULL
 #'          zone. See the session.timezone tests for examples.
 #' @param parameters A \code{\link{list}} of extra parameters to be passed in
 #'          the \sQuote{X-Presto-Session} header
+#' @param request.config An optional config list, as returned by
+#'          `httr::config()`, to be sent with every HTTP request.
 #' @param use.trino.headers A boolean to indicate whether Trino request headers
 #'          should be used. Default to FALSE.
 #' @param extra.credentials Extra credentials to be passed in the
@@ -60,6 +62,7 @@ setMethod('dbConnect',
     source = methods::getPackageName(),
     session.timezone='UTC',
     parameters = list(),
+    request.config = httr::config(),
     use.trino.headers=FALSE,
     extra.credentials="",
     bigint = c("integer", "integer64", "numeric", "character"),
@@ -78,6 +81,7 @@ setMethod('dbConnect',
       port=port,
       source=source,
       session.timezone=session.timezone,
+      request.config=request.config,
       use.trino.headers=use.trino.headers,
       session=PrestoSession$new(parameters),
       extra.credentials=extra.credentials,
