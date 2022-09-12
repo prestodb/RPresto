@@ -13,10 +13,17 @@ NULL
 setMethod('dbExistsTable',
   c('PrestoConnection', 'character'),
   function(conn, name, ...) {
-    # This is necessary because name might be a quoted identifier rather than
-    # just a string (see #167)
-    name = DBI::dbQuoteIdentifier(conn, name)
-    id = DBI::dbUnquoteIdentifier(conn, name)[[1]]@name
-    return(tolower(id) %in% tolower(dbListTables(conn, pattern=id)))
+    table_name = DBI::dbQuoteIdentifier(conn, name)
+    tryCatch({
+      res <- dplyr::db_query_fields(conn, table_name)
+      return(TRUE)
+    },
+    error = function(e) {
+      if (grepl('Table .* does not exist', conditionMessage(e))) {
+        return(FALSE)
+      } else {
+        stop('Cannot tell if ', name, ' exists.', call. = FALSE)
+      }
+    })
   }
 )
