@@ -65,12 +65,10 @@ create_table <- function(con, table_name, sql, verbose = TRUE, ...) {
 #' @keywords internal
 #' @rdname dummy_tables
 #' @md
-create_primitive_arrays_table <- function(
-  con,
-  table_name = "presto_primitive_arrays",
-  time_zone = "America/New_York",
-  verbose = TRUE
-) {
+create_primitive_arrays_table <- function(con,
+                                          table_name = "presto_primitive_arrays",
+                                          time_zone = "America/New_York",
+                                          verbose = TRUE) {
   drop_table(con, table_name, verbose)
   create_table_sql <- paste0("
     CREATE TABLE ", table_name, " AS
@@ -160,8 +158,7 @@ create_primitive_arrays_table <- function(
         INTERVAL '3 7:8:9.600' DAY TO SECOND,
         null
       ] AS array_interval_day_to_second
-    "
-  )
+    ")
   create_table(con, table_name, create_table_sql, verbose)
 }
 
@@ -177,12 +174,10 @@ create_primitive_arrays_table <- function(
 #' @keywords internal
 #' @rdname dummy_tables
 #' @md
-create_primitive_maps_table <- function(
-  con,
-  table_name = "presto_primitive_maps",
-  time_zone = "America/New_York",
-  verbose = TRUE
-) {
+create_primitive_maps_table <- function(con,
+                                        table_name = "presto_primitive_maps",
+                                        time_zone = "America/New_York",
+                                        verbose = TRUE) {
   drop_table(con, table_name, verbose)
   tmp_table_name <- paste0("tmp_pretso_primitive_arrays")
   create_primitive_arrays_table(
@@ -210,8 +205,7 @@ create_primitive_maps_table <- function(
         AS map_interval_year_to_month,
       MAP(ARRAY[1, 2, 3], array_interval_day_to_second)
         AS map_interval_day_to_second
-    FROM ", tmp_table_name
-  )
+    FROM ", tmp_table_name)
   n_rows <- create_table(con, table_name, create_table_sql, verbose)
   drop_table(con, tmp_table_name, verbose)
   invisible(n_rows)
@@ -232,12 +226,10 @@ create_primitive_maps_table <- function(
 #' @keywords internal
 #' @rdname dummy_tables
 #' @md
-create_primitive_types_table <- function(
-  con,
-  table_name = "presto_primitive_types",
-  time_zone = "America/New_York",
-  verbose = TRUE
-) {
+create_primitive_types_table <- function(con,
+                                         table_name = "presto_primitive_types",
+                                         time_zone = "America/New_York",
+                                         verbose = TRUE) {
   drop_table(con, table_name, verbose)
   tmp_table_name <- paste0("tmp_pretso_primitive_arrays")
   create_primitive_arrays_table(
@@ -302,8 +294,7 @@ create_primitive_types_table <- function(
       interval_year_to_month,
       interval_day_to_second
     )
-    "
-  )
+    ")
   n_rows <- create_table(con, table_name, create_table_sql, verbose)
   drop_table(con, tmp_table_name, verbose)
   invisible(n_rows)
@@ -321,12 +312,10 @@ create_primitive_types_table <- function(
 #' @keywords internal
 #' @rdname dummy_tables
 #' @md
-create_primitive_rows_table <- function(
-  con,
-  table_name = "presto_primitive_rows",
-  time_zone = "America/New_York",
-  verbose = TRUE
-) {
+create_primitive_rows_table <- function(con,
+                                        table_name = "presto_primitive_rows",
+                                        time_zone = "America/New_York",
+                                        verbose = TRUE) {
   drop_table(con, table_name, verbose)
   tmp_table_name <- paste0("tmp_pretso_primitive_types")
   create_primitive_types_table(
@@ -375,8 +364,7 @@ create_primitive_rows_table <- function(
           interval_day_to_second INTERVAL DAY TO SECOND
         )
       ) AS row_primitive_types
-    FROM ", tmp_table_name
-  )
+    FROM ", tmp_table_name)
   n_rows <- create_table(con, table_name, create_table_sql, verbose)
   drop_table(con, tmp_table_name, verbose)
   invisible(n_rows)
@@ -397,12 +385,10 @@ create_primitive_rows_table <- function(
 #' @keywords internal
 #' @rdname dummy_tables
 #' @md
-create_array_of_rows_table <- function(
-  con,
-  table_name = "presto_array_of_rows",
-  time_zone = "America/New_York",
-  verbose = TRUE
-) {
+create_array_of_rows_table <- function(con,
+                                       table_name = "presto_array_of_rows",
+                                       time_zone = "America/New_York",
+                                       verbose = TRUE) {
   drop_table(con, table_name, verbose)
   tmp_table_name <- paste0("tmp_pretso_primitive_rows")
   create_primitive_rows_table(
@@ -411,8 +397,7 @@ create_array_of_rows_table <- function(
   create_table_sql <- paste0("
     CREATE TABLE ", table_name, " AS
     SELECT ARRAY[row_primitive_types, row_primitive_types] AS array_of_rows
-    FROM ", tmp_table_name
-  )
+    FROM ", tmp_table_name)
   n_rows <- create_table(con, table_name, create_table_sql, verbose)
   drop_table(con, tmp_table_name, verbose)
   invisible(n_rows)
@@ -431,12 +416,10 @@ create_array_of_rows_table <- function(
 #' @keywords internal
 #' @rdname dummy_tables
 #' @md
-create_array_of_maps_table <- function(
-  con,
-  table_name = "presto_array_of_maps",
-  time_zone = "America/New_York",
-  verbose = TRUE
-) {
+create_array_of_maps_table <- function(con,
+                                       table_name = "presto_array_of_maps",
+                                       time_zone = "America/New_York",
+                                       verbose = TRUE) {
   drop_table(con, table_name, verbose)
   tmp_table_name <- paste0("tmp_pretso_primitive_maps")
   create_primitive_maps_table(
@@ -465,8 +448,7 @@ create_array_of_maps_table <- function(
         AS array_map_interval_year_to_month,
       ARRAY[map_interval_day_to_second, map_interval_day_to_second]
         AS array_map_interval_day_to_second
-    FROM ", tmp_table_name
-  )
+    FROM ", tmp_table_name)
   n_rows <- create_table(con, table_name, create_table_sql, verbose)
   drop_table(con, tmp_table_name, verbose)
   invisible(n_rows)

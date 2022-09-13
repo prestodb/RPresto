@@ -15,30 +15,28 @@ NULL
 #'   compatibility with
 #'   generic.
 #' @usage NULL
-.dbWriteTable <- function(
-  conn, name, value,
-  overwrite = FALSE, ...,
-  append = FALSE, field.types = NULL, temporary = FALSE, row.names = FALSE,
-  with = NULL
-) {
+.dbWriteTable <- function(conn, name, value,
+                          overwrite = FALSE, ...,
+                          append = FALSE, field.types = NULL, temporary = FALSE, row.names = FALSE,
+                          with = NULL) {
   stopifnot(is.data.frame(value))
 
   if (!identical(append, FALSE)) {
-    stop('Appending not supported by RPresto yet', call. = FALSE)
+    stop("Appending not supported by RPresto yet", call. = FALSE)
   }
   if (!is.null(field.types)) {
-    stop('`field.types` not supported by RPresto', call. = FALSE)
+    stop("`field.types` not supported by RPresto", call. = FALSE)
   }
   if (!identical(temporary, FALSE)) {
-    stop('Temporary tables not supported by RPresto', call. = FALSE)
+    stop("Temporary tables not supported by RPresto", call. = FALSE)
   }
   if (!identical(row.names, FALSE)) {
-    stop('row.names not supported by RPresto', call. = FALSE)
+    stop("row.names not supported by RPresto", call. = FALSE)
   }
 
   sql <- dbplyr::sql_render(
     query = dbplyr::lazy_query(
-      query_type = 'values', x = value,
+      query_type = "values", x = value,
       group_vars = character(), order_vars = NULL, frame = NULL
     ),
     con = conn
@@ -50,7 +48,7 @@ NULL
 #' @importMethodsFrom DBI dbWriteTable
 #' @export
 setMethod(
-  'dbWriteTable',
-  c('PrestoConnection', 'character', 'data.frame'),
+  "dbWriteTable",
+  c("PrestoConnection", "character", "data.frame"),
   .dbWriteTable
 )

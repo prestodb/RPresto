@@ -23,9 +23,7 @@ setGeneric("dbCreateTableAs",
 
 #' @rdname PrestoConnection-class
 #' @usage NULL
-.dbCreateTableAs <- function(
-  conn, name, sql, overwrite = FALSE, with = NULL, ...
-) {
+.dbCreateTableAs <- function(conn, name, sql, overwrite = FALSE, with = NULL, ...) {
   stopifnot(is.character(sql), length(sql) == 1)
   stopifnot(length(overwrite) == 1, is.logical(overwrite), !is.na(overwrite))
 
@@ -43,11 +41,11 @@ setGeneric("dbCreateTableAs",
       # Remove the existing table and let the user know that the table is
       # overwritten
       rn <- paste0(
-        'temp_', paste(sample(letters, 10, replace = TRUE), collapse = '')
+        "temp_", paste(sample(letters, 10, replace = TRUE), collapse = "")
       )
       DBI::dbExecute(
         conn,
-        dbplyr::sql(paste('ALTER TABLE', name, 'RENAME TO', rn))
+        dbplyr::sql(paste("ALTER TABLE", name, "RENAME TO", rn))
       )
       tryCatch(
         {
@@ -57,20 +55,21 @@ setGeneric("dbCreateTableAs",
           # In case of error, revert the original table's name
           DBI::dbExecute(
             conn,
-            dbplyr::sql(paste('ALTER TABLE', rn, 'RENAME TO', name))
+            dbplyr::sql(paste("ALTER TABLE", rn, "RENAME TO", name))
           )
           stop(
-            'Overwriting table ', name, ' failed with error: "',
-            conditionMessage(e), '".', call. = FALSE
+            "Overwriting table ", name, ' failed with error: "',
+            conditionMessage(e), '".',
+            call. = FALSE
           )
         }
       )
       if (dbRemoveTable(conn, rn)) {
-        message('The table ', name, ' is overwritten.')
+        message("The table ", name, " is overwritten.")
       }
     } else {
       stop(
-        'The table ', name, ' exists but overwrite is set to FALSE.',
+        "The table ", name, " exists but overwrite is set to FALSE.",
         call. = FALSE
       )
     }
@@ -83,6 +82,6 @@ setGeneric("dbCreateTableAs",
 #' @rdname PrestoConnection-class
 #' @export
 setMethod(
-  'dbCreateTableAs', signature('PrestoConnection'),
+  "dbCreateTableAs", signature("PrestoConnection"),
   .dbCreateTableAs
 )

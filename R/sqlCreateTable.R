@@ -11,9 +11,7 @@ NULL
 #' @inheritParams DBI::sqlCreateTable
 #' @param with An optional WITH clause for the CREATE TABLE statement.
 #' @usage NULL
-.sqlCreateTable <- function(
-  con, table, fields, row.names = NA, temporary = FALSE, with = NULL, ...
-) {
+.sqlCreateTable <- function(con, table, fields, row.names = NA, temporary = FALSE, with = NULL, ...) {
   table <- DBI::dbQuoteIdentifier(con, table)
 
   if (is.data.frame(fields)) {
@@ -24,7 +22,7 @@ NULL
   field_names <- DBI::dbQuoteIdentifier(con, names(fields))
   field_types <- unname(fields)
   fields <- paste0(field_names, " ", field_types)
-  
+
   DBI::SQL(paste0(
     "CREATE ", if (temporary) "TEMPORARY ", "TABLE ", table, " (\n",
     "  ", paste(fields, collapse = ",\n  "), "\n)\n", with

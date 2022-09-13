@@ -31,14 +31,14 @@ setGeneric("sqlCreateTableAs",
 #' @rdname PrestoConnection-class
 #' @usage NULL
 .sqlCreateTableAs <- function(con, name, sql, with = NULL, ...) {
-    name <- DBI::dbQuoteIdentifier(con, name)
+  name <- DBI::dbQuoteIdentifier(con, name)
 
-    DBI::SQL(paste0(
-      'CREATE TABLE ', name, '\n',
-      if (!is.null(with)) paste0(with, '\n'),
-      'AS\n',
-      sql
-    ))
+  DBI::SQL(paste0(
+    "CREATE TABLE ", name, "\n",
+    if (!is.null(with)) paste0(with, "\n"),
+    "AS\n",
+    sql
+  ))
 }
 
 #' @rdname PrestoConnection-class

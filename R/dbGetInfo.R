@@ -11,7 +11,8 @@ NULL
 #' @rdname dbGetInfo
 #' @importMethodsFrom DBI dbGetInfo
 #' @export
-setMethod("dbGetInfo",
+setMethod(
+  "dbGetInfo",
   "PrestoDriver",
   function(dbObj) {
     return()
@@ -21,26 +22,27 @@ setMethod("dbGetInfo",
 #' @rdname dbGetInfo
 #' @importMethodsFrom DBI dbGetInfo
 #' @export
-setMethod("dbGetInfo",
+setMethod(
+  "dbGetInfo",
   "PrestoConnection",
   function(dbObj) {
     return(list(
-      host=dbObj@host,
-      port=dbObj@port,
-      user=dbObj@user,
-      catalog=dbObj@catalog,
-      schema=dbObj@schema
+      host = dbObj@host,
+      port = dbObj@port,
+      user = dbObj@user,
+      catalog = dbObj@catalog,
+      schema = dbObj@schema
     ))
   }
 )
 
 .dbGetInfo.PrestoResult <- function(dbObj) {
   return(list(
-    query.id=dbObj@query$id(),
-    statement=.dbGetStatement(dbObj),
-    row.count=.dbGetRowCount(dbObj),
-    has.completed=.dbHasCompleted(dbObj),
-    stats=dbObj@query$stats()
+    query.id = dbObj@query$id(),
+    statement = .dbGetStatement(dbObj),
+    row.count = .dbGetRowCount(dbObj),
+    has.completed = .dbHasCompleted(dbObj),
+    stats = dbObj@query$stats()
   ))
 }
 
@@ -63,24 +65,24 @@ setMethod("dbGetInfo",
 #' @export
 #' @examples
 #' \dontrun{
-#'   conn <- dbConnect(Presto(), 'localhost', 7777, 'onur', 'datascience')
-#'   result <- dbSendQuery(conn, 'SELECT * FROM jonchang_iris')
-#'   iris <- data.frame()
-#'   progress.bar <- NULL
-#'   while (!dbHasCompleted(result)) {
-#'     chunk <- dbFetch(result)
-#'     if (!NROW(iris)) {
-#'       iris <- chunk
-#'     } else if (NROW(chunk)) {
-#'       iris <- rbind(iris, chunk)
-#'     }
-#'     stats <- dbGetInfo(result)[['stats']]
-#'     if (is.null(progress.bar)) {
-#'       progress.bar <- txtProgressBar(0, stats[['totalSplits']], style=3)
-#'     } else {
-#'       setTxtProgressBar(progress.bar, stats[['completedSplits']])
-#'     }
+#' conn <- dbConnect(Presto(), "localhost", 7777, "onur", "datascience")
+#' result <- dbSendQuery(conn, "SELECT * FROM jonchang_iris")
+#' iris <- data.frame()
+#' progress.bar <- NULL
+#' while (!dbHasCompleted(result)) {
+#'   chunk <- dbFetch(result)
+#'   if (!NROW(iris)) {
+#'     iris <- chunk
+#'   } else if (NROW(chunk)) {
+#'     iris <- rbind(iris, chunk)
 #'   }
-#'   close(progress.bar)
+#'   stats <- dbGetInfo(result)[["stats"]]
+#'   if (is.null(progress.bar)) {
+#'     progress.bar <- txtProgressBar(0, stats[["totalSplits"]], style = 3)
+#'   } else {
+#'     setTxtProgressBar(progress.bar, stats[["completedSplits"]])
+#'   }
+#' }
+#' close(progress.bar)
 #' }
 setMethod("dbGetInfo", "PrestoResult", .dbGetInfo.PrestoResult)

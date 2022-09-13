@@ -12,8 +12,9 @@ NULL
 #' @importMethodsFrom DBI dbDisconnect
 #' @export
 #' @rdname Presto
-setMethod('dbDisconnect',
-  'PrestoConnection',
+setMethod(
+  "dbDisconnect",
+  "PrestoConnection",
   function(conn) {
     return(TRUE)
   }

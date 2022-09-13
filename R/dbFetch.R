@@ -12,7 +12,7 @@ NULL
     # Preserve attributes for empty data frames
     return(res_list[[1]])
   } else {
-    res_list <- purrr::keep(res_list, ~(ncol(.) > 0))
+    res_list <- purrr::keep(res_list, ~ (ncol(.) > 0))
     # We need to check for the uniqueness of columns because dplyr::bind_rows
     # will drop duplicate column names and we want to preserve all the data
     unique.chunk.column.names <- unique(lapply(
@@ -20,14 +20,15 @@ NULL
       names
     ))
     if (length(unique.chunk.column.names) != 1) {
-      stop('Chunk column names are different across chunks: ',
-           jsonlite::toJSON(lapply(res_list, names))
+      stop(
+        "Chunk column names are different across chunks: ",
+        jsonlite::toJSON(lapply(res_list, names))
       )
     }
-    if (requireNamespace('dplyr', quietly=TRUE)) {
+    if (requireNamespace("dplyr", quietly = TRUE)) {
       return(dplyr::bind_rows(res_list))
     } else {
-      return(do.call('rbind', res_list))
+      return(do.call("rbind", res_list))
     }
   }
 }
@@ -36,14 +37,16 @@ NULL
 #' @importMethodsFrom DBI dbFetch
 #' @export
 setMethod(
-  'dbFetch', c('PrestoResult', 'numeric'),
+  "dbFetch", c("PrestoResult", "numeric"),
   function(res, n) {
     if (!dbIsValid(res)) {
-      stop('Result object is not valid')
+      stop("Result object is not valid")
     }
     if (!((n > 0 && is.infinite(n)) || (as.integer(n) == -1L))) {
-      stop('fetching custom number of rows (n != -1 and n != Inf) ',
-           'is not supported, asking for: ', n)
+      stop(
+        "fetching custom number of rows (n != -1 and n != Inf) ",
+        "is not supported, asking for: ", n
+      )
     }
     res_list <- list()
     chunk.count <- 1
@@ -61,10 +64,10 @@ setMethod(
 #' @importMethodsFrom DBI dbFetch
 #' @export
 setMethod(
-  'dbFetch', c('PrestoResult', 'missing'),
+  "dbFetch", c("PrestoResult", "missing"),
   function(res) {
     if (!dbIsValid(res)) {
-      stop('Result object is not valid')
+      stop("Result object is not valid")
     }
     if (isFALSE(res@query$postDataFetched())) {
       df <- res@post.data

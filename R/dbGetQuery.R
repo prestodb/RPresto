@@ -17,4 +17,4 @@ NULL
 #' @rdname PrestoConnection-class
 #' @importMethodsFrom DBI dbGetQuery
 #' @export
-setMethod('dbGetQuery', c('PrestoConnection', 'character'), .dbGetQuery)
+setMethod("dbGetQuery", c("PrestoConnection", "character"), .dbGetQuery)

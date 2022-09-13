@@ -11,10 +11,10 @@ NULL
 #' @importMethodsFrom DBI dbGetRowsAffected
 #' @export
 setMethod(
-  'dbGetRowsAffected', 'PrestoResult',
+  "dbGetRowsAffected", "PrestoResult",
   function(res) {
     df <- dbFetch(res, -1)
-    if ('rows' %in% colnames(df)) {
+    if ("rows" %in% colnames(df)) {
       return(as.integer(df$rows))
     }
     return(0L)

@@ -5,7 +5,7 @@
 # LICENSE file in the root directory of this source tree.
 
 #' Class to encapsulate a Presto session
-#' 
+#'
 #' Internal implementation detail class needed for its side-effects.
 #' When SET/RESET SESSION queries are called, session parameters need to be
 #' maintained by the client and requires an in-place update.
@@ -13,29 +13,29 @@
 #' @slot .parameters List of Presto session parameters to be added to the
 #'         X-Presto-Session header.
 #' @keywords internal
-PrestoSession <- setRefClass('PrestoSession',
-  fields=c(
-    '.parameters'
+PrestoSession <- setRefClass("PrestoSession",
+  fields = c(
+    ".parameters"
   ),
-  methods=list(
-    initialize=function(parameters, ...) {
+  methods = list(
+    initialize = function(parameters, ...) {
       initFields(.parameters = parameters)
     },
-    setParameter=function(key, value) {
+    setParameter = function(key, value) {
       .parameters[[key]] <<- value
     },
-    unsetParameter=function(key) {
+    unsetParameter = function(key) {
       .parameters[[key]] <<- NULL
     },
-    parameters=function() {
+    parameters = function() {
       return(.parameters)
     },
-    parameterString=function() {
+    parameterString = function() {
       return(paste(
         names(.parameters),
         .parameters,
-        sep='=',
-        collapse=','
+        sep = "=",
+        collapse = ","
       ))
     }
   )

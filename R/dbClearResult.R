@@ -10,31 +10,32 @@ NULL
 #' @rdname PrestoResult-class
 #' @importMethodsFrom DBI dbClearResult
 #' @export
-setMethod('dbClearResult',
-  c('PrestoResult'),
+setMethod(
+  "dbClearResult",
+  c("PrestoResult"),
   function(res, ...) {
     if (dbHasCompleted(res)) {
       return(TRUE)
     }
 
     uri <- res@query$nextUri()
-    if (uri == '') {
+    if (uri == "") {
       return(TRUE)
     }
 
-    if (res@query$state() == '__KILLED') {
+    if (res@query$state() == "__KILLED") {
       return(TRUE)
     }
 
     headers <- .request_headers(res@connection)
     delete.uri <- paste0(
-      res@connection@host, ':', res@connection@port,
-      '/v1/query/', res@query$id()
+      res@connection@host, ":", res@connection@port,
+      "/v1/query/", res@query$id()
     )
-    delete.result <- httr::DELETE(delete.uri, config=headers)
+    delete.result <- httr::DELETE(delete.uri, config = headers)
     s <- httr::status_code(delete.result)
     if (s >= 200 && s < 300) {
-      res@query$state('__KILLED')
+      res@query$state("__KILLED")
       rv <- TRUE
     } else {
       rv <- FALSE

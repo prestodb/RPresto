@@ -16,18 +16,18 @@ dbplyr_edition.PrestoConnection <- function(con) 2L
 
 .description_from_info <- function(info) {
   return(paste0(
-    'presto ',
-    ' [',
-    info[['schema']],
-    ':',
-    info[['catalog']],
-    ' | ',
-    info[['user']],
-    '@',
-    info[['host']],
-    ':',
-    info[['port']],
-    ']'
+    "presto ",
+    " [",
+    info[["schema"]],
+    ":",
+    info[["catalog"]],
+    " | ",
+    info[["user"]],
+    "@",
+    info[["host"]],
+    ":",
+    info[["port"]],
+    "]"
   ))
 }
 
@@ -78,7 +78,7 @@ db_query_rows.PrestoConnection <- function(con, sql) {
 }
 
 #' dbplyr database methods
-#' 
+#'
 #' @rdname dbplyr-db
 #' @param con A `PrestoConnection` as returned by `dbConnect()`.
 #' @importFrom dplyr db_list_tables
@@ -105,10 +105,8 @@ db_has_table.PrestoConnection <- function(con, table) {
 #' @param with An optional WITH clause for the CREATE TABLE statement.
 #' @importFrom dplyr db_write_table
 #' @export
-db_write_table.PrestoConnection  <- function(
-  con, table, types, values, temporary = FALSE, overwrite = FALSE,
-  ..., with = NULL
-) {
+db_write_table.PrestoConnection <- function(con, table, types, values, temporary = FALSE, overwrite = FALSE,
+                                            ..., with = NULL) {
   dbWriteTable(
     conn = con,
     name = table,
@@ -128,13 +126,12 @@ db_write_table.PrestoConnection  <- function(
 #' @param ... Extra arguments to be passed to individual methods.
 #' @importFrom dbplyr db_copy_to
 #' @export
-db_copy_to.PrestoConnection  <- function(
-  con, table, values, overwrite = FALSE, types = NULL, temporary = TRUE,
-  unique_indexes = NULL, indexes = NULL, analyze = TRUE, ...,
-  in_transaction = TRUE, with = NULL
-) {
+db_copy_to.PrestoConnection <- function(con, table, values, overwrite = FALSE, types = NULL, temporary = TRUE,
+                                        unique_indexes = NULL, indexes = NULL, analyze = TRUE, ...,
+                                        in_transaction = TRUE, with = NULL) {
   table <- dplyr::db_write_table(
-    con, table, types = types, values = values,
+    con, table,
+    types = types, values = values,
     temporary = temporary, overwrite = overwrite, with = with,
     ...
   )
@@ -145,19 +142,19 @@ db_copy_to.PrestoConnection  <- function(
 #' @param sql A SQL statement.
 #' @importFrom dbplyr db_compute
 #' @export
-db_compute.PrestoConnection  <- function(
-  con, table, sql, temporary = TRUE, unique_indexes = list(), indexes = list(),
-  analyze = TRUE, with = NULL,
-  ...
-) {
+db_compute.PrestoConnection <- function(con, table, sql, temporary = TRUE, unique_indexes = list(), indexes = list(),
+                                        analyze = TRUE, with = NULL,
+                                        ...) {
   if (!identical(temporary, FALSE)) {
     stop(
-      'Temporary table is not supported. ',
-      'Use temporary = FALSE to create a permanent table.',
-      call. = FALSE)
+      "Temporary table is not supported. ",
+      "Use temporary = FALSE to create a permanent table.",
+      call. = FALSE
+    )
   }
   table <- dplyr::db_save_query(
-    con, sql, table, temporary = temporary, with = with, ...
+    con, sql, table,
+    temporary = temporary, with = with, ...
   )
   table
 }
@@ -168,18 +165,19 @@ db_compute.PrestoConnection  <- function(
 #' @export
 #' @rdname dplyr_function_implementations
 #' @keywords internal
-db_collect.PrestoConnection <- function(
-  con, sql, n = -1, warn_incomplete = TRUE, ...
-) {
+db_collect.PrestoConnection <- function(con, sql, n = -1, warn_incomplete = TRUE, ...) {
   # This is the one difference between this implementation and the default
   # dbplyr::db_collect.DBIConnection()
   # We pass ... to dbSendQuery() so that bigint can be specified for individual
   # db_collect() calls
   res <- dbSendQuery(con, sql, ...)
-  tryCatch({
+  tryCatch(
+    {
       out <- dbFetch(res, n = n)
-  }, finally = {
+    },
+    finally = {
       dbClearResult(res)
-  })
+    }
+  )
   out
 }

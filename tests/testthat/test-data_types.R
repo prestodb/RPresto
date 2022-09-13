@@ -4,21 +4,29 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-context('data types')
+context("data types")
 
-source('utilities.R')
+source("utilities.R")
 
 test_that("Queries return the correct primitive types", {
   conn <- setup_live_connection()
 
-  expect_equal_data_frame(dbGetQuery(conn, "select true bool"),
-               tibble::tibble(bool = TRUE))
-  expect_equal_data_frame(dbGetQuery(conn, "select 1 one"),
-               tibble::tibble(one = 1))
-  expect_equal_data_frame(dbGetQuery(conn, "select cast(1 as double) one"),
-               tibble::tibble(one = 1.0))
-  expect_equal_data_frame(dbGetQuery(conn, "select 'one' one"),
-               tibble::tibble(one = 'one'))
+  expect_equal_data_frame(
+    dbGetQuery(conn, "select true bool"),
+    tibble::tibble(bool = TRUE)
+  )
+  expect_equal_data_frame(
+    dbGetQuery(conn, "select 1 one"),
+    tibble::tibble(one = 1)
+  )
+  expect_equal_data_frame(
+    dbGetQuery(conn, "select cast(1 as double) one"),
+    tibble::tibble(one = 1.0)
+  )
+  expect_equal_data_frame(
+    dbGetQuery(conn, "select 'one' one"),
+    tibble::tibble(one = "one")
+  )
 })
 
 test_that("Queries return the correct array types", {
@@ -37,7 +45,7 @@ test_that("Queries return the correct array types", {
   )
   expect_equal_data_frame(
     dbGetQuery(conn, "select array['1'] arr"),
-    tibble::tibble(arr = list('1'))
+    tibble::tibble(arr = list("1"))
   )
   expect_equal_data_frame(
     dbGetQuery(conn, "select array[1, 2] arr"),
@@ -119,7 +127,7 @@ test_that("Queries return the correct row types", {
 })
 
 test_that("all data types work", {
-  conn <- setup_live_connection(session.timezone=test.timezone())
+  conn <- setup_live_connection(session.timezone = test.timezone())
 
   expect_equal_data_frame(
     dbGetQuery(conn, "
@@ -149,54 +157,52 @@ test_that("all data types work", {
     "),
     tibble::tibble(
       type_boolean = TRUE,
-      type_tinyint=1L,
-      type_smallint=1L,
-      type_integer=1L,
-      type_bigint=1L,
-      type_real=1.0,
-      type_double=1.0,
-      type_decimal='1.414',
-      type_varchar='a',
-      type_char='a',
-      type_varbinary=list(charToRaw('a')),
-      type_json='{"a":1}',
-      type_date=as.Date('2015-03-01'),
-      type_time=hms::as_hms('01:02:03.456'),
-      type_time_with_timezone=hms::as_hms('06:47:03.456'),
-      type_timestamp
-      =as.POSIXct('2001-08-22 03:04:05.321', tz=test.timezone()),
-      type_timestamp_with_timezone
-      =as.POSIXct('2001-08-22 08:49:05.321', tz=test.timezone()),
-      type_interval_year_to_month=lubridate::duration(13, units = "months"),
-      type_interval_day_to_second=
+      type_tinyint = 1L,
+      type_smallint = 1L,
+      type_integer = 1L,
+      type_bigint = 1L,
+      type_real = 1.0,
+      type_double = 1.0,
+      type_decimal = "1.414",
+      type_varchar = "a",
+      type_char = "a",
+      type_varbinary = list(charToRaw("a")),
+      type_json = '{"a":1}',
+      type_date = as.Date("2015-03-01"),
+      type_time = hms::as_hms("01:02:03.456"),
+      type_time_with_timezone = hms::as_hms("06:47:03.456"),
+      type_timestamp = as.POSIXct("2001-08-22 03:04:05.321", tz = test.timezone()),
+      type_timestamp_with_timezone = as.POSIXct("2001-08-22 08:49:05.321", tz = test.timezone()),
+      type_interval_year_to_month = lubridate::duration(13, units = "months"),
+      type_interval_day_to_second =
         lubridate::duration(626704.321, units = "seconds"),
-      type_array_bigint=list(c(1L, 2L, 3L)),
-      type_map_varchar_bigint=list(c(a=0L))
+      type_array_bigint = list(c(1L, 2L, 3L)),
+      type_map_varchar_bigint = list(c(a = 0L))
     )
   )
 
   e <- tibble::tibble(
-    type_boolean=NA,
-    type_tinyint=NA_integer_,
-    type_smallint=NA_integer_,
-    type_integer=NA_integer_,
-    type_bigint=NA_integer_,
-    type_real=NA_real_,
-    type_double=NA_real_,
-    type_decimal=NA_character_,
-    type_varchar=NA_character_,
-    type_char=NA_character_,
+    type_boolean = NA,
+    type_tinyint = NA_integer_,
+    type_smallint = NA_integer_,
+    type_integer = NA_integer_,
+    type_bigint = NA_integer_,
+    type_real = NA_real_,
+    type_double = NA_real_,
+    type_decimal = NA_character_,
+    type_varchar = NA_character_,
+    type_char = NA_character_,
     # raw type doesn't have an NA value
-    type_varbinary=list(raw(0)),
-    type_json=NA_character_,
-    type_date=as.Date(NA),
-    type_time=hms::as_hms(NA_character_),
-    type_time_with_timezone=hms::as_hms(NA_character_),
-    type_timestamp=as.POSIXct(NA_character_, tz = test.timezone()),
-    type_timestamp_with_timezone=
+    type_varbinary = list(raw(0)),
+    type_json = NA_character_,
+    type_date = as.Date(NA),
+    type_time = hms::as_hms(NA_character_),
+    type_time_with_timezone = hms::as_hms(NA_character_),
+    type_timestamp = as.POSIXct(NA_character_, tz = test.timezone()),
+    type_timestamp_with_timezone =
       as.POSIXct(NA_character_, tz = test.timezone()),
-    type_array_bigint=list(NA_integer_),
-    type_map_varchar_bigint=list(NA_integer_)
+    type_array_bigint = list(NA_integer_),
+    type_map_varchar_bigint = list(NA_integer_)
   )
   expect_equal_data_frame(
     dbGetQuery(conn, "

@@ -11,12 +11,10 @@ NULL
 #' @inheritParams DBI::dbCreateTable
 #' @param with An optional WITH clause for the CREATE TABLE statement.
 #' @usage NULL
-.dbCreateTable <- function(
-  conn, name, fields, with = NULL, ..., row.names = NULL, temporary = FALSE
-) {
+.dbCreateTable <- function(conn, name, fields, with = NULL, ..., row.names = NULL, temporary = FALSE) {
   stopifnot(is.null(row.names))
   if (!isFALSE(temporary)) {
-    stop('CREATE TEMPORARY TABLE is not supported in Presto.', call. = FALSE)
+    stop("CREATE TEMPORARY TABLE is not supported in Presto.", call. = FALSE)
   }
 
   query <- sqlCreateTable(

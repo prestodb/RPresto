@@ -10,20 +10,23 @@ NULL
 #' @rdname PrestoConnection-class
 #' @importMethodsFrom DBI dbExistsTable
 #' @export
-setMethod('dbExistsTable',
-  c('PrestoConnection', 'character'),
+setMethod(
+  "dbExistsTable",
+  c("PrestoConnection", "character"),
   function(conn, name, ...) {
-    table_name = DBI::dbQuoteIdentifier(conn, name)
-    tryCatch({
-      res <- dplyr::db_query_fields(conn, table_name)
-      return(TRUE)
-    },
-    error = function(e) {
-      if (grepl('Table .* does not exist', conditionMessage(e))) {
-        return(FALSE)
-      } else {
-        stop('Cannot tell if ', name, ' exists.', call. = FALSE)
+    table_name <- DBI::dbQuoteIdentifier(conn, name)
+    tryCatch(
+      {
+        res <- dplyr::db_query_fields(conn, table_name)
+        return(TRUE)
+      },
+      error = function(e) {
+        if (grepl("Table .* does not exist", conditionMessage(e))) {
+          return(FALSE)
+        } else {
+          stop("Cannot tell if ", name, " exists.", call. = FALSE)
+        }
       }
-    })
+    )
   }
 )

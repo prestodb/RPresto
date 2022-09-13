@@ -56,39 +56,37 @@ NULL
 #' )
 #' my_db2 <- src_presto(con = my_con)
 #' }
-src_presto <- function(
-    catalog=NULL,
-    schema=NULL,
-    user=NULL,
-    host= NULL,
-    port=NULL,
-    source=NULL,
-    session.timezone=NULL,
-    parameters=NULL,
-    bigint = c("integer", "integer64", "numeric", "character"),
-    con=NULL,
-    ...
-  ) {
+src_presto <- function(catalog = NULL,
+                       schema = NULL,
+                       user = NULL,
+                       host = NULL,
+                       port = NULL,
+                       source = NULL,
+                       session.timezone = NULL,
+                       parameters = NULL,
+                       bigint = c("integer", "integer64", "numeric", "character"),
+                       con = NULL,
+                       ...) {
   if (is.null(con)) {
     con <- DBI::dbConnect(
-      drv=Presto(),
-      catalog=catalog %||% character(0),
-      schema=schema %||% character(0),
-      user=user %||% character(0),
-      host=host %||% character(0),
-      port=port %||% character(0),
-      source=source %||% character(0),
-      session.timezone=session.timezone %||% character(0),
-      parameters=parameters %||% list(),
-      bigint=match.arg(bigint) %||% character(0),
+      drv = Presto(),
+      catalog = catalog %||% character(0),
+      schema = schema %||% character(0),
+      user = user %||% character(0),
+      host = host %||% character(0),
+      port = port %||% character(0),
+      source = source %||% character(0),
+      session.timezone = session.timezone %||% character(0),
+      parameters = parameters %||% list(),
+      bigint = match.arg(bigint) %||% character(0),
       ...
     )
   } else {
-    stopifnot(inherits(con, 'PrestoConnection'))
+    stopifnot(inherits(con, "PrestoConnection"))
   }
 
-  src <- dbplyr::src_dbi(con, auto_disconnect=FALSE)
-  class(src) <- c('src_presto', class(src))
+  src <- dbplyr::src_dbi(con, auto_disconnect = FALSE)
+  class(src) <- c("src_presto", class(src))
   return(src)
 }
 
@@ -134,7 +132,7 @@ tbl.src_presto <- function(src, from, ...) {
 #' @export
 #' @param conn A `PrestoConnection` object produced by `DBI::dbConnect()`.
 #' @param from Either a string (giving a table name) or a literal
-#'          [dbplyr::sql()] string. 
+#'          [dbplyr::sql()] string.
 #' @param ... Passed on to [dbplyr::tbl_sql()]
 #' @rdname dplyr_source_function_implementations
 #' @keywords internal
@@ -165,11 +163,9 @@ tbl.PrestoConnection <- function(conn, from, ...) {
 #' @param with An optional WITH clause for the CREATE TABLE statement.
 #' @rdname dplyr_source_function_implementations
 #' @keywords internal
-copy_to.src_presto <- function(
-  dest, df, name = deparse(substitute(df)), overwrite = FALSE,
-  ...,
-  with = NULL
-) {
+copy_to.src_presto <- function(dest, df, name = deparse(substitute(df)), overwrite = FALSE,
+                               ...,
+                               with = NULL) {
   name <- dbplyr::as.sql(name, con = dest$con)
   if (inherits(df, "tbl_sql") && dplyr::same_src(df$src, dest)) {
     out <- dplyr::compute(df,
@@ -203,32 +199,30 @@ copy_to.src_presto <- function(
 #' @keywords internal
 collect.tbl_presto <- function(x, ..., n = Inf, warn_incomplete = TRUE) {
   if (identical(n, Inf)) {
-        n <- -1
-    }
-    else {
-        x <- utils::head(x, n)
-    }
-    sql <- dbplyr::db_sql_render(x$src$con, x)
-    # This is the one place whereby this implementation is different from the
-    # default dbplyr::collect.tbl_sql()
-    # We pass ... to db_collect() here so that bigint can be used in collect()
-    # to specify the BIGINT treatment
-    out <- dbplyr::db_collect(
-      x$src$con, sql, n = n, warn_incomplete = warn_incomplete, ...
-    )
-    dplyr::grouped_df(out, intersect(dbplyr::op_grps(x), names(out)))
+    n <- -1
+  } else {
+    x <- utils::head(x, n)
+  }
+  sql <- dbplyr::db_sql_render(x$src$con, x)
+  # This is the one place whereby this implementation is different from the
+  # default dbplyr::collect.tbl_sql()
+  # We pass ... to db_collect() here so that bigint can be used in collect()
+  # to specify the BIGINT treatment
+  out <- dbplyr::db_collect(
+    x$src$con, sql,
+    n = n, warn_incomplete = warn_incomplete, ...
+  )
+  dplyr::grouped_df(out, intersect(dbplyr::op_grps(x), names(out)))
 }
 
-#' S3 implementation of \code{\link[dplyr]{copy_to}} for PrestoConnection 
+#' S3 implementation of \code{\link[dplyr]{copy_to}} for PrestoConnection
 #'
 #' @importFrom dplyr copy_to
 #' @export
 #' @inheritParams dplyr::copy_to
 #' @rdname dplyr_source_function_implementations
 #' @keywords internal
-copy_to.PrestoConnection <- function(
-  dest, df, name = deparse(substitute(df)), overwrite = FALSE
-) {
+copy_to.PrestoConnection <- function(dest, df, name = deparse(substitute(df)), overwrite = FALSE) {
   copy_to(
     dest = src_presto(con = dest),
     df = df,

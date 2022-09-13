@@ -4,33 +4,37 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-context('integration')
+context("integration")
 
-source('utilities.R')
+source("utilities.R")
 
 test_that("Connections handle port argument correctly", {
   test_port <- function(port) {
     dbConnect(RPresto::Presto(),
-      schema='test_schema',
-      catalog='test_catalog',
-      host='localhost',
-      port=port,
-      user=Sys.getenv('USER')
+      schema = "test_schema",
+      catalog = "test_catalog",
+      host = "localhost",
+      port = port,
+      user = Sys.getenv("USER")
     )
   }
 
-  expect_that(test_port(NULL),
-              throws_error("Please specify a port as an integer"))
-  expect_that(test_port('NOT A NUMBER'),
-              throws_error("Please specify a port as an integer"))
+  expect_that(
+    test_port(NULL),
+    throws_error("Please specify a port as an integer")
+  )
+  expect_that(
+    test_port("NOT A NUMBER"),
+    throws_error("Please specify a port as an integer")
+  )
 })
 
-test_that('Integration tests work', {
+test_that("Integration tests work", {
   conn <- setup_live_connection()
 
   expect_that(conn, is_a("PrestoConnection"))
 
-  sql <- paste('SELECT * FROM', iris.sql(), 'LIMIT 5')
+  sql <- paste("SELECT * FROM", iris.sql(), "LIMIT 5")
 
   rs <- dbSendQuery(conn, sql)
   expect_that(rs, is_a("PrestoResult"))
@@ -40,10 +44,10 @@ test_that('Integration tests work', {
     chunk <- dbFetch(rs)
     if (NROW(chunk)) {
       df <- if (is.null(df)) {
-          chunk
-        } else {
-          rbind(df, chunk)
-        }
+        chunk
+      } else {
+        rbind(df, chunk)
+      }
     }
   }
   expect_that(df, is_a("data.frame"))

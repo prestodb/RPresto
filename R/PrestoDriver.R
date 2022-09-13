@@ -10,16 +10,17 @@
 #' @keywords internal
 #' @importClassesFrom DBI DBIDriver
 #' @export
-setClass('PrestoDriver',
-  contains='DBIDriver'
+setClass("PrestoDriver",
+  contains = "DBIDriver"
 )
 
 #' @rdname PrestoDriver-class
 #' @importMethodsFrom methods show
 #' @export
-setMethod('show',
-  'PrestoDriver',
+setMethod(
+  "show",
+  "PrestoDriver",
   function(object) {
-    cat('<PrestoDriver>\n')
+    cat("<PrestoDriver>\n")
   }
 )

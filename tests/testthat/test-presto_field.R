@@ -25,7 +25,7 @@ source("utilities.R")
 # interval (year to month) type
 # interval (day to second) type
 test_that("Queries return the correct primitive types", {
-  conn <- setup_live_connection(session.timezone=test.timezone())
+  conn <- setup_live_connection(session.timezone = test.timezone())
   # bool type
   expect_equal_data_frame(
     df.boolean <- dbGetQuery(conn, "select true as type_bool"),
@@ -172,7 +172,8 @@ test_that("Queries return the correct primitive types", {
     tibble::tibble(
       type_interval_day_to_second =
         lubridate::duration(
-          2*24*60*60 + 4*60*60 + 5*60 + 6 + 500/1000, units = "seconds"
+          2 * 24 * 60 * 60 + 4 * 60 * 60 + 5 * 60 + 6 + 500 / 1000,
+          units = "seconds"
         )
     )
   )
@@ -183,7 +184,7 @@ test_that("Queries return the correct primitive types", {
 })
 
 test_that("Queries return the correct primitive types in arrays", {
-  conn <- setup_live_connection(session.timezone=test.timezone())
+  conn <- setup_live_connection(session.timezone = test.timezone())
   # bool type
   expect_equal_data_frame(
     df.boolean <- dbGetQuery(conn, "select array[true, false] as type_bool"),
@@ -280,7 +281,7 @@ test_that("Queries return the correct primitive types in arrays", {
     )
   )
   purrr::walk(df.date$type_date, expect_s3_class, "Date")
-  purrr::walk(df.date$type_date[[1]], ~expect_null(attr(., "tz")))
+  purrr::walk(df.date$type_date[[1]], ~ expect_null(attr(., "tz")))
   # timestamp type
   expect_equal_data_frame(
     df.timestamp <- dbGetQuery(
@@ -305,7 +306,7 @@ test_that("Queries return the correct primitive types in arrays", {
   purrr::walk(df.timestamp$type_timestamp, expect_s3_class, "POSIXct")
   purrr::walk(
     df.timestamp$type_timestamp[[1]],
-    ~expect_equal(attr(., "tz"), test.timezone())
+    ~ expect_equal(attr(., "tz"), test.timezone())
   )
   # timestamp with timezone type
   expect_equal_data_frame(
@@ -334,7 +335,7 @@ test_that("Queries return the correct primitive types in arrays", {
   )
   purrr::walk(
     df.timestamp_with_tz$type_timestamp_with_tz[[1]],
-    ~expect_equal(attr(., "tz"), test.timezone())
+    ~ expect_equal(attr(., "tz"), test.timezone())
   )
   # time type
   expect_equal_data_frame(
@@ -347,7 +348,7 @@ test_that("Queries return the correct primitive types in arrays", {
     )
   )
   purrr::walk(df.time$type_time, expect_s3_class, "difftime")
-  purrr::walk(df.time$type_time[[1]], ~expect_null(attr(., "tz")))
+  purrr::walk(df.time$type_time[[1]], ~ expect_null(attr(., "tz")))
   # time with timezone type
   expect_equal_data_frame(
     df.time_with_tz <- dbGetQuery(
@@ -371,7 +372,7 @@ test_that("Queries return the correct primitive types in arrays", {
     expect_s3_class, "difftime"
   )
   purrr::walk(
-    df.time_with_tz$type_time_with_tz[[1]], ~expect_null(attr(., "tz"))
+    df.time_with_tz$type_time_with_tz[[1]], ~ expect_null(attr(., "tz"))
   )
   # interval (year to month) type
   expect_equal_data_frame(
@@ -412,10 +413,12 @@ test_that("Queries return the correct primitive types in arrays", {
       type_interval_day_to_second = list(
         c(
           lubridate::duration(
-            2*24*60*60 + 4*60*60 + 5*60 + 6 + 500/1000, units = "seconds"
+            2 * 24 * 60 * 60 + 4 * 60 * 60 + 5 * 60 + 6 + 500 / 1000,
+            units = "seconds"
           ),
           lubridate::duration(
-            4*24*60*60 + 4*60*60 + 5*60 + 6 + 500/1000, units = "seconds"
+            4 * 24 * 60 * 60 + 4 * 60 * 60 + 5 * 60 + 6 + 500 / 1000,
+            units = "seconds"
           )
         )
       )
@@ -428,7 +431,7 @@ test_that("Queries return the correct primitive types in arrays", {
 })
 
 test_that("Queries return the correct map types", {
-  conn <- setup_live_connection(session.timezone=test.timezone())
+  conn <- setup_live_connection(session.timezone = test.timezone())
   # single map value -> 1-element named typed vector
   expect_equal_data_frame(
     df.map_single_value <- dbGetQuery(
@@ -444,11 +447,11 @@ test_that("Queries return the correct map types", {
   )
   purrr::walk(
     df.map_single_value$type_map_single_value,
-    ~expect_true(!is.null(names(.)))
+    ~ expect_true(!is.null(names(.)))
   )
   purrr::walk(
     df.map_single_value$type_map_single_value,
-    ~expect_equal(length(.), 1)
+    ~ expect_equal(length(.), 1)
   )
   # multiple map values -> multiple-element named typed vector
   expect_equal_data_frame(
@@ -476,11 +479,11 @@ test_that("Queries return the correct map types", {
   )
   purrr::walk(
     df.map_multiple_values$type_map_multiple_values,
-    ~expect_true(!is.null(names(.)))
+    ~ expect_true(!is.null(names(.)))
   )
   purrr::walk(
     df.map_multiple_values$type_map_multiple_values,
-    ~expect_equal(length(.), 2)
+    ~ expect_equal(length(.), 2)
   )
   # nested single map value -> 1-element named list
   expect_equal_data_frame(
@@ -503,19 +506,19 @@ test_that("Queries return the correct map types", {
   )
   purrr::walk(
     df.map_nested_value$type_map_nested_value,
-    ~expect_true(!is.null(names(.)))
+    ~ expect_true(!is.null(names(.)))
   )
   purrr::walk(
     df.map_nested_value$type_map_nested_value,
-    ~expect_equal(length(.), 1)
+    ~ expect_equal(length(.), 1)
   )
   purrr::walk(
     df.map_nested_value$type_map_nested_value,
-    ~purrr::walk(., expect_s3_class, "Date")
+    ~ purrr::walk(., expect_s3_class, "Date")
   )
   purrr::walk(
     df.map_nested_value$type_map_nested_value,
-    ~purrr::walk(., ~expect_equal(length(.), 1))
+    ~ purrr::walk(., ~ expect_equal(length(.), 1))
   )
   # nested multiple map values -> multiple-element named list
   expect_equal_data_frame(
@@ -550,19 +553,19 @@ test_that("Queries return the correct map types", {
   )
   purrr::walk(
     df.map_nested_values$type_map_nested_values,
-    ~expect_true(!is.null(names(.)))
+    ~ expect_true(!is.null(names(.)))
   )
   purrr::walk(
     df.map_nested_values$type_map_nested_values,
-    ~expect_equal(length(.), 2)
+    ~ expect_equal(length(.), 2)
   )
   purrr::walk(
     df.map_nested_values$type_map_nested_values,
-    ~purrr::walk(., expect_s3_class, "Date")
+    ~ purrr::walk(., expect_s3_class, "Date")
   )
   purrr::walk(
     df.map_nested_values$type_map_nested_values,
-    ~purrr::walk(., ~expect_equal(length(.), 2))
+    ~ purrr::walk(., ~ expect_equal(length(.), 2))
   )
   # array of single-value maps -> unnamed list of 1-element named typed vector
   expect_equal_data_frame(
@@ -590,19 +593,19 @@ test_that("Queries return the correct map types", {
   )
   purrr::walk(
     df.array_of_map_single_value$type_map_single_value,
-    ~expect_true(is.null(names(.)))
+    ~ expect_true(is.null(names(.)))
   )
   purrr::walk(
     df.array_of_map_single_value$type_map_single_value,
-    ~expect_equal(length(.), 2)
+    ~ expect_equal(length(.), 2)
   )
   purrr::walk(
     df.array_of_map_single_value$type_map_single_value,
-    ~purrr::walk(., expect_s3_class, "Date")
+    ~ purrr::walk(., expect_s3_class, "Date")
   )
   purrr::walk(
     df.array_of_map_single_value$type_map_single_value,
-    ~purrr::walk(., ~expect_equal(length(.), 1))
+    ~ purrr::walk(., ~ expect_equal(length(.), 1))
   )
   # array of multiple-element maps -> unnamed list of multiple-element named
   # typed vector
@@ -637,24 +640,24 @@ test_that("Queries return the correct map types", {
   )
   purrr::walk(
     df.array_of_map_multiple_values$type_map_multiple_values,
-    ~expect_true(is.null(names(.)))
+    ~ expect_true(is.null(names(.)))
   )
   purrr::walk(
     df.array_of_map_multiple_values$type_map_multiple_values,
-    ~expect_equal(length(.), 2)
+    ~ expect_equal(length(.), 2)
   )
   purrr::walk(
     df.array_of_map_multiple_values$type_map_multiple_values,
-    ~purrr::walk(., expect_s3_class, "Date")
+    ~ purrr::walk(., expect_s3_class, "Date")
   )
   purrr::walk(
     df.array_of_map_multiple_values$type_map_multiple_values,
-    ~purrr::walk(., ~expect_equal(length(.), 2))
+    ~ purrr::walk(., ~ expect_equal(length(.), 2))
   )
 })
 
 test_that("Queries return the correct row types", {
-  conn <- setup_live_connection(session.timezone=test.timezone())
+  conn <- setup_live_connection(session.timezone = test.timezone())
   # single row value is mapped to a single-value named list
   expect_equal_data_frame(
     df.row_single_value <- dbGetQuery(
@@ -692,7 +695,7 @@ test_that("Queries return the correct row types", {
 })
 
 test_that("Queries return the correct map of row types", {
-  conn <- setup_live_connection(session.timezone=test.timezone())
+  conn <- setup_live_connection(session.timezone = test.timezone())
   # map of single row is a named list
   expect_equal_data_frame(
     df.map_single_row <- dbGetQuery(

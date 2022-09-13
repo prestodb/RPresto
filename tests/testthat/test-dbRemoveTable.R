@@ -4,17 +4,17 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-context('dbRemoveTable')
+context("dbRemoveTable")
 
-source('utilities.R')
+source("utilities.R")
 
-test_that('dbRemoveTable works with live database', {
+test_that("dbRemoveTable works with live database", {
   conn <- setup_live_connection()
-  test_table_name <- 'test_dbremovetable'
+  test_table_name <- "test_dbremovetable"
   if (!dbExistsTable(conn, test_table_name)) {
     dbExecute(
       conn,
-      paste('CREATE TABLE', test_table_name, '(field1 BIGINT, field2 VARCHAR)')
+      paste("CREATE TABLE", test_table_name, "(field1 BIGINT, field2 VARCHAR)")
     )
   }
   expect_true(dbExistsTable(conn, test_table_name))
