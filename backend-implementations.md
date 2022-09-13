@@ -73,7 +73,7 @@ Important methods:
 | db_desc | PrestoConnection | Implemented | dbplyr-db.R |
 | db_data_type | PrestoConnection | Implemented | dbplyr-db.R |
 | db_explain | PrestoConnection | Implemented | dbplyr-db.R |
-| db_query_rows | PrestoConnection | Not implemented | dbplyr-db.R |
+| db_query_rows | PrestoConnection | Not implemented | |
 | db_query_fields | PrestoConnection | Default | |
 | db_save_query | PrestoConnection | Default | |
 | db_list_tables | PrestoConnection | Implemented | dbplyr-db.R |
