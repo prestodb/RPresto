@@ -203,13 +203,13 @@ collect.tbl_presto <- function(x, ..., n = Inf, warn_incomplete = TRUE) {
   } else {
     x <- utils::head(x, n)
   }
-  sql <- dbplyr::db_sql_render(x$src$con, x)
+  sql <- dbplyr::db_sql_render(dbplyr::remote_con(x), x)
   # This is the one place whereby this implementation is different from the
   # default dbplyr::collect.tbl_sql()
   # We pass ... to db_collect() here so that bigint can be used in collect()
   # to specify the BIGINT treatment
   out <- dbplyr::db_collect(
-    x$src$con, sql,
+    dbplyr::remote_con(x), sql,
     n = n, warn_incomplete = warn_incomplete, ...
   )
   dplyr::grouped_df(out, intersect(dbplyr::op_grps(x), names(out)))
@@ -246,7 +246,7 @@ copy_to.PrestoConnection <- function(dest, df, name = deparse(substitute(df)), o
 #' @rdname dplyr_function_implementations
 compute.tbl_presto <- function(x, name, temporary = FALSE, ..., cte = FALSE) {
   name <- unname(name)
-  sql <- dbplyr::db_sql_render(x$src$con, x, use_presto_cte = FALSE)
+  sql <- dbplyr::db_sql_render(dbplyr::remote_con(x), x, use_presto_cte = FALSE)
   if (identical(cte, TRUE)) {
     if (inherits(x$lazy_query, "lazy_base_remote_query")) {
       stop(
@@ -254,11 +254,14 @@ compute.tbl_presto <- function(x, name, temporary = FALSE, ..., cte = FALSE) {
         call. = FALSE
       )
     }
-    x$src$con@session$addCTE(name, sql, replace = TRUE)
+    con <- dbplyr::remote_con(x)
+    con@session$addCTE(name, sql, replace = TRUE)
   } else {
-    name <- dbplyr::db_compute(x$src$con, name, sql, temporary = temporary, ...)
+    name <- dbplyr::db_compute(
+      dbplyr::remote_con(x), name, sql, temporary = temporary, ...
+    )
   }
-  dplyr::tbl(x$src, dbplyr::as.sql(name), colnames(x)) %>%
+  dplyr::tbl(dbplyr::remote_src(x), dbplyr::as.sql(name), colnames(x)) %>%
     dplyr::group_by(!!!rlang::syms(dbplyr::op_grps(x))) %>%
     dbplyr::window_order(!!!dbplyr::op_sort(x))
 }
