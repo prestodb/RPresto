@@ -35,9 +35,10 @@ is_simple_type <- function(prf) {
 parse.timestamp <- function(x, timezone) {
   if (!requireNamespace("lubridate", quietly = TRUE)) {
     stop("The [", x$name_, "] field is a TIMESTAMP WITH TIMEZONE ",
-         "field. Please install the lubridate package or cast the field to ",
-         "VARCHAR in Presto before importing it to R.",
-         call. = FALSE)
+      "field. Please install the lubridate package or cast the field to ",
+      "VARCHAR in Presto before importing it to R.",
+      call. = FALSE
+    )
   }
   if (is.na(x)) {
     return(as.POSIXct(x, tz = timezone))
@@ -60,15 +61,17 @@ parse.timestamp <- function(x, timezone) {
 parse.time_with_tz <- function(x, timezone) {
   if (!requireNamespace("hms", quietly = TRUE)) {
     stop("The [", x$name_, "] field is a TIME WITH TIME ZONE ",
-         "field. Please install the hms package or cast the field to VARCHAR ",
-         "before importing it to R.",
-         call. = FALSE)
+      "field. Please install the hms package or cast the field to VARCHAR ",
+      "before importing it to R.",
+      call. = FALSE
+    )
   }
   if (!requireNamespace("lubridate", quietly = TRUE)) {
     stop("The [", x$name_, "] field is a TIMESTAMP WITH TIMEZONE ",
-         "field. Please install the lubridate package or cast the field to ",
-         "VARCHAR before importing it to R.",
-         call. = FALSE)
+      "field. Please install the lubridate package or cast the field to ",
+      "VARCHAR before importing it to R.",
+      call. = FALSE
+    )
   }
   if (is.na(x)) {
     return(hms::as_hms(as.POSIXct(x, tz = timezone)))
@@ -85,9 +88,10 @@ parse.time_with_tz <- function(x, timezone) {
 parse.interval_year_to_month <- function(x) {
   if (!requireNamespace("lubridate", quietly = TRUE)) {
     stop("The [", x$name_, "] field is an INTERVAL YEAR TO MONTH ",
-         "field. Please install the lubridate package or cast the field to ",
-         "other types before importing it to R.",
-         call. = FALSE)
+      "field. Please install the lubridate package or cast the field to ",
+      "other types before importing it to R.",
+      call. = FALSE
+    )
   }
   if (is.na(x)) {
     return(x)
@@ -101,9 +105,10 @@ parse.interval_year_to_month <- function(x) {
 parse.interval_day_to_second <- function(x) {
   if (!requireNamespace("lubridate", quietly = TRUE)) {
     stop("The [", x$name_, "] field is an INTERVAL YEAR TO MONTH ",
-         "field. Please install the lubridate package or cast the field to ",
-         "other types before importing it to R.",
-         call. = FALSE)
+      "field. Please install the lubridate package or cast the field to ",
+      "other types before importing it to R.",
+      call. = FALSE
+    )
   }
   if (is.na(x)) {
     return(x)
@@ -118,7 +123,7 @@ parse.interval_day_to_second <- function(x) {
     lubridate::duration(day_to_millisecond[2], units = "hours") +
     lubridate::duration(day_to_millisecond[3], units = "minutes") +
     lubridate::duration(day_to_millisecond[4], units = "seconds") +
-    lubridate::duration(day_to_millisecond[5]/1000, units = "seconds")
+    lubridate::duration(day_to_millisecond[5] / 1000, units = "seconds")
   return(d)
 }
 
@@ -133,7 +138,7 @@ unlist_with_attr <- function(x) {
 
 replace_null_with_na <- function(x) {
   if (is.list(x)) {
-    purrr::modify(x, ~. %||% NA)
+    purrr::modify(x, ~ . %||% NA)
   } else {
     x %||% NA
   }
@@ -141,10 +146,10 @@ replace_null_with_na <- function(x) {
 
 extract.schema.attr <- function(prf) {
   tibble::tibble(
-    name = purrr::map_chr(prf, ~.$name_),
-    is_array = purrr::map_lgl(prf, ~.$is_array_),
-    is_map = purrr::map_lgl(prf, ~.$is_map_),
-    is_row = purrr::map_lgl(prf, ~.$is_row_)
+    name = purrr::map_chr(prf, ~ .$name_),
+    is_array = purrr::map_lgl(prf, ~ .$is_array_),
+    is_map = purrr::map_lgl(prf, ~ .$is_map_),
+    is_row = purrr::map_lgl(prf, ~ .$is_row_)
   )
 }
 
@@ -156,9 +161,9 @@ convert_bigint <- function(df, bigint) {
   }
 
   as_bigint <- switch(bigint,
-                      integer = as.integer,
-                      numeric = as.numeric,
-                      character = as.character
+    integer = as.integer,
+    numeric = as.numeric,
+    character = as.character
   )
 
   rapply_int64(df, f = as_bigint)

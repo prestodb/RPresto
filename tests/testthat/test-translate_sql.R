@@ -4,207 +4,208 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-context('translate_sql')
+context("translate_sql")
 
-source('utilities.R')
+source("utilities.R")
 
-with_locale(test.locale(), test_that)('as() works', {
-  if (!requireNamespace('dplyr', quietly=TRUE)) {
-    skip('dplyr not available')
+with_locale(test.locale(), test_that)("as() works", {
+  if (!requireNamespace("dplyr", quietly = TRUE)) {
+    skip("dplyr not available")
   }
 
-  s <- setup_mock_dplyr_connection()[['db']]
+  s <- setup_mock_dplyr_connection()[["db"]]
 
   expect_equal(
-    dbplyr::translate_sql(as(x, 0.0), con=s[['con']]),
+    dbplyr::translate_sql(as(x, 0.0), con = s[["con"]]),
     dbplyr::sql('CAST("x" AS DOUBLE)')
   )
   expect_equal(
-    dbplyr::translate_sql(pmax(x), con=s[['con']]),
+    dbplyr::translate_sql(pmax(x), con = s[["con"]]),
     dbplyr::sql('GREATEST("x")')
   )
   expect_equal(
     dbplyr::translate_sql_(
-      list(substitute(as(x, l), list(l=list()))),
-      con=s[['con']]
+      list(substitute(as(x, l), list(l = list()))),
+      con = s[["con"]]
     ),
     dbplyr::sql('CAST("x" AS ARRAY<VARCHAR>)')
   )
 
-  substituted.expression <- substitute(as(x, l), list(l=Sys.Date()))
+  substituted.expression <- substitute(as(x, l), list(l = Sys.Date()))
   expect_equal(
-    dbplyr::translate_sql_(list(substituted.expression), con=s[['con']]),
+    dbplyr::translate_sql_(list(substituted.expression), con = s[["con"]]),
     dbplyr::sql('CAST("x" AS DATE)')
   )
 
   # Hacky dummy table so that we can test substitution
-  s <- setup_live_dplyr_connection()[['db']]
-  if (requireNamespace('dbplyr', quietly=TRUE)
-      && utils::compareVersion(
-        as.character(utils::packageVersion('dbplyr')),
-        '1.3.0'
-      ) >= 0
+  s <- setup_live_dplyr_connection()[["db"]]
+  if (requireNamespace("dbplyr", quietly = TRUE) &&
+    utils::compareVersion(
+      as.character(utils::packageVersion("dbplyr")),
+      "1.3.0"
+    ) >= 0
   ) {
     # vars argument gives a deprecation warning starting with 1.3.0
     t <- dplyr::tbl(
       s,
-      from=dplyr::sql_subquery(
-        s[['con']],
-        dbplyr::sql('SELECT 1')
+      from = dplyr::sql_subquery(
+        s[["con"]],
+        dbplyr::sql("SELECT 1")
       )
     )
   } else {
     t <- dplyr::tbl(
       s,
-      from=dplyr::sql_subquery(
-        s[['con']],
-        dbplyr::sql('SELECT 1')
+      from = dplyr::sql_subquery(
+        s[["con"]],
+        dbplyr::sql("SELECT 1")
       ),
-      vars=c('x')
+      vars = c("x")
     )
   }
 
-  l <- list(a=1L)
+  l <- list(a = 1L)
   expect_equal(
     dbplyr::translate_sql(
       as(x, !!l),
-      con=s[['con']]
+      con = s[["con"]]
     ),
     dbplyr::sql('CAST("x" AS MAP<VARCHAR, BIGINT>)')
   )
   expect_equal(
     dbplyr::translate_sql(
-      as(x, !!local(list(a=Sys.time()))),
-      con=s[['con']]
+      as(x, !!local(list(a = Sys.time()))),
+      con = s[["con"]]
     ),
     dbplyr::sql('CAST("x" AS MAP<VARCHAR, TIMESTAMP>)')
   )
   r <- as.raw(0)
-  p <- as.POSIXct('2001-02-03 04:05:06', tz='Europe/Istanbul')
+  p <- as.POSIXct("2001-02-03 04:05:06", tz = "Europe/Istanbul")
   l <- TRUE
   query <- as.character(dbplyr::sql_render(dplyr::transmute(
     t,
-    b=as(a, r),
-    c=as(a, p),
-    d=as(a, l)
+    b = as(a, r),
+    c = as(a, p),
+    d = as(a, l)
   )))
   old_expected_query_pattern <- paste0(
     '^SELECT "b"( AS "b")?, "c"( AS "c")?, "d"( AS "d")?.*',
-    'FROM \\(',
-      'SELECT ',
-        '"_col0", ',
-        'CAST\\("a" AS VARBINARY\\) AS "b", ' ,
-        'CAST\\("a" AS TIMESTAMP WITH TIME ZONE\\) AS "c", ',
-        'CAST\\("a" AS BOOLEAN\\) AS "d"\n',
-      'FROM \\(',
-        '\\(SELECT 1\\) "[_0-9a-z]+"',
-      '\\) "[_0-9a-z]+"',
+    "FROM \\(",
+    "SELECT ",
+    '"_col0", ',
+    'CAST\\("a" AS VARBINARY\\) AS "b", ',
+    'CAST\\("a" AS TIMESTAMP WITH TIME ZONE\\) AS "c", ',
+    'CAST\\("a" AS BOOLEAN\\) AS "d"\n',
+    "FROM \\(",
+    '\\(SELECT 1\\) "[_0-9a-z]+"',
+    '\\) "[_0-9a-z]+"',
     '\\) "[_0-9a-z]+"$'
   )
   new_expected_query_pattern <- paste0(
-    '^SELECT\\s*',
-      'CAST\\("a" AS VARBINARY\\) AS "b",\\s*' ,
-      'CAST\\("a" AS TIMESTAMP WITH TIME ZONE\\) AS "c",\\s*',
-      'CAST\\("a" AS BOOLEAN\\) AS "d"\n',
-    'FROM \\(',
-      '\\(SELECT 1\\) "[_0-9a-z]+"',
+    "^SELECT\\s*",
+    'CAST\\("a" AS VARBINARY\\) AS "b",\\s*',
+    'CAST\\("a" AS TIMESTAMP WITH TIME ZONE\\) AS "c",\\s*',
+    'CAST\\("a" AS BOOLEAN\\) AS "d"\n',
+    "FROM \\(",
+    '\\(SELECT 1\\) "[_0-9a-z]+"',
     '\\) "[_0-9a-z]+"$'
   )
   # newer versions of dplyr have a simpler pattern
-  expected_query_pattern <- paste0('(',
+  expected_query_pattern <- paste0(
+    "(",
     old_expected_query_pattern,
     "|",
     new_expected_query_pattern,
-    ')'
+    ")"
   )
   expect_true(
     grepl(expected_query_pattern, query)
   )
 })
 
-with_locale(test.locale(), test_that)('as.<type>() works', {
-  if (!requireNamespace('dplyr', quietly=TRUE)) {
-    skip('dplyr not available')
+with_locale(test.locale(), test_that)("as.<type>() works", {
+  if (!requireNamespace("dplyr", quietly = TRUE)) {
+    skip("dplyr not available")
   }
 
-  s <- setup_mock_dplyr_connection()[['db']]
+  s <- setup_mock_dplyr_connection()[["db"]]
   expect_equal(
-    dbplyr::translate_sql(as.character(x), con=s[['con']]),
+    dbplyr::translate_sql(as.character(x), con = s[["con"]]),
     dbplyr::sql('CAST("x" AS VARCHAR)')
   )
   expect_equal(
-    dbplyr::translate_sql(as.numeric(x), con=s[['con']]),
+    dbplyr::translate_sql(as.numeric(x), con = s[["con"]]),
     dbplyr::sql('CAST("x" AS DOUBLE)')
   )
   expect_equal(
-    dbplyr::translate_sql(as.double(x), con=s[['con']]),
+    dbplyr::translate_sql(as.double(x), con = s[["con"]]),
     dbplyr::sql('CAST("x" AS DOUBLE)')
   )
   expect_equal(
-    dbplyr::translate_sql(as.integer(x), con=s[['con']]),
+    dbplyr::translate_sql(as.integer(x), con = s[["con"]]),
     dbplyr::sql('CAST("x" AS BIGINT)')
   )
   expect_equal(
-    dbplyr::translate_sql(as.Date(x), con=s[['con']]),
+    dbplyr::translate_sql(as.Date(x), con = s[["con"]]),
     dbplyr::sql('CAST("x" AS DATE)')
   )
   expect_equal(
-    dbplyr::translate_sql(as.logical(x), con=s[['con']]),
+    dbplyr::translate_sql(as.logical(x), con = s[["con"]]),
     dbplyr::sql('CAST("x" AS BOOLEAN)')
   )
   expect_equal(
-    dbplyr::translate_sql(as.raw(x), con=s[['con']]),
+    dbplyr::translate_sql(as.raw(x), con = s[["con"]]),
     dbplyr::sql('CAST("x" AS VARBINARY)')
   )
 })
 
-with_locale(test.locale(), test_that)('`[[` works for char/numeric indices', {
-  dbplyr_version <- try(as.character(utils::packageVersion('dbplyr')))
-  if (inherits(dbplyr_version, 'try-error')) {
-    skip('dbplyr not available')
-  } else if (utils::compareVersion(dbplyr_version, '1.4.0') < 0) {
-    skip('remote evaluation of `[[` requires dbplyr >= 1.4.0')
+with_locale(test.locale(), test_that)("`[[` works for char/numeric indices", {
+  dbplyr_version <- try(as.character(utils::packageVersion("dbplyr")))
+  if (inherits(dbplyr_version, "try-error")) {
+    skip("dbplyr not available")
+  } else if (utils::compareVersion(dbplyr_version, "1.4.0") < 0) {
+    skip("remote evaluation of `[[` requires dbplyr >= 1.4.0")
   }
 
-  s <- setup_mock_dplyr_connection()[['db']]
+  s <- setup_mock_dplyr_connection()[["db"]]
 
   # a character index should be escaped
   expect_equal(
-    dbplyr::translate_sql(x[['a']], con=s[['con']]),
+    dbplyr::translate_sql(x[["a"]], con = s[["con"]]),
     dbplyr::sql("ELEMENT_AT(\"x\", 'a')")
   )
   # but a numeric index (for arrays) should not
   expect_equal(
-    dbplyr::translate_sql(x[[1]], con=s[['con']]),
+    dbplyr::translate_sql(x[[1]], con = s[["con"]]),
     dbplyr::sql("ELEMENT_AT(\"x\", 1)")
   )
   expect_equal(
-    dbplyr::translate_sql(x[[1L]], con=s[['con']]),
+    dbplyr::translate_sql(x[[1L]], con = s[["con"]]),
     dbplyr::sql("ELEMENT_AT(\"x\", 1)")
   )
 
   # neither `x` nor `i` should be evaluated locally
   expect_equal(
-    dbplyr::translate_sql(dim[['a']], con=s[['con']]),
+    dbplyr::translate_sql(dim[["a"]], con = s[["con"]]),
     dbplyr::sql("ELEMENT_AT(\"dim\", 'a')")
   )
   expect_equal(
-    dbplyr::translate_sql(x[['dim']], con=s[['con']]),
+    dbplyr::translate_sql(x[["dim"]], con = s[["con"]]),
     dbplyr::sql("ELEMENT_AT(\"x\", 'dim')")
   )
 })
 
-with_locale(test.locale(), test_that)('`[[` works for dynamic indices', {
-  dbplyr_version <- try(as.character(utils::packageVersion('dbplyr')))
-  if (inherits(dbplyr_version, 'try-error')) {
-    skip('dbplyr not available')
-  } else if (utils::compareVersion(dbplyr_version, '1.4.0') < 0) {
-    skip('remote evaluation of `[[` requires dbplyr >= 1.4.0')
+with_locale(test.locale(), test_that)("`[[` works for dynamic indices", {
+  dbplyr_version <- try(as.character(utils::packageVersion("dbplyr")))
+  if (inherits(dbplyr_version, "try-error")) {
+    skip("dbplyr not available")
+  } else if (utils::compareVersion(dbplyr_version, "1.4.0") < 0) {
+    skip("remote evaluation of `[[` requires dbplyr >= 1.4.0")
   }
 
   # create an inline table with both array and map columns
   x <- dplyr::tbl(
-    setup_live_dplyr_connection()[['db']],
+    setup_live_dplyr_connection()[["db"]],
     dbplyr::sql(
       "SELECT * FROM (
       VALUES
@@ -327,12 +328,12 @@ with_locale(test.locale(), test_that)('`[[` works for dynamic indices', {
   )
 })
 
-with_locale(test.locale(), test_that)('is.[in]finite() works', {
-  if (!requireNamespace('dplyr', quietly=TRUE)) {
-    skip('dplyr not available')
+with_locale(test.locale(), test_that)("is.[in]finite() works", {
+  if (!requireNamespace("dplyr", quietly = TRUE)) {
+    skip("dplyr not available")
   }
 
-  s <- setup_mock_dplyr_connection()[['db']]
+  s <- setup_mock_dplyr_connection()[["db"]]
 
   expect_equal(
     dbplyr::translate_sql(is.infinite(x), con = s$con),
@@ -345,21 +346,21 @@ with_locale(test.locale(), test_that)('is.[in]finite() works', {
   )
 })
 
-with_locale(test.locale(), test_that)('quantile() and median() throw errors', {
-  dbplyr_version <- try(as.character(utils::packageVersion('dbplyr')))
-  if (inherits(dbplyr_version, 'try-error')) {
-    skip('dbplyr not available')
-  } else if (utils::compareVersion(dbplyr_version, '1.4.0') < 0) {
-    skip('remote evaluation of `[[` requires dbplyr >= 1.4.0')
+with_locale(test.locale(), test_that)("quantile() and median() throw errors", {
+  dbplyr_version <- try(as.character(utils::packageVersion("dbplyr")))
+  if (inherits(dbplyr_version, "try-error")) {
+    skip("dbplyr not available")
+  } else if (utils::compareVersion(dbplyr_version, "1.4.0") < 0) {
+    skip("remote evaluation of `[[` requires dbplyr >= 1.4.0")
   }
 
-  s <- setup_mock_dplyr_connection()[['db']]
+  s <- setup_mock_dplyr_connection()[["db"]]
 
-  expect_error(dbplyr::translate_sql(quantile(x, 0.9), con=s[['con']]))
-  expect_error(dbplyr::translate_sql(median(x), con=s[['con']]))
+  expect_error(dbplyr::translate_sql(quantile(x, 0.9), con = s[["con"]]))
+  expect_error(dbplyr::translate_sql(median(x), con = s[["con"]]))
 
   x <- dplyr::tbl(
-    setup_live_dplyr_connection()[['db']],
+    setup_live_dplyr_connection()[["db"]],
     dbplyr::sql(
       "SELECT * FROM (
       VALUES
@@ -402,4 +403,3 @@ with_locale(test.locale(), test_that)('quantile() and median() throw errors', {
       collect()
   )
 })
-

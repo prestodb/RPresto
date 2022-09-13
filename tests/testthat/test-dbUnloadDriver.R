@@ -4,8 +4,8 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-context('dbUnloadDriver')
+context("dbUnloadDriver")
 
-test_that('dbUnloadDriver works', {
+test_that("dbUnloadDriver works", {
   expect_true(dbUnloadDriver(Presto()))
 })

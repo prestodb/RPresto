@@ -43,49 +43,50 @@ NULL
 #' @rdname Presto
 #' @examples
 #' \dontrun{
-#'   conn <- dbConnect(Presto(), catalog = 'hive', schema = 'default',
-#'                     user = 'onur', host = 'localhost', port = 8080,
-#'                     session.timezone='US/Eastern', bigint = 'character')
-#'   dbListTables(conn, '%_iris')
-#'   dbDisconnect(conn)
+#' conn <- dbConnect(Presto(),
+#'   catalog = "hive", schema = "default",
+#'   user = "onur", host = "localhost", port = 8080,
+#'   session.timezone = "US/Eastern", bigint = "character"
+#' )
+#' dbListTables(conn, "%_iris")
+#' dbDisconnect(conn)
 #' }
 #' @md
-setMethod('dbConnect',
-  'PrestoDriver',
-  function(
-    drv,
-    catalog,
-    schema,
-    user,
-    host = 'localhost',
-    port = 8080,
-    source = methods::getPackageName(),
-    session.timezone='UTC',
-    parameters = list(),
-    request.config = httr::config(),
-    use.trino.headers=FALSE,
-    extra.credentials="",
-    bigint = c("integer", "integer64", "numeric", "character"),
-    ...
-  ) {
+setMethod(
+  "dbConnect",
+  "PrestoDriver",
+  function(drv,
+           catalog,
+           schema,
+           user,
+           host = "localhost",
+           port = 8080,
+           source = methods::getPackageName(),
+           session.timezone = "UTC",
+           parameters = list(),
+           request.config = httr::config(),
+           use.trino.headers = FALSE,
+           extra.credentials = "",
+           bigint = c("integer", "integer64", "numeric", "character"),
+           ...) {
     port <- suppressWarnings(as.integer(port))
     if (!length(port) == 1 || is.na(port)) {
       stop("Please specify a port as an integer")
     }
 
-    conn <- methods::new('PrestoConnection',
-      catalog=catalog,
-      schema=schema,
-      user=user,
-      host=host,
-      port=port,
-      source=source,
-      session.timezone=session.timezone,
-      request.config=request.config,
-      use.trino.headers=use.trino.headers,
-      session=PrestoSession$new(parameters),
-      extra.credentials=extra.credentials,
-      bigint=match.arg(bigint)
+    conn <- methods::new("PrestoConnection",
+      catalog = catalog,
+      schema = schema,
+      user = user,
+      host = host,
+      port = port,
+      source = source,
+      session.timezone = session.timezone,
+      request.config = request.config,
+      use.trino.headers = use.trino.headers,
+      session = PrestoSession$new(parameters),
+      extra.credentials = extra.credentials,
+      bigint = match.arg(bigint)
     )
     return(conn)
   }

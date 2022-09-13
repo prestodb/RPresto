@@ -50,12 +50,10 @@ parse.presto.type <- function(presto_type) {
   }
 }
 
-create.presto.field <- function(
-  name, type, key_type = NA_character_,
-  is_array = NA, fields = list(),
-  is_parent_map = FALSE, is_parent_array = FALSE,
-  timezone = NA_character_
-) {
+create.presto.field <- function(name, type, key_type = NA_character_,
+                                is_array = NA, fields = list(),
+                                is_parent_map = FALSE, is_parent_array = FALSE,
+                                timezone = NA_character_) {
   prf <- list()
   prf$name_ <- name
   prf$type_ <- parse.presto.type(type)
@@ -71,9 +69,7 @@ create.presto.field <- function(
   return(prf)
 }
 
-init.presto.field.from.json = function(
-  column.list, timezone, is_parent_map = FALSE, is_parent_array = FALSE
-) {
+init.presto.field.from.json <- function(column.list, timezone, is_parent_map = FALSE, is_parent_array = FALSE) {
   stopifnot(is.list(column.list))
 
   name <- purrr::pluck(column.list, "name")
@@ -158,17 +154,18 @@ get.process.func <- function(prf) {
   } else if (prf$type_ == "PRESTO_BOOLEAN") {
     purrr::flatten_lgl
   } else if (prf$type_ == "PRESTO_FLOAT") {
-    function(x) purrr::flatten_dbl(purrr::map(x, ~as.numeric(.)))
+    function(x) purrr::flatten_dbl(purrr::map(x, ~ as.numeric(.)))
   } else if (prf$type_ == "PRESTO_BYTES") {
-    function(x) purrr::map(x, ~openssl::base64_decode(as.character(.)))
+    function(x) purrr::map(x, ~ openssl::base64_decode(as.character(.)))
   } else if (prf$type_ == "PRESTO_DATE") {
     function(x) as.Date(purrr::flatten_chr(x))
   } else if (prf$type_ == "PRESTO_TIMESTAMP") {
     function(x) {
       if (!requireNamespace("lubridate", quietly = TRUE)) {
         stop("The [", x$name_, "] field is a TIMESTAMP field. Please install ",
-             "the lubridate package before importing it to R.",
-             call. = FALSE)
+          "the lubridate package before importing it to R.",
+          call. = FALSE
+        )
       }
       lubridate::ymd_hms(purrr::flatten_chr(x), tz = prf$timezone_)
     }
@@ -182,8 +179,9 @@ get.process.func <- function(prf) {
     function(x) {
       if (!requireNamespace("hms", quietly = TRUE)) {
         stop("The [", x$name_, "] field is a TIME field. Please ",
-             "install the hms package before importing it to R.",
-             call. = FALSE)
+          "install the hms package before importing it to R.",
+          call. = FALSE
+        )
       }
       unlist_with_attr(purrr::map(x, hms::as_hms))
     }
@@ -248,29 +246,31 @@ create.empty.tibble <- function(schema) {
         } else if (prf$type_ == "PRESTO_DATE") {
           as.Date(character(0))
         } else if (
-            prf$type_ %in% c("PRESTO_TIMESTAMP", "PRESTO_TIMESTAMP_WITH_TZ")
-          ) {
-            as.POSIXct(character(0))
+          prf$type_ %in% c("PRESTO_TIMESTAMP", "PRESTO_TIMESTAMP_WITH_TZ")
+        ) {
+          as.POSIXct(character(0))
         } else if (prf$type_ %in% c("PRESTO_TIME", "PRESTO_TIME_WITH_TZ")) {
           if (!requireNamespace("hms", quietly = TRUE)) {
             stop("The [", prf$name_, "] field is a TIME field. Please ",
-                 "install the hms package before importing it to R.",
-                 call. = FALSE)
+              "install the hms package before importing it to R.",
+              call. = FALSE
+            )
           }
           hms::as_hms(character(0))
         } else if (
-            prf$type_ %in% c(
-              "PRESTO_INTERVAL_YEAR_TO_MONTH",
-              "PRESTO_INTERVAL_DAY_TO_SECOND"
+          prf$type_ %in% c(
+            "PRESTO_INTERVAL_YEAR_TO_MONTH",
+            "PRESTO_INTERVAL_DAY_TO_SECOND"
+          )
+        ) {
+          if (!requireNamespace("lubridate", quietly = TRUE)) {
+            stop("The [", prf$name_, "] field is an INTERVAL YEAR TO MONTH ",
+              "field. Please install the lubridate package before ",
+              "importing it to R.",
+              call. = FALSE
             )
-          ) {
-            if (!requireNamespace("lubridate", quietly = TRUE)) {
-              stop("The [", prf$name_, "] field is an INTERVAL YEAR TO MONTH ",
-                   "field. Please install the lubridate package before ",
-                   "importing it to R.",
-                   call. = FALSE)
-            }
-            lubridate::duration(integer(0))
+          }
+          lubridate::duration(integer(0))
         } else if (prf$type_ == "PRESTO_UNKNOWN") {
           character(0)
         }
@@ -322,11 +322,11 @@ organize_map_type_data <- function(data, prf, keep_names) {
 # data contains all rows of data in a list
 organize_row_type_data <- function(data, prf, keep_names) {
   field.count <- length(prf$fields_)
-  field.names <- purrr::map_chr(prf$fields_, ~.$name_)
+  field.names <- purrr::map_chr(prf$fields_, ~ .$name_)
   if (!prf$is_array_) {
     # single row -> named list
     if (!prf$is_parent_map_) {
-      data <- purrr::map(data, ~organize.data.by.schema(list(.), prf$fields_))
+      data <- purrr::map(data, ~ organize.data.by.schema(list(.), prf$fields_))
     }
     # map of 1 row -> named list
     # map of n rows -> tibble
@@ -344,22 +344,22 @@ organize_row_type_data <- function(data, prf, keep_names) {
         # tibble
         data <- purrr::map(
           data,
-          ~organize.data.by.schema(., prf$fields_, keep_names = FALSE)
+          ~ organize.data.by.schema(., prf$fields_, keep_names = FALSE)
         )
-        data <- purrr::map(data, ~tibble::as_tibble(.))
+        data <- purrr::map(data, ~ tibble::as_tibble(.))
       } else {
         data <- purrr::map(
           data,
           # MAP keys (akin to row names) are discarded here
-          ~organize.data.by.schema(., prf$fields_, keep_names = FALSE)
+          ~ organize.data.by.schema(., prf$fields_, keep_names = FALSE)
         )
       }
     }
   }
   # array of rows -> tibble
   if (prf$is_array_) {
-    data <- purrr::map(data, ~organize.data.by.schema(., prf$fields_))
-    data <- purrr::map(data, ~tibble::as_tibble(.))
+    data <- purrr::map(data, ~ organize.data.by.schema(., prf$fields_))
+    data <- purrr::map(data, ~ tibble::as_tibble(.))
   }
   return(data)
 }
@@ -384,7 +384,7 @@ organize.data.by.schema <- function(data, schema, keep_names = TRUE) {
         )
       }
     }
-    col.names <- purrr::map_chr(schema, ~.$name_)
+    col.names <- purrr::map_chr(schema, ~ .$name_)
   }
   # Special case used in db_query_fields
   if (is.null(data) || length(data) == 0) {
@@ -426,7 +426,8 @@ extract.data <-
     bigint <- match.arg(bigint)
     columns <- response.content$columns
     schema <- purrr::map(
-      columns, init.presto.field.from.json, timezone = timezone
+      columns, init.presto.field.from.json,
+      timezone = timezone
     )
     data <- response.content$data
     data <- organize.data.by.schema(data, schema)

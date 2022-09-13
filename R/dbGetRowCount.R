@@ -14,4 +14,4 @@ NULL
 #' @rdname PrestoResult-class
 #' @importMethodsFrom DBI dbGetRowCount
 #' @export
-setMethod('dbGetRowCount', 'PrestoResult', .dbGetRowCount)
+setMethod("dbGetRowCount", "PrestoResult", .dbGetRowCount)

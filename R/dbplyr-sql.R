@@ -8,7 +8,7 @@
 NULL
 
 #' dbplyr SQL methods
-#' 
+#'
 #' @rdname dbplyr-sql
 #' @importFrom dbplyr sql_query_save
 #' @inheritParams sqlCreateTableAs
@@ -18,13 +18,11 @@ NULL
 #'   error in Presto. Using `temporary = FALSE` to save the query in a
 #'   permanent table.
 #' @md
-sql_query_save.PrestoConnection <- function(
-  con, sql, name, temporary = TRUE, ..., with = NULL
-) {
+sql_query_save.PrestoConnection <- function(con, sql, name, temporary = TRUE, ..., with = NULL) {
   if (!identical(temporary, FALSE)) {
     stop(
-      'Temporary table is not supported in Presto. ',
-      'Use temporary = FALSE to save the query in a permanent table.',
+      "Temporary table is not supported in Presto. ",
+      "Use temporary = FALSE to save the query in a permanent table.",
       call. = FALSE
     )
   }
@@ -51,7 +49,7 @@ sql_query_fields.PrestoConnection <- function(con, sql, ...) {
 #' @rdname dbplyr_function_implementations
 #' @keywords internal
 sql_escape_date.PrestoConnection <- function(con, x) {
-  paste0('DATE ', DBI::dbQuoteString(con, as.character(x)))
+  paste0("DATE ", DBI::dbQuoteString(con, as.character(x)))
 }
 
 #' S3 implementation of custom escape method for \link[dbplyr]{sql_escape_datetime}
@@ -62,16 +60,16 @@ sql_escape_date.PrestoConnection <- function(con, x) {
 #' @keywords internal
 sql_escape_datetime.PrestoConnection <- function(con, x) {
   # Use unix time to minimize reliance on time zone particulars.
-  paste0('FROM_UNIXTIME(', as.numeric(x), ')')
+  paste0("FROM_UNIXTIME(", as.numeric(x), ")")
 }
 
 presto_window_functions <- function() {
   return(dbplyr::sql_translator(
-    .parent=dbplyr::base_win,
-    all=dbplyr::win_recycled('bool_and'),
-    any=dbplyr::win_recycled('bool_or'),
-    n_distinct=dbplyr::win_absent('n_distinct'),
-    sd=dbplyr::win_recycled("stddev_samp"),
+    .parent = dbplyr::base_win,
+    all = dbplyr::win_recycled("bool_and"),
+    any = dbplyr::win_recycled("bool_or"),
+    n_distinct = dbplyr::win_absent("n_distinct"),
+    sd = dbplyr::win_recycled("stddev_samp"),
     quantile = function(...) stop(quantile_error_message(), call. = FALSE),
     median = function(...) stop(quantile_error_message("median"), call. = FALSE)
   ))
@@ -100,14 +98,15 @@ quantile_error_message <- function(f = "quantile") {
 #' @keywords internal
 sql_translation.PrestoConnection <- function(con) {
   return(dbplyr::sql_variant(
-    dbplyr::sql_translator(.parent = dbplyr::base_scalar,
+    dbplyr::sql_translator(
+      .parent = dbplyr::base_scalar,
       ifelse = dbplyr::sql_prefix("IF"),
       as = function(column, type) {
         sql_type <- stringi::stri_trans_toupper(
           dbDataType(Presto(), type),
-          'en_US.UTF-8'
+          "en_US.UTF-8"
         )
-        dbplyr::build_sql('CAST(', column, ' AS ', dbplyr::sql(sql_type), ')')
+        dbplyr::build_sql("CAST(", column, " AS ", dbplyr::sql(sql_type), ")")
       },
       as.character = dbplyr::sql_cast("VARCHAR"),
       as.numeric = dbplyr::sql_cast("DOUBLE"),
@@ -132,9 +131,10 @@ sql_translation.PrestoConnection <- function(con) {
       quantile = function(...) stop(quantile_error_message(), call. = FALSE),
       median = function(...) stop(quantile_error_message("median"), call. = FALSE)
     ),
-    dbplyr::sql_translator(.parent = dbplyr::base_agg,
+    dbplyr::sql_translator(
+      .parent = dbplyr::base_agg,
       n = function() dbplyr::sql("COUNT(*)"),
-      sd =  dbplyr::sql_prefix("STDDEV_SAMP"),
+      sd = dbplyr::sql_prefix("STDDEV_SAMP"),
       var = dbplyr::sql_prefix("VAR_SAMP"),
       all = dbplyr::sql_prefix("BOOL_AND"),
       any = dbplyr::sql_prefix("BOOL_OR"),

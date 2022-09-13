@@ -14,4 +14,4 @@ NULL
 #' @rdname PrestoResult-class
 #' @importMethodsFrom DBI dbHasCompleted
 #' @export
-setMethod('dbHasCompleted', 'PrestoResult', .dbHasCompleted)
+setMethod("dbHasCompleted", "PrestoResult", .dbHasCompleted)

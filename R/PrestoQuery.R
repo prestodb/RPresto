@@ -4,9 +4,13 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-"%||%" <- function(x, y) if (is.null(x)) return(y) else return(x)
+"%||%" <- function(x, y) if (is.null(x)) {
+  return(y)
+} else {
+  return(x)
+}
 
-wait <- function () {
+wait <- function() {
   # sleep 50 - 100 ms
   Sys.sleep(stats::runif(n = 1, min = 50, max = 100) / 1000)
 }
@@ -17,11 +21,11 @@ wait <- function () {
   stop("Query ", query.id, " failed: ", message)
 }
 
-.get.content.state <- function (content) {
-  if (is.null(content$stats)
-      || is.null(content$stats$state)
+.get.content.state <- function(content) {
+  if (is.null(content$stats) ||
+    is.null(content$stats$state)
   ) {
-    stop('No state information in content')
+    stop("No state information in content")
   }
   return(content$stats$state)
 }
@@ -29,18 +33,18 @@ wait <- function () {
 .check.response.status <- function(response) {
   status <- httr::status_code(response)
   if (status != 200) {
-    text.content <- httr::content(response, as = "text", encoding='UTF-8')
+    text.content <- httr::content(response, as = "text", encoding = "UTF-8")
     if (is.null(text.content) || !nzchar(text.content)) {
       httr::stop_for_status(status)
     }
-    stop('Received error response (HTTP ', status, '): ', text.content)
+    stop("Received error response (HTTP ", status, "): ", text.content)
   }
 }
 
 # Similar to the PrestoRequest.process method in the Presto Python client
-.response.to.content <- function (response)  {
+.response.to.content <- function(response) {
   # response can be application/octet-stream MIME type with no auto parser
-  text.content <- httr::content(response, as = "text", encoding='UTF-8')
+  text.content <- httr::content(response, as = "text", encoding = "UTF-8")
   content <- jsonlite::fromJSON(text.content, simplifyVector = FALSE)
   return(content)
 }
@@ -70,26 +74,26 @@ wait <- function () {
 #' @slot .post.data.fetched A boolean flag indicating if data returned from the
 #'       POST request has been fetched
 #' @keywords internal
-PrestoQuery <- setRefClass('PrestoQuery',
-  fields=c(
+PrestoQuery <- setRefClass("PrestoQuery",
+  fields = c(
     # immutable once the query is created
-    '.conn',
-    '.statement',
-    '.id',
-    '.bigint',
+    ".conn",
+    ".statement",
+    ".id",
+    ".bigint",
     # mutable depending on the stage of the query
-    '.state',
-    '.next.uri',
-    '.info.uri',
-    '.stats',
-    '.response',
-    '.content',
+    ".state",
+    ".next.uri",
+    ".info.uri",
+    ".stats",
+    ".response",
+    ".content",
     # mutable when the result is fetched
-    '.fetched.row.count',
-    '.post.data.fetched'
+    ".fetched.row.count",
+    ".post.data.fetched"
   ),
-  methods=list(
-    initialize=function(conn, statement, ...) {
+  methods = list(
+    initialize = function(conn, statement, ...) {
       dots <- list(...)
       if ("bigint" %in% names(dots)) {
         bigint <- dots$bigint
@@ -100,82 +104,82 @@ PrestoQuery <- setRefClass('PrestoQuery',
       initFields(
         .conn = conn,
         .statement = statement,
-        .state = '',
+        .state = "",
         .fetched.row.count = 0L,
         .post.data.fetched = NA,
         .bigint = bigint
       )
     },
     # Getter functions
-    id=function() {
+    id = function() {
       return(.id)
     },
-    infoUri=function() {
+    infoUri = function() {
       return(.info.uri)
     },
-    nextUri=function() {
+    nextUri = function() {
       return(.next.uri)
     },
-    content=function() {
+    content = function() {
       return(.content)
     },
     # Setter functions
-    response=function(value) {
+    response = function(value) {
       if (!missing(value)) {
         .response <<- value
       }
       invisible(.response)
     },
-    state=function(new.state) {
+    state = function(new.state) {
       if (!missing(new.state)) {
         .state <<- new.state %||% ""
       }
       invisible(.state)
     },
-    stats=function(new.stats) {
+    stats = function(new.stats) {
       if (!missing(new.stats)) {
         .stats <<- new.stats
       }
       invisible(.stats)
     },
-    postDataFetched=function(value) {
+    postDataFetched = function(value) {
       if (!missing(value)) {
         .post.data.fetched <<- value
       }
       invisible(.post.data.fetched)
     },
-    fetchedRowCount=function(value) {
+    fetchedRowCount = function(value) {
       if (!missing(value)) {
         .fetched.row.count <<- .fetched.row.count + as.integer(value)
       }
       invisible(.fetched.row.count)
     },
     # More complex functions
-    getContentState=function() {
+    getContentState = function() {
       return(.get.content.state(.content))
     },
-    stopWithErrorMessage=function() {
+    stopWithErrorMessage = function() {
       .stop.with.error.message(.content)
     },
-    checkResponseStatus=function() {
+    checkResponseStatus = function() {
       .check.response.status(.response)
     },
-    checkContentState=function() {
-      if (getContentState() == 'FAILED') {
-        state('FAILED')
+    checkContentState = function() {
+      if (getContentState() == "FAILED") {
+        state("FAILED")
         stats(.content$stats)
         stopWithErrorMessage()
       }
     },
-    responseToContent=function() {
+    responseToContent = function() {
       checkResponseStatus()
       .content <<- .response.to.content(.response)
       checkContentState()
     },
     # Similar to the PrestoRequest.post method in the Presto Python client
     # Make a POST request to Presto and store the response
-    post=function() {
-      url <- paste0(.conn@host, ':', .conn@port, '/v1/statement')
+    post = function() {
+      url <- paste0(.conn@host, ":", .conn@port, "/v1/statement")
       status <- 503L
       retries <- 3
       headers <- .request_headers(.conn)
@@ -183,8 +187,8 @@ PrestoQuery <- setRefClass('PrestoQuery',
         wait()
         post.response <- httr::POST(
           url,
-          body=enc2utf8(.statement),
-          config=headers
+          body = enc2utf8(.statement),
+          config = headers
         )
         status <- as.integer(httr::status_code(post.response))
         if (status >= 400L && status != 503L) {
@@ -194,7 +198,7 @@ PrestoQuery <- setRefClass('PrestoQuery',
       response(post.response)
     },
     # Make a GET request to Presto using the next URI and store the response
-    get=function(num.retry = 3) {
+    get = function(num.retry = 3) {
       headers <- .request_headers(.conn)
       get.response <- tryCatch(
         {
@@ -208,22 +212,26 @@ PrestoQuery <- setRefClass('PrestoQuery',
         },
         error = function(e) {
           if (num.retry == 0) {
-            stop("There was a problem with the request ",
-             "and we have exhausted our retry limit for uri: ", .next.uri)
+            stop(
+              "There was a problem with the request ",
+              "and we have exhausted our retry limit for uri: ", .next.uri
+            )
           }
-          message('GET call failed with error: "', conditionMessage(e),
-                  '", retrying [', 4 - num.retry, '/3]\n')
+          message(
+            'GET call failed with error: "', conditionMessage(e),
+            '", retrying [', 4 - num.retry, "/3]\n"
+          )
           wait()
           httr::handle_reset(.next.uri)
-          return(get(num.retry-1))
+          return(get(num.retry - 1))
         }
       )
       response(get.response)
     },
     # Execute the query and update information
-    execute=function() {
+    execute = function() {
       result <- methods::new(
-        'PrestoResult',
+        "PrestoResult",
         statement = .statement,
         connection = .conn,
         query = .self,
@@ -249,7 +257,7 @@ PrestoQuery <- setRefClass('PrestoQuery',
     # A cleaner design would be to pass the response
     # directly as an argument, but that would mean parsing
     # the content multiple times.
-    updateQuery=function() {
+    updateQuery = function() {
       .next.uri <<- .content$nextUri %||% ""
       .info.uri <<- .content$infoUri %||% ""
       state(getContentState())
@@ -257,17 +265,17 @@ PrestoQuery <- setRefClass('PrestoQuery',
       updateSession()
     },
     # Call get() to fetch the next batch of query result and extract the data
-    fetch=function() {
+    fetch = function() {
       df <- tibble::tibble()
       if (!hasCompleted()) {
         tryCatch(
           get(),
           error = function(e) {
-            state('FAILED')
+            state("FAILED")
             stop(simpleError(
               paste0(
-                'Cannot fetch ', .next.uri, ', ',
-                'error: ', conditionMessage(e)
+                "Cannot fetch ", .next.uri, ", ",
+                "error: ", conditionMessage(e)
               )
             ))
           }
@@ -278,23 +286,22 @@ PrestoQuery <- setRefClass('PrestoQuery',
       }
       return(df)
     },
-    updateSession=function() {
+    updateSession = function() {
       if (!is.null(.content$updateType)) {
-        switch(
-          .content$updateType,
-          'SET SESSION' = {
-            properties <- httr::headers(.response)[['x-presto-set-session']]
+        switch(.content$updateType,
+          "SET SESSION" = {
+            properties <- httr::headers(.response)[["x-presto-set-session"]]
             if (!is.null(properties)) {
-              for (pair in strsplit(properties, ',', fixed = TRUE)) {
-                pair <- unlist(strsplit(pair, '=', fixed = TRUE))
+              for (pair in strsplit(properties, ",", fixed = TRUE)) {
+                pair <- unlist(strsplit(pair, "=", fixed = TRUE))
                 .conn@session$setParameter(pair[1], pair[2])
               }
             }
           },
-          'RESET SESSION' = {
-            properties <- httr::headers(.response)[['x-presto-clear-session']]
+          "RESET SESSION" = {
+            properties <- httr::headers(.response)[["x-presto-clear-session"]]
             if (!is.null(properties)) {
-              for (key in strsplit(properties, ',', fixed = TRUE)) {
+              for (key in strsplit(properties, ",", fixed = TRUE)) {
                 .conn@session$unsetParameter(key)
               }
             }
@@ -302,7 +309,7 @@ PrestoQuery <- setRefClass('PrestoQuery',
         )
       }
     },
-    extractData=function() {
+    extractData = function() {
       df <- extract.data(
         .content,
         timezone = .conn@session.timezone,
@@ -310,12 +317,12 @@ PrestoQuery <- setRefClass('PrestoQuery',
       )
       return(df)
     },
-    hasCompleted=function() {
+    hasCompleted = function() {
       # .post.data.fetched is FALSE when POST returns some data but the data
       # hasn't been fetched using dbFetch() yet. Usually in this situation
       # there is still some next URI to GET, so it's usually redundant to check
       # .post.data.fetched (i.e. POST but not fetched).
-      return(.next.uri == '' & !isFALSE(.post.data.fetched))
+      return(.next.uri == "" & !isFALSE(.post.data.fetched))
     }
   )
 )

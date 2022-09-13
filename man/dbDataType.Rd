@@ -36,9 +36,9 @@ drv <- RPresto::Presto()
 dbDataType(drv, list())
 dbDataType(drv, 1)
 dbDataType(drv, NULL)
-dbDataType(drv, list(list(list(a=Sys.Date()))))
-dbDataType(drv, as.POSIXct('2015-03-01 00:00:00', tz='UTC'))
+dbDataType(drv, list(list(list(a = Sys.Date()))))
+dbDataType(drv, as.POSIXct("2015-03-01 00:00:00", tz = "UTC"))
 dbDataType(drv, Sys.time())
 # Data types for ARRAY or MAP values can be tricky
-all.equal('VARCHAR', dbDataType(drv, list(1, 2, 3L)))
+all.equal("VARCHAR", dbDataType(drv, list(1, 2, 3L)))
 }

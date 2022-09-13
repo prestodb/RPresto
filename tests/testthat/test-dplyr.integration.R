@@ -4,23 +4,23 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-context('dplyr')
+context("dplyr")
 
-source('utilities.R')
+source("utilities.R")
 
-test_that('dplyr integration works', {
+test_that("dplyr integration works", {
   parts <- setup_live_dplyr_connection()
-  db <- parts[['db']]
-  tablename <- parts[['iris_table_name']]
+  db <- parts[["db"]]
+  tablename <- parts[["iris_table_name"]]
 
   expect_that(db, is_a("src_sql"))
   iris_presto <- dplyr::tbl(db, tablename)
-  expect_that(iris_presto, is_a('tbl_presto'))
+  expect_that(iris_presto, is_a("tbl_presto"))
   expect_that(ncol(iris_presto), equals(5))
 
   # collect() works
   expect_that(
-    nrow(dplyr::collect(iris_presto, n=Inf)),
+    nrow(dplyr::collect(iris_presto, n = Inf)),
     equals(nrow(iris))
   )
 
@@ -28,9 +28,9 @@ test_that('dplyr integration works', {
     dplyr::rename(
       dplyr::summarise(
         dplyr::group_by(iris_presto, species),
-        mean_sepal_length = mean(as(sepal_length, 0.0), na.rm=TRUE)
+        mean_sepal_length = mean(as(sepal_length, 0.0), na.rm = TRUE)
       ),
-      Species=species
+      Species = species
     ),
     Species
   )
@@ -40,11 +40,11 @@ test_that('dplyr integration works', {
         dplyr::group_by(
           dplyr::mutate(
             iris,
-            Species=as.character(Species)
+            Species = as.character(Species)
           ),
           Species
         ),
-        mean_sepal_length=mean(Sepal.Length, na.rm=TRUE)
+        mean_sepal_length = mean(Sepal.Length, na.rm = TRUE)
       ),
       Species
     )
@@ -71,7 +71,7 @@ test_that('dplyr integration works', {
   # 0.4.3 vs 0.5.0 that no longer wraps the former in parentheses
   # so it should be tested.
   expect_that(
-    nrow(dplyr::collect(dplyr::collapse(iris_presto), n=Inf)),
+    nrow(dplyr::collect(dplyr::collapse(iris_presto), n = Inf)),
     equals(nrow(iris))
   )
 

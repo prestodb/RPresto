@@ -29,6 +29,9 @@ more robust mapping between Presto data types and R types
   * `dplyr::compute()`
 * `PrestoConnection` gains a `request.config` slot whereby users can set extra
   Curl configs (as returned by `httr::config()` to GET/POST requests. (#173)
+* Styling the whole package using `styler::style_pkg()`. A notable change is to
+  user double quotes everywhere instead of a combination of single and double
+  quotes. (#174)
 
 # RPresto 1.3.8
 

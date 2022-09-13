@@ -12,17 +12,18 @@ NULL
 #'                e.g. \sQuote{\%test\%}
 #' @importMethodsFrom DBI dbListTables
 #' @export
-setMethod('dbListTables',
-  'PrestoConnection',
+setMethod(
+  "dbListTables",
+  "PrestoConnection",
   function(conn, pattern, ...) {
     if (!missing(pattern)) {
-      statement <- paste('SHOW TABLES LIKE', DBI::dbQuoteString(conn, pattern))
+      statement <- paste("SHOW TABLES LIKE", DBI::dbQuoteString(conn, pattern))
     } else {
-      statement <- 'SHOW TABLES'
+      statement <- "SHOW TABLES"
     }
     rv <- dbGetQuery(conn, statement)
     if (NROW(rv)) {
-      return(rv[['Table']])
+      return(rv[["Table"]])
     } else {
       return(character(0))
     }

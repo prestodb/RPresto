@@ -14,12 +14,12 @@ NULL
 #' @rdname PrestoResult-class
 #' @importMethodsFrom DBI fetch
 #' @export
-setMethod('fetch', c('PrestoResult', 'integer'), .defer.to.dbFetch)
+setMethod("fetch", c("PrestoResult", "integer"), .defer.to.dbFetch)
 
 #' @rdname PrestoResult-class
 #' @importMethodsFrom DBI fetch
 #' @export
-setMethod('fetch', c('PrestoResult', 'numeric'), .defer.to.dbFetch)
+setMethod("fetch", c("PrestoResult", "numeric"), .defer.to.dbFetch)
 
 # due to the way generics are set, if we do not do this override the default
 # value from the generic n=-1 gets set which could give wrong results
@@ -27,8 +27,8 @@ setMethod('fetch', c('PrestoResult', 'numeric'), .defer.to.dbFetch)
 #' @importMethodsFrom DBI fetch
 #' @export
 setMethod(
-  'fetch',
-  c('PrestoResult', 'missing'),
+  "fetch",
+  c("PrestoResult", "missing"),
   function(res) {
     return(dbFetch(res))
   }

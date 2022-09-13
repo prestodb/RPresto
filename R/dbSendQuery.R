@@ -11,7 +11,8 @@ NULL
 #' @importFrom methods new
 #' @importMethodsFrom DBI dbSendQuery
 #' @export
-setMethod('dbSendQuery', c('PrestoConnection', 'character'),
+setMethod(
+  "dbSendQuery", c("PrestoConnection", "character"),
   function(conn, statement, ...) {
     query <- PrestoQuery$new(conn, statement, ...)
     result <- query$execute()

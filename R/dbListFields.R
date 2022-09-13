@@ -10,22 +10,24 @@ NULL
 #' @rdname PrestoConnection-class
 #' @importMethodsFrom DBI dbListFields
 #' @export
-setMethod('dbListFields',
-  c('PrestoConnection', 'character'),
+setMethod(
+  "dbListFields",
+  c("PrestoConnection", "character"),
   function(conn, name, ...) {
     quoted.name <- DBI::dbQuoteIdentifier(conn, name)
-    names(dbGetQuery(conn, paste('SELECT * FROM', quoted.name, 'LIMIT 0')))
+    names(dbGetQuery(conn, paste("SELECT * FROM", quoted.name, "LIMIT 0")))
   }
 )
 
 #' @rdname PrestoResult-class
 #' @importMethodsFrom DBI dbListFields
 #' @export
-setMethod('dbListFields',
-  signature(conn='PrestoResult', name='missing'),
+setMethod(
+  "dbListFields",
+  signature(conn = "PrestoResult", name = "missing"),
   function(conn, name) {
     if (!dbIsValid(conn)) {
-      stop('The result object is not valid')
+      stop("The result object is not valid")
     }
     # We cannot use the result object without advancing the query.
     # Sometimes presto does not return the full column information, e.g.

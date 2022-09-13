@@ -35,24 +35,24 @@ implement things like progress bars. See the examples section.
 }
 \examples{
 \dontrun{
-  conn <- dbConnect(Presto(), 'localhost', 7777, 'onur', 'datascience')
-  result <- dbSendQuery(conn, 'SELECT * FROM jonchang_iris')
-  iris <- data.frame()
-  progress.bar <- NULL
-  while (!dbHasCompleted(result)) {
-    chunk <- dbFetch(result)
-    if (!NROW(iris)) {
-      iris <- chunk
-    } else if (NROW(chunk)) {
-      iris <- rbind(iris, chunk)
-    }
-    stats <- dbGetInfo(result)[['stats']]
-    if (is.null(progress.bar)) {
-      progress.bar <- txtProgressBar(0, stats[['totalSplits']], style=3)
-    } else {
-      setTxtProgressBar(progress.bar, stats[['completedSplits']])
-    }
+conn <- dbConnect(Presto(), "localhost", 7777, "onur", "datascience")
+result <- dbSendQuery(conn, "SELECT * FROM jonchang_iris")
+iris <- data.frame()
+progress.bar <- NULL
+while (!dbHasCompleted(result)) {
+  chunk <- dbFetch(result)
+  if (!NROW(iris)) {
+    iris <- chunk
+  } else if (NROW(chunk)) {
+    iris <- rbind(iris, chunk)
   }
-  close(progress.bar)
+  stats <- dbGetInfo(result)[["stats"]]
+  if (is.null(progress.bar)) {
+    progress.bar <- txtProgressBar(0, stats[["totalSplits"]], style = 3)
+  } else {
+    setTxtProgressBar(progress.bar, stats[["completedSplits"]])
+  }
+}
+close(progress.bar)
 }
 }

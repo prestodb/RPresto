@@ -4,20 +4,20 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-context('bigint handling')
+context("bigint handling")
 
-source('utilities.R')
+source("utilities.R")
 
-test_that('Non 32-bit integers give warning', {
+test_that("Non 32-bit integers give warning", {
   conn <- setup_live_connection()
 
   expect_warning(
     dbGetQuery(conn, "SELECT CAST('2147483648' AS BIGINT)"),
-    'NAs produced by integer overflow'
+    "NAs produced by integer overflow"
   )
   expect_warning(
     dbGetQuery(conn, "SELECT CAST('-2147483649' AS BIGINT)"),
-    'NAs produced by integer overflow'
+    "NAs produced by integer overflow"
   )
 })
 

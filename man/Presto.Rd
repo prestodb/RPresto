@@ -85,10 +85,12 @@ Connect to a Presto database
 }
 \examples{
 \dontrun{
-  conn <- dbConnect(Presto(), catalog = 'hive', schema = 'default',
-                    user = 'onur', host = 'localhost', port = 8080,
-                    session.timezone='US/Eastern', bigint = 'character')
-  dbListTables(conn, '\%_iris')
-  dbDisconnect(conn)
+conn <- dbConnect(Presto(),
+  catalog = "hive", schema = "default",
+  user = "onur", host = "localhost", port = 8080,
+  session.timezone = "US/Eastern", bigint = "character"
+)
+dbListTables(conn, "\%_iris")
+dbDisconnect(conn)
 }
 }
