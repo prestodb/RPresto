@@ -96,6 +96,23 @@ test_that("dbConnect constructs PrestoConnection correctly", {
     )@request.config$options$verbose
   )
 
+  expect_equal(
+    length(
+      dbConnect(
+        RPresto::Presto(),
+        catalog = "jmx",
+        schema = "test",
+        host = "http://localhost",
+        port = 8000,
+        source = "testsource",
+        session.timezone = test.timezone(),
+        user = Sys.getenv("USER"),
+        ctes = list("test_cte" = "SELECT 1")
+      )@session$.ctes
+    ),
+    1
+  )
+
   expect_error(
     dbConnect(
       RPresto::Presto(),

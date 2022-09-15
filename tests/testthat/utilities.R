@@ -352,7 +352,8 @@ setup_live_connection <- function(session.timezone = "",
     parameters = parameters,
     extra.credentials = extra.credentials,
     user = Sys.getenv("USER"),
-    bigint = bigint
+    bigint = bigint,
+    ...
   )
   return(conn)
 }
