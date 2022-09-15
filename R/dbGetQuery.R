@@ -7,14 +7,46 @@
 #' @include PrestoConnection.R
 NULL
 
-.dbGetQuery <- function(conn, statement, ...) {
-  result <- dbSendQuery(conn, statement, ...)
+.dbGetQuery <- function(conn, statement, ..., statement_with_cte = NULL, cte_tables = c()) {
+  result <- dbSendQuery(conn, statement_with_cte %||% statement, ...)
   on.exit(dbClearResult(result))
-  df <- dbFetch(result, -1)
-  return(df)
+  res <- try(
+    {
+      dbFetch(result, -1)
+    },
+    silent = TRUE
+  )
+  # If error, try CTE; return if not
+  if (inherits(res, "try-error")) {
+    matching_cte_table <- find_cte_tables_from_try_result(conn, res)
+    # If found CTE, retry; return error if not
+    if (length(matching_cte_table) > 0) {
+      # Add previously found CTE tables for the retry. The order of the CTE
+      # tables matter.
+      cte_tables <- unique(c(matching_cte_table, cte_tables))
+      sql_with_cte <- generate_sql_with_cte(conn, statement, cte_tables)
+      # Retry using the same function
+      res <- .dbGetQuery(
+        conn = conn,
+        statement = statement,
+        ...,
+        statement_with_cte = sql_with_cte,
+        cte_tables = cte_tables
+      )
+      return(res)
+    }
+    stop(conditionMessage(attr(res, "condition")), call. = FALSE)
+  }
+  return(res)
 }
 
 #' @rdname PrestoConnection-class
 #' @importMethodsFrom DBI dbGetQuery
 #' @export
-setMethod("dbGetQuery", c("PrestoConnection", "character"), .dbGetQuery)
+setMethod(
+  "dbGetQuery",
+  c("PrestoConnection", "character"),
+  function(conn, statement, ...) {
+    .dbGetQuery(conn, statement, ...)
+  }
+)
