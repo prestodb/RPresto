@@ -166,18 +166,31 @@ db_compute.PrestoConnection <- function(con, table, sql, temporary = TRUE, uniqu
 #' @rdname dplyr_function_implementations
 #' @keywords internal
 db_collect.PrestoConnection <- function(con, sql, n = -1, warn_incomplete = TRUE, ...) {
-  # This is the one difference between this implementation and the default
-  # dbplyr::db_collect.DBIConnection()
-  # We pass ... to dbSendQuery() so that bigint can be specified for individual
-  # db_collect() calls
-  res <- dbSendQuery(con, sql, ...)
-  tryCatch(
-    {
-      out <- dbFetch(res, n = n)
-    },
-    finally = {
-      dbClearResult(res)
+  dbGetQuery(con, sql, ...)
+}
+
+#' @rdname dbplyr-db
+#' @param use_presto_cte `r lifecycle::badge("experimental")`
+#'   A logical value indicating if to use common table expressions stored in
+#'   PrestoConnection when possible. Default to TRUE. See
+#'   `vignette("common-table-expressions")`.
+#' @importFrom dbplyr db_sql_render
+#' @export
+db_sql_render.PrestoConnection <- function(con, sql, ..., use_presto_cte = TRUE) {
+  rendered_sql <- dbplyr::sql_render(sql, con = con, ...)
+  # Try CTE if sql is tbl_lazy and use_presto_cte = TRUE; return if not
+  if (!is.null(sql$lazy_query) && identical(use_presto_cte, TRUE)) {
+    if (is_cte_used(rendered_sql)) {
+      stop("CTEs are already used in the query.", call. = FALSE)
     }
-  )
-  out
+    cte_tables <- find_cte_tables_from_lazy_query(con, sql$lazy_query)
+    # If CTE found, use CTE; return if not
+    if (length(cte_tables) > 0) {
+      sql_with_cte <- generate_sql_with_cte(con, rendered_sql, cte_tables)
+      return(sql_with_cte)
+    } else {
+      return(rendered_sql)
+    }
+  }
+  return(rendered_sql)
 }
