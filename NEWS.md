@@ -13,7 +13,8 @@ more robust mapping between Presto data types and R types
   * Add complete support for complex Presto types (i.e., ARRAY, MAP, and ROW).
     They are now translated to typed vectors, lists, or tibbles depending on the
     types and structure of the data. (#118)
-* Add vignettes on Presto-R type translations
+* Add vignettes on Presto-R type translations (see `vignette("primitive-types")`
+  and `vignette("complex-types")`)
 * `dbExistsTable()` error when quoted identifier is supplied as `name` is fixed
   (#167)
 * Add a few `dplyr` and `dbplyr` method implementations. See
@@ -32,6 +33,8 @@ more robust mapping between Presto data types and R types
 * Styling the whole package using `styler::style_pkg()`. A notable change is to
   user double quotes everywhere instead of a combination of single and double
   quotes. (#174)
+* Add an experimental feature to support common table expressions (CTEs) in both
+  DBI and dplyr backends (see `vignette("common-table-expressions")`) (#175)
 
 # RPresto 1.3.8
 
