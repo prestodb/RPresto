@@ -18,6 +18,7 @@ Presto(...)
   source = methods::getPackageName(),
   session.timezone = "UTC",
   parameters = list(),
+  ctes = list(),
   request.config = httr::config(),
   use.trino.headers = FALSE,
   extra.credentials = "",
@@ -51,6 +52,10 @@ zone. See the session.timezone tests for examples.}
 
 \item{parameters}{A \code{\link[=list]{list()}} of extra parameters to be passed in
 the \sQuote{X-Presto-Session} header}
+
+\item{ctes}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+A list of common table expressions (CTEs) that can be used in the
+WITH clause. See \code{vignette("common-table-expressions")}.}
 
 \item{request.config}{An optional config list, as returned by
 \code{httr::config()}, to be sent with every HTTP request.}

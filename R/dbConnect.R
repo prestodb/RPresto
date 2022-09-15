@@ -20,6 +20,9 @@ NULL
 #'          zone. See the session.timezone tests for examples.
 #' @param parameters A [list()] of extra parameters to be passed in
 #'          the \sQuote{X-Presto-Session} header
+#' @param ctes  `r lifecycle::badge("experimental")`
+#'          A list of common table expressions (CTEs) that can be used in the
+#'          WITH clause. See `vignette("common-table-expressions")`.
 #' @param request.config An optional config list, as returned by
 #'          `httr::config()`, to be sent with every HTTP request.
 #' @param use.trino.headers A boolean to indicate whether Trino request headers
@@ -64,6 +67,7 @@ setMethod(
            source = methods::getPackageName(),
            session.timezone = "UTC",
            parameters = list(),
+           ctes = list(),
            request.config = httr::config(),
            use.trino.headers = FALSE,
            extra.credentials = "",
@@ -84,7 +88,7 @@ setMethod(
       session.timezone = session.timezone,
       request.config = request.config,
       use.trino.headers = use.trino.headers,
-      session = PrestoSession$new(parameters),
+      session = PrestoSession$new(parameters, ctes),
       extra.credentials = extra.credentials,
       bigint = match.arg(bigint)
     )
