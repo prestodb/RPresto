@@ -6,15 +6,24 @@
 \alias{PrestoSession}
 \title{Class to encapsulate a Presto session}
 \description{
-Internal implementation detail class needed for its side-effects.
-When SET/RESET SESSION queries are called, session parameters need to be
-maintained by the client and requires an in-place update.
+A session contains temporary attributes and information that are only useful
+for the session. It's attached to a PrestoConnection for as long as as the
+connection lives. There are a few types of information stored.
+\enumerate{
+\item Session properties that can be set via query response headers and need
+to be sent with following HTTP requests.
+\item Common table expressions (CTEs) that can be used to store a subquery and
+be used in a WITH statement.
+}
 }
 \section{Slots}{
 
 \describe{
 \item{\code{.parameters}}{List of Presto session parameters to be added to the
 X-Presto-Session header.}
+
+\item{\code{.ctes}}{List of common table expressions (CTEs), i.e. SELECT statements
+with names. They can be used in a WITH statement.}
 }}
 
 
