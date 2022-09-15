@@ -1,0 +1,184 @@
+---
+title: "Common Table Expressions (CTEs)"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Common Table Expressions (CTEs)}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+options(pillar.max_dec_width=20)
+```
+
+The [Common Table Expressions][1] or CTE’s for short are used within SQL
+databases to simplify complex joins and subqueries. You can think of them as
+named subqueries that can be referenced in other parts of the query, including
+other CTEs (i.e. recursive CTEs).
+
+In Presto, CTEs take the form of [`WITH` clauses][2]. There can be multiple
+named CTE within the single `WITH` clause. They need to be defined before the
+main `SELECT` query.
+
+At the time of this writing (late 2022), `DBI` APIs don't have an official way
+of implementing CTEs yet. `dbplyr` just begins to introduce CTEs into its APIs
+as an experimental feature. So our implementation of CTE support in `RPresto` is
+very much avant-garde and should be used with discretion.
+
+We attach CTEs to the `PrestoConnection` so that they are available across the
+queries executed via the connection.
+
+## Setup
+
+```{r setup, message=FALSE}
+library(RPresto)
+library(DBI)
+library(dplyr)
+library(dbplyr)
+```
+
+You can check your `RPresto` version by running the `packageVersion()` function.
+**You need version 1.4.0 or later to use the CTE feature.**
+
+```{r version}
+packageVersion("RPresto")
+```
+
+## Define CTEs while creating a `PrestoConnection`
+
+You can define and attach CTEs while creating a `PrestoConnection`. Here we
+assume that the user already have a Presto server with a memory connector set
+up. If you don't have such a server set up, refer to the
+[Presto documentation][2] for instructions if you want to follow along.
+
+```{r PrestoConnection}
+con <- DBI::dbConnect(
+  drv = RPresto::Presto(),
+  host = "http://localhost",
+  port = 8080,
+  user = Sys.getenv("USER"),
+  catalog = "memory",
+  schema = "default",
+  # Define a testing CTE using dummy VALUES
+  ctes = list(
+    "dummy_values" =
+      "SELECT * FROM (VALUES (1, 'a'), (2, 'b'), (3, 'c') ) AS t (id, name)"
+  )
+)
+```
+
+Now `dummy_values` is not an existing permanent table available in the
+`PrestoConnection`. It only exists as a temporary feature for the connection.
+
+```{r exists_dummy_values}
+db_has_table(con, "dummy_values")
+```
+
+We can read the content of the CTE.
+
+```{r read_dummy_values}
+dbReadTable(con, "dummy_values")
+```
+
+We can also execute arbitrary `SELECT` queries on top of the CTE.
+
+```{r getquery_dummy_values}
+dbGetQuery(con, "SELECT id * 2 AS id_2, name FROM dummy_values")
+```
+
+## Incorporating CTEs with `dplyr` backend
+
+Another way of leveraging CTEs in your workflow is to incorporate them into the
+`dplyr` workflow.
+
+```{r setup_dplyr}
+# We first copy mtcars to Presto and create a remote table on it
+tbl.mtcars <- copy_to(con, mtcars, "test_mtcars", overwrite = TRUE)
+tbl.mtcars %>% colnames()
+```
+
+We call a few `dplyr` verbs on the remote table to mimic a typical analysis
+work flow.
+
+```{r dplyr_transformation}
+tbl.mtcars.transform <- tbl.mtcars %>%
+  mutate(hp2 = pow(hp, 2)) %>%
+  group_by(cyl) %>%
+  mutate(mean_mpg_by_cyl = mean(mpg, na.rm = TRUE))
+```
+
+We can see the underlying SQL query generated so far.
+
+```{r dplyr_showquery}
+tbl.mtcars.transform %>% show_query()
+```
+
+For illustration, let's say we filter the same transformed table twice on the
+`cyl` field and `UNION ALL` them together in the next step.
+
+```{r unionall}
+tbl.mtcars.union <- union(
+  filter(tbl.mtcars.transform, cyl == 4L),
+  filter(tbl.mtcars.transform, cyl == 8L),
+  all = TRUE
+)
+tbl.mtcars.union %>% show_query()
+```
+
+The underlying SQL query of the transformed table (i.e. `tbl.mtcars.transform`)
+has to be replicated twice in this step and thus makes the resulting query long
+and repetitive. It offers a prime opportunity to simplify using CTEs.
+
+We can "save" the underlying SQL query of the transformed table into a CTE and
+use that in the union step by calling the `compute()` function with
+`cte = TRUE`.
+
+```{r compute_cte}
+tbl.mtcars.transform <- tbl.mtcars.transform %>%
+  compute(name = "mtcars_transform", cte = TRUE)
+tbl.mtcars.transform %>% show_query()
+```
+
+Here the content of `tbl.mtcars.transform` hasn't changed at all and we can
+use the remote table as it is just like before. The only change underneath is
+that the underlying logic is now captured and stored in a CTE. You can almost
+think of it as saving `tbl.mtcars.transform` as a temporary table named
+`mtcars_transform` and pointing the new remote table on that temporary table.
+The difference is that no query has actually been executed yet.
+
+Now we've leveraged CTE, the query for the union step looks more clean and
+readable.
+
+```{r unionall_cte}
+tbl.mtcars.union <- union(
+  filter(tbl.mtcars.transform, cyl == 4L),
+  filter(tbl.mtcars.transform, cyl == 8L),
+  all = TRUE
+)
+tbl.mtcars.union %>% show_query()
+```
+
+We can even create nested CTEs that depend on other CTEs (Presto calls it
+chained CTEs). Below we call `compute()` on `tbl.mtcars.union` which already
+utilizies the `mtcars_transform` CTE.
+
+```{r compute_cte_2}
+tbl.mtcars.union <- tbl.mtcars.union %>%
+  compute(name = "mtcars_union", cte = TRUE)
+tbl.mtcars.union %>% show_query()
+```
+
+Now the underlying query of the previous `tbl.mtcars.union` is saved into the
+`mtcars_union` CTE which in turn depends on the `mtcars_transform` CTE.
+
+```{r teardown_dplyr, echo=FALSE}
+# Clean up
+dbRemoveTable(con, "test_mtcars")
+```
+
+[1]: https://www.essentialsql.com/introduction-common-table-expressions-ctes/
+[2]: https://prestodb.io/docs/current/sql/select.html#with-clause
