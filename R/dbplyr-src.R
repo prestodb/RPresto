@@ -240,11 +240,24 @@ copy_to.PrestoConnection <- function(dest, df, name = deparse(substitute(df)), o
 #' @importFrom rlang !!!
 #' @export
 #' @param x A lazy data frame backed by a database query.
+#' @param cte `r lifecycle::badge("experimental")`
+#'   An experimental feature to save the query to a common table expression.
+#'   Default to FALSE. See `vignette("common-table-expressions")`
 #' @rdname dplyr_function_implementations
-compute.tbl_presto <- function(x, name, temporary = FALSE, ...) {
+compute.tbl_presto <- function(x, name, temporary = FALSE, ..., cte = FALSE) {
   name <- unname(name)
-  sql <- dbplyr::db_sql_render(x$src$con, x$lazy_query)
-  name <- dbplyr::db_compute(x$src$con, name, sql, temporary = temporary, ...)
+  sql <- dbplyr::db_sql_render(x$src$con, x, use_presto_cte = FALSE)
+  if (identical(cte, TRUE)) {
+    if (inherits(x$lazy_query, "lazy_base_remote_query")) {
+      stop(
+        "No operations need to be computed. Aborting compute.",
+        call. = FALSE
+      )
+    }
+    x$src$con@session$addCTE(name, sql, replace = TRUE)
+  } else {
+    name <- dbplyr::db_compute(x$src$con, name, sql, temporary = temporary, ...)
+  }
   dplyr::tbl(x$src, dbplyr::as.sql(name), colnames(x)) %>%
     dplyr::group_by(!!!rlang::syms(dbplyr::op_grps(x))) %>%
     dbplyr::window_order(!!!dbplyr::op_sort(x))

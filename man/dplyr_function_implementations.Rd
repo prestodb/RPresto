@@ -22,10 +22,14 @@
 
 \method{collect}{tbl_presto}(x, ..., n = Inf, warn_incomplete = TRUE)
 
-\method{compute}{tbl_presto}(x, name, temporary = FALSE, ...)
+\method{compute}{tbl_presto}(x, name, temporary = FALSE, ..., cte = FALSE)
 }
 \arguments{
 \item{x}{A lazy data frame backed by a database query.}
+
+\item{cte}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+An experimental feature to save the query to a common table expression.
+Default to FALSE. See \code{vignette("common-table-expressions")}}
 }
 \description{
 S3 implementation of \code{db_desc} for Presto.
