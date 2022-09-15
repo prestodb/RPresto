@@ -6,6 +6,7 @@
 \alias{db_write_table.PrestoConnection}
 \alias{db_copy_to.PrestoConnection}
 \alias{db_compute.PrestoConnection}
+\alias{db_sql_render.PrestoConnection}
 \title{dbplyr database methods}
 \usage{
 \method{db_list_tables}{PrestoConnection}(con)
@@ -49,6 +50,8 @@
   with = NULL,
   ...
 )
+
+\method{db_sql_render}{PrestoConnection}(con, sql, ..., use_presto_cte = TRUE)
 }
 \arguments{
 \item{con}{A \code{PrestoConnection} as returned by \code{dbConnect()}.}
@@ -72,6 +75,11 @@ FALSE is accepted.}
 for compatibility with generics.}
 
 \item{sql}{A SQL statement.}
+
+\item{use_presto_cte}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+A logical value indicating if to use common table expressions stored in
+PrestoConnection when possible. Default to TRUE. See
+\code{vignette("common-table-expressions")}.}
 }
 \description{
 dbplyr database methods

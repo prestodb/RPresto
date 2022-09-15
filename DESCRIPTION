@@ -54,6 +54,7 @@ Collate:
     'PrestoResult.R'
     'RPresto-package.R'
     'create.dummy.tables.R'
+    'cte.R'
     'dbClearResult.R'
     'dbConnect.R'
     'dbCreateTable.R'
