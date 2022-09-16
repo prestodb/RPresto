@@ -20,7 +20,14 @@
   with = NULL
 )
 
-\method{copy_to}{PrestoConnection}(dest, df, name = deparse(substitute(df)), overwrite = FALSE)
+\method{copy_to}{PrestoConnection}(
+  dest,
+  df,
+  name = deparse(substitute(df)),
+  overwrite = FALSE,
+  ...,
+  with = NULL
+)
 }
 \arguments{
 \item{src}{A presto src created with \code{src_presto}.}

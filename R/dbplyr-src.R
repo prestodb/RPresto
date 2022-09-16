@@ -222,12 +222,14 @@ collect.tbl_presto <- function(x, ..., n = Inf, warn_incomplete = TRUE) {
 #' @inheritParams dplyr::copy_to
 #' @rdname dplyr_source_function_implementations
 #' @keywords internal
-copy_to.PrestoConnection <- function(dest, df, name = deparse(substitute(df)), overwrite = FALSE) {
+copy_to.PrestoConnection <- function(dest, df, name = deparse(substitute(df)), overwrite = FALSE, ..., with = NULL) {
   copy_to(
     dest = src_presto(con = dest),
     df = df,
     name = name,
-    overwrite = overwrite
+    overwrite = overwrite,
+    ...,
+    with = with
   )
 }
 
