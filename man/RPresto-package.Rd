@@ -17,7 +17,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Thomas J. Leeper \email{thomasleeper@fb.com} [contributor]
+\strong{Maintainer}: Jarod G.R. Meng \email{jarodm@fb.com}
 
 Authors:
 \itemize{
@@ -27,8 +27,8 @@ Authors:
 
 Other contributors:
 \itemize{
+  \item Thomas J. Leeper \email{thomasleeper@fb.com} [contributor]
   \item John Myles White \email{johnmyleswhite@fb.com} [contributor]
-  \item Jarod G.R. Meng \email{jarodm@fb.com} [contributor]
 }
 
 }

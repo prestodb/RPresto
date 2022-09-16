@@ -4,13 +4,9 @@ Version: 1.4.0
 Authors@R: c(
     person('Onur Ismail', 'Filiz', , 'onur@fb.com', role='aut'),
     person('Sergey', 'Goder', , 'sgoder@fb.com', role='aut'),
-    person(
-        'Thomas J.', 'Leeper', ,
-        'thomasleeper@fb.com',
-        role=c('ctb', 'cre')
-    ),
-    person('John Myles', 'White', , 'johnmyleswhite@fb.com', role='ctb'),
-    person('Jarod G.R.', 'Meng', , 'jarodm@fb.com', role='ctb')
+    person('Jarod G.R.', 'Meng', , 'jarodm@fb.com', role=c('aut', 'cre')),
+    person('Thomas J.', 'Leeper', , 'thomasleeper@fb.com', role='ctb'),
+    person('John Myles', 'White', , 'johnmyleswhite@fb.com', role='ctb')
     )
 Copyright: Meta Platforms, Inc. 2015-present.
 Description: Implements a 'DBI' compliant interface to Presto. Presto is

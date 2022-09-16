@@ -1,5 +1,6 @@
 # RPresto 1.4.0
 
+* Change maintainer to Jarod Meng (jarodm@fb.com)
 * Major refactoring of the internal schema and data parsing functions to enable
 more robust mapping between Presto data types and R types
   * The output is changed from `data.frame` to `tibble` to offer better printing
