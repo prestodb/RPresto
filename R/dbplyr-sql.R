@@ -29,7 +29,7 @@ sql_query_save.PrestoConnection <- function(con, sql, name, temporary = TRUE, ..
   sqlCreateTableAs(con, name, sql, with, ...)
 }
 
-#' S3 implementation of \code{sql_query_fields} for Presto.
+#' S3 implementation of `sql_query_fields` for Presto.
 #'
 #' @importFrom dbplyr sql_query_fields
 #' @export
@@ -42,7 +42,7 @@ sql_query_fields.PrestoConnection <- function(con, sql, ...) {
   )
 }
 
-#' S3 implementation of custom escape method for \link[dbplyr]{sql_escape_date}
+#' S3 implementation of custom escape method for [sql_escape_date][dbplyr::sql_escape_date]
 #'
 #' @importFrom dbplyr sql_escape_date
 #' @export
@@ -52,7 +52,7 @@ sql_escape_date.PrestoConnection <- function(con, x) {
   paste0("DATE ", DBI::dbQuoteString(con, as.character(x)))
 }
 
-#' S3 implementation of custom escape method for \link[dbplyr]{sql_escape_datetime}
+#' S3 implementation of custom escape method for [sql_escape_datetime][dbplyr::sql_escape_datetime]
 #'
 #' @importFrom dbplyr sql_escape_datetime
 #' @export
@@ -79,7 +79,7 @@ presto_window_functions <- function() {
 #'
 #' @param f a string giving the name of the function
 #'
-#' @return error message for \code{f}
+#' @return error message for `f`
 #' @keywords internal
 #' @noRd
 quantile_error_message <- function(f = "quantile") {
@@ -90,7 +90,7 @@ quantile_error_message <- function(f = "quantile") {
   )
 }
 
-#' S3 implementation of \code{sql_translation} for Presto.
+#' S3 implementation of `sql_translation` for Presto.
 #'
 #' @importFrom dbplyr sql_translation
 #' @export

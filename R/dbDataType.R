@@ -137,12 +137,12 @@ for (i in seq_along(.non.complex.types)) {
   return(stringi::stri_trans_toupper(rv, "en_US.UTF-8"))
 }
 
-#' Return the corresponding presto data type for the given R \code{object}
-#' @param dbObj A \code{\linkS4class{PrestoDriver}} object
+#' Return the corresponding presto data type for the given R `object`
+#' @param dbObj A [PrestoDriver-class] object
 #' @param obj Any R object
 #' @param ... Extra optional parameters, not currently used
-#' @return A \code{character} value corresponding to the Presto type for
-#'         \code{obj}
+#' @return A `character` value corresponding to the Presto type for
+#'         `obj`
 #' @rdname dbDataType
 #' @details The default value for unknown classes is \sQuote{VARCHAR}.
 #'

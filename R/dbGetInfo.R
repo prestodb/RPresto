@@ -47,13 +47,13 @@ setMethod(
 }
 
 
-#' For the \code{\linkS4class{PrestoResult}} object, the implementation
-#' returns the additional \code{stats} field which can be used to
+#' For the [PrestoResult-class] object, the implementation
+#' returns the additional `stats` field which can be used to
 #' implement things like progress bars. See the examples section.
-#' @param dbObj A \code{\linkS4class{PrestoDriver}},
-#'          \code{\linkS4class{PrestoConnection}}
-#'          or \code{\linkS4class{PrestoResult}} object
-#' @return [PrestoResult] A \code{\link{list}} with elements
+#' @param dbObj A [PrestoDriver-class],
+#'          [PrestoConnection-class]
+#'          or [PrestoResult-class] object
+#' @return [PrestoResult-class] A [list()] with elements
 #'   \describe{
 #'     \item{statement}{The SQL sent to the database}
 #'     \item{row.count}{Number of rows fetched so far}

@@ -8,8 +8,7 @@
 NULL
 
 #' @rdname PrestoConnection-class
-#' @param pattern optional SQL pattern for filtering table names,
-#'                e.g. \sQuote{\%test\%}
+#' @param pattern optional SQL pattern for filtering table names, e.g. '%test%'
 #' @importMethodsFrom DBI dbListTables
 #' @export
 setMethod(

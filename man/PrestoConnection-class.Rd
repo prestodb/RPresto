@@ -105,12 +105,11 @@ A data frame: field types are generated using
 \item{...}{Other parameters passed on to methods.}
 
 \item{overwrite}{a logical specifying whether to overwrite an existing table
-or not. Its default is `FALSE`.}
+or not. Its default is \code{FALSE}.}
 
-\item{pattern}{optional SQL pattern for filtering table names,
-e.g. \sQuote{\%test\%}}
+\item{pattern}{optional SQL pattern for filtering table names, e.g. '\%test\%'}
 
-\item{fail_if_missing}{If `FALSE`, `dbRemoveTable()` succeeds if the
+\item{fail_if_missing}{If \code{FALSE}, \code{dbRemoveTable()} succeeds if the
 table doesn't exist.}
 
 \item{value}{a \link{data.frame} (or coercible to data.frame).}

@@ -8,7 +8,7 @@
 NULL
 
 #' Connect to a Presto database
-#' @return [Presto] A \code{\linkS4class{PrestoDriver}} object
+#' @return [Presto] A [PrestoDriver-class] object
 #' @rdname Presto
 #' @export
 Presto <- function(...) {
