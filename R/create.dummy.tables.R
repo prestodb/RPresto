@@ -11,20 +11,19 @@
 NULL
 
 drop_table <- function(con, table_name, verbose = TRUE, ...) {
-  drop_table_sql <- paste0("DROP TABLE IF EXISTS ", table_name)
-  drop_table_res <- dbGetQuery(con, drop_table_sql, ...)
-  if (drop_table_res$result && verbose) {
+  if (DBI::dbExistsTable(con, table_name)) {
+    DBI::dbRemoveTable(con, table_name)
+  }
+  if (verbose) {
     message("The previous table ", table_name, " has been dropped.")
   }
 }
 
 create_table <- function(con, table_name, sql, verbose = TRUE, ...) {
-  create_table_res <- dbGetQuery(con, sql, ...)
-  n_rows <- create_table_res$rows
-  if (n_rows > 0 && verbose) {
+  dbCreateTableAs(con, table_name, sql)
+  if (verbose) {
     message("The table ", table_name, " has been created.")
   }
-  invisible(n_rows)
 }
 
 #' Create a table that has an ARRAY of 3 elements for all primitive data types
@@ -71,7 +70,6 @@ create_primitive_arrays_table <- function(con,
                                           verbose = TRUE) {
   drop_table(con, table_name, verbose)
   create_table_sql <- paste0("
-    CREATE TABLE ", table_name, " AS
     SELECT
       ARRAY[
         true,
@@ -160,6 +158,7 @@ create_primitive_arrays_table <- function(con,
       ] AS array_interval_day_to_second
     ")
   create_table(con, table_name, create_table_sql, verbose)
+  invisible(TRUE)
 }
 
 #' Create a table that has a MAP of 3 elements for all primitive data types
@@ -184,7 +183,6 @@ create_primitive_maps_table <- function(con,
     con, tmp_table_name, time_zone, verbose
   )
   create_table_sql <- paste0("
-    CREATE TABLE ", table_name, " AS
     SELECT
       MAP(ARRAY[1, 2, 3], array_boolean) AS map_boolean,
       MAP(ARRAY[1, 2, 3], array_tinyint) AS map_tinyint,
@@ -206,9 +204,9 @@ create_primitive_maps_table <- function(con,
       MAP(ARRAY[1, 2, 3], array_interval_day_to_second)
         AS map_interval_day_to_second
     FROM ", tmp_table_name)
-  n_rows <- create_table(con, table_name, create_table_sql, verbose)
+  create_table(con, table_name, create_table_sql, verbose)
   drop_table(con, tmp_table_name, verbose)
-  invisible(n_rows)
+  invisible(TRUE)
 }
 
 #' Create a table that has 3 rows of all primitive Presto data types with dummy
@@ -236,7 +234,6 @@ create_primitive_types_table <- function(con,
     con, tmp_table_name, time_zone, verbose
   )
   create_table_sql <- paste0("
-    CREATE TABLE ", table_name, " AS
     SELECT
       boolean,
       tinyint,
@@ -295,9 +292,9 @@ create_primitive_types_table <- function(con,
       interval_day_to_second
     )
     ")
-  n_rows <- create_table(con, table_name, create_table_sql, verbose)
+  create_table(con, table_name, create_table_sql, verbose)
   drop_table(con, tmp_table_name, verbose)
-  invisible(n_rows)
+  invisible(TRUE)
 }
 
 #' Create a table that has 1 ROW column to include all primitive types
@@ -322,7 +319,6 @@ create_primitive_rows_table <- function(con,
     con, tmp_table_name, time_zone, verbose
   )
   create_table_sql <- paste0("
-    CREATE TABLE ", table_name, " AS
     SELECT
       CAST(
         ROW(
@@ -365,9 +361,9 @@ create_primitive_rows_table <- function(con,
         )
       ) AS row_primitive_types
     FROM ", tmp_table_name)
-  n_rows <- create_table(con, table_name, create_table_sql, verbose)
+  create_table(con, table_name, create_table_sql, verbose)
   drop_table(con, tmp_table_name, verbose)
-  invisible(n_rows)
+  invisible(TRUE)
 }
 
 #' Create a table that has an `ARRAY(ROW)` column that has 2 `ROW` elements in
@@ -395,12 +391,11 @@ create_array_of_rows_table <- function(con,
     con, tmp_table_name, time_zone, verbose
   )
   create_table_sql <- paste0("
-    CREATE TABLE ", table_name, " AS
     SELECT ARRAY[row_primitive_types, row_primitive_types] AS array_of_rows
     FROM ", tmp_table_name)
-  n_rows <- create_table(con, table_name, create_table_sql, verbose)
+  create_table(con, table_name, create_table_sql, verbose)
   drop_table(con, tmp_table_name, verbose)
-  invisible(n_rows)
+  invisible(TRUE)
 }
 
 #' Create a table that has an `ARRAY(MAP)` column that has 2 `MAP` elements in
@@ -426,7 +421,6 @@ create_array_of_maps_table <- function(con,
     con, tmp_table_name, time_zone, verbose
   )
   create_table_sql <- paste0("
-    CREATE TABLE ", table_name, " AS
     SELECT
       ARRAY[map_boolean, map_boolean] AS array_map_boolean,
       ARRAY[map_tinyint, map_tinyint] AS array_map_tinyint,
@@ -449,7 +443,7 @@ create_array_of_maps_table <- function(con,
       ARRAY[map_interval_day_to_second, map_interval_day_to_second]
         AS array_map_interval_day_to_second
     FROM ", tmp_table_name)
-  n_rows <- create_table(con, table_name, create_table_sql, verbose)
+  create_table(con, table_name, create_table_sql, verbose)
   drop_table(con, tmp_table_name, verbose)
-  invisible(n_rows)
+  invisible(TRUE)
 }
