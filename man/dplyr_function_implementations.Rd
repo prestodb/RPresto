@@ -30,11 +30,11 @@
 \description{
 S3 implementation of \code{db_desc} for Presto.
 
-S3 implementation of \code{\link[dplyr]{db_data_type}} for Presto.
+S3 implementation of \code{\link[dplyr:backend_dbplyr]{dplyr::db_data_type()}} for Presto.
 
-S3 implementation of \code{\link[dplyr]{db_explain}} for Presto.
+S3 implementation of \code{\link[dplyr:backend_dbplyr]{dplyr::db_explain()}} for Presto.
 
-S3 implementation of \code{\link[dplyr]{db_query_rows}} for Presto.
+S3 implementation of \code{\link[dplyr:backend_dbplyr]{dplyr::db_query_rows()}} for Presto.
 
 S3 implementation of \code{db_collect} for Presto.
 

@@ -18,9 +18,9 @@
 \description{
 S3 implementation of \code{sql_query_fields} for Presto.
 
-S3 implementation of custom escape method for \link[dbplyr]{sql_escape_date}
+S3 implementation of custom escape method for \link[dbplyr:db-quote]{sql_escape_date}
 
-S3 implementation of custom escape method for \link[dbplyr]{sql_escape_datetime}
+S3 implementation of custom escape method for \link[dbplyr:db-quote]{sql_escape_datetime}
 
 S3 implementation of \code{sql_translation} for Presto.
 }

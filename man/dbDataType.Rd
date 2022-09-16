@@ -7,7 +7,7 @@
 \S4method{dbDataType}{PrestoDriver}(dbObj, obj, ...)
 }
 \arguments{
-\item{dbObj}{A \code{\linkS4class{PrestoDriver}} object}
+\item{dbObj}{A \linkS4class{PrestoDriver} object}
 
 \item{obj}{Any R object}
 
@@ -15,7 +15,7 @@
 }
 \value{
 A \code{character} value corresponding to the Presto type for
-        \code{obj}
+\code{obj}
 }
 \description{
 Return the corresponding presto data type for the given R \code{object}

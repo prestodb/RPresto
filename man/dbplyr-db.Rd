@@ -57,7 +57,7 @@
 
 \item{types}{Not used. Only NULL is accpeted.}
 
-\item{values}{A `data.frame`.}
+\item{values}{A \code{data.frame}.}
 
 \item{temporary}{If a temporary table should be used. Not supported. Only
 FALSE is accepted.}

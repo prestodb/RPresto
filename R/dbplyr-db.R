@@ -31,7 +31,7 @@ dbplyr_edition.PrestoConnection <- function(con) 2L
   ))
 }
 
-#' S3 implementation of \code{db_desc} for Presto.
+#' S3 implementation of `db_desc` for Presto.
 #'
 #' @importFrom dplyr db_desc
 #' @export
@@ -42,7 +42,7 @@ db_desc.PrestoConnection <- function(x) {
   return(.description_from_info(info))
 }
 
-#' S3 implementation of \code{\link[dplyr]{db_data_type}} for Presto.
+#' S3 implementation of [dplyr::db_data_type()] for Presto.
 #'
 #' @importFrom dplyr db_data_type
 #' @export
@@ -52,7 +52,7 @@ db_data_type.PrestoConnection <- function(con, fields, ...) {
   return(sapply(fields, function(field) dbDataType(Presto(), field)))
 }
 
-#' S3 implementation of \code{\link[dplyr]{db_explain}} for Presto.
+#' S3 implementation of [dplyr::db_explain()] for Presto.
 #'
 #' @importFrom dplyr db_explain
 #' @export
@@ -64,7 +64,7 @@ db_explain.PrestoConnection <- function(con, sql, ...) {
   return(paste(explanation[[1]], collapse = "\n"))
 }
 
-#' S3 implementation of \code{\link[dplyr]{db_query_rows}} for Presto.
+#' S3 implementation of [dplyr::db_query_rows()] for Presto.
 #'
 #' @importFrom dplyr db_query_rows
 #' @export
@@ -159,7 +159,7 @@ db_compute.PrestoConnection <- function(con, table, sql, temporary = TRUE, uniqu
   table
 }
 
-#' S3 implementation of \code{db_collect} for Presto.
+#' S3 implementation of `db_collect` for Presto.
 #'
 #' @importFrom dbplyr db_collect
 #' @export

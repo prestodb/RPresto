@@ -5,7 +5,7 @@
 # LICENSE file in the root directory of this source tree.
 
 #' An S4 class to represent a Presto Driver (and methods)
-#' It is used purely for dispatch and \code{dbUnloadDriver} is unnecessary
+#' It is used purely for dispatch and `dbUnloadDriver` is unnecessary
 #'
 #' @keywords internal
 #' @importClassesFrom DBI DBIDriver

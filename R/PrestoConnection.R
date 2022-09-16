@@ -11,7 +11,7 @@ NULL
 # request.config slot in PrestoConnection below.
 setOldClass("request")
 
-#' S4 implementation of \code{DBIConnection} for Presto.
+#' S4 implementation of `DBIConnection` for Presto.
 #'
 #' @keywords internal
 #' @importClassesFrom DBI DBIConnection
