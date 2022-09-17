@@ -13,6 +13,7 @@ more robust mapping between Presto data types and R types
   * Add complete support for complex Presto types (i.e., ARRAY, MAP, and ROW).
     They are now translated to typed vectors, lists, or tibbles depending on the
     types and structure of the data. (#118)
+  * It supports all primitive and complex data types for Trino too. (#176)
 * Add vignettes on Presto-R type translations (see `vignette("primitive-types")`
   and `vignette("complex-types")`)
 * `dbExistsTable()` error when quoted identifier is supplied as `name` is fixed

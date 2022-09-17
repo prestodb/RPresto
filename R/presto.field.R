@@ -77,7 +77,8 @@ init.presto.field.from.json <- function(column.list, timezone, is_parent_map = F
   is_array <- (type == "array")
   if (is_array) {
     type_signature <-
-      purrr::pluck(column.list, "typeSignature", "typeArguments", 1)
+      purrr::pluck(column.list, "typeSignature", "typeArguments", 1) %||%
+      purrr::pluck(column.list, "typeSignature", "arguments", 1, "value")
     type <- purrr::pluck(type_signature, "rawType")
     if (type == "array") {
       stop(
@@ -93,12 +94,16 @@ init.presto.field.from.json <- function(column.list, timezone, is_parent_map = F
   # Filled for complex types (i.e., MAP and ROW)
   fields <- list()
   if (type == "map") {
-    key_type <- purrr::pluck(type_signature, "typeArguments", 1, "rawType")
+    key_type <-
+      purrr::pluck(type_signature, "typeArguments", 1, "rawType") %||%
+      purrr::pluck(type_signature, "arguments", 1, "value", "rawType")
     fields_json <- list(
       list(
         name = name,
         type = "map_field_type",
-        typeSignature = purrr::pluck(type_signature, "typeArguments", 2)
+        typeSignature =
+          purrr::pluck(type_signature, "typeArguments", 2) %||%
+          purrr::pluck(type_signature, "arguments", 2, "value")
       )
     )
     fields <- purrr::map(
@@ -108,15 +113,23 @@ init.presto.field.from.json <- function(column.list, timezone, is_parent_map = F
   }
   # ROW type is a complex type that has sub-fields
   if (type == "row") {
-    fields_count <- length(purrr::pluck(type_signature, "literalArguments"))
+    fields_count <- length(
+      purrr::pluck(type_signature, "literalArguments") %||%
+      purrr::pluck(type_signature, "arguments")
+    )
     fields_json <- vector(mode = "list", length = fields_count)
     for (i in seq(fields_count)) {
       fields_json[[i]]$name <-
-        purrr::pluck(type_signature, "literalArguments", i)
-      fields_json[[i]]$type <-
-        purrr::pluck(type_signature, "arguments", i, "value", "typeSignature")
+        purrr::pluck(type_signature, "literalArguments", i) %||%
+        purrr::pluck(type_signature, "arguments", i, "value", "fieldName", "name")
+      field_type <- purrr::pluck(type_signature, "arguments", i, "value", "typeSignature")
+      if (!is.character(field_type)) {
+        field_type <- purrr::pluck(type_signature, "arguments", i, "value", "typeSignature", "rawType")
+      }
+      fields_json[[i]]$type <- field_type
       fields_json[[i]]$typeSignature <-
-        purrr::pluck(type_signature, "typeArguments", i)
+        purrr::pluck(type_signature, "typeArguments", i) %||%
+        purrr::pluck(type_signature, "arguments", i, "value", "typeSignature")
     }
     fields <- purrr::map(
       fields_json, init.presto.field.from.json, timezone
@@ -139,7 +152,6 @@ init.presto.field.from.json <- function(column.list, timezone, is_parent_map = F
       name, type, key_type, is_array, fields, is_parent_map, is_parent_array
     )
   }
-
   return(prf)
 }
 

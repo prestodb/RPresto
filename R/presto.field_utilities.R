@@ -51,10 +51,27 @@ parse.timestamp <- function(x, timezone) {
   if (is.na(parts[3])) {
     warning("No timezone detected in timestamp ", x, call. = FALSE)
   }
-  parsed_ts_with_tz <- lubridate::ymd_hms(
-    paste(parts[1:2], collapse = " "),
-    tz = ifelse(is.na(parts[3]), "", parts[3])
-  )
+  # Trino passes timezone in the UTC offset format, e.g. +08:00
+  if (stringi::stri_detect_regex(parts[3], "[\\+\\-]\\d\\d:\\d\\d")) {
+    parsed_ts_in_utc <- lubridate::ymd_hms(
+      paste(parts[1:2], collapse = " "), tz = "UTC"
+    )
+    parsed_tz <- stringi::stri_match_all_regex(
+      parts[3], "([\\+\\-])(\\d\\d):(\\d\\d)"
+    )[[1]][1, ]
+    if (length(parsed_tz) != 4) {
+      stop("The timezone ", parts[3], " cannot be parsed.", call. = FALSE)
+    }
+    utc_offset_sign <- ifelse(parsed_tz[2] == "+", -1, 1)
+    utc_offset_seconds <-
+      as.numeric(parsed_tz[3]) * 60 * 60 + as.numeric(parsed_tz[4]) * 60
+    parsed_ts_with_tz <- parsed_ts_in_utc + utc_offset_sign * utc_offset_seconds
+  } else {
+    parsed_ts_with_tz <- lubridate::ymd_hms(
+      paste(parts[1:2], collapse = " "),
+      tz = ifelse(is.na(parts[3]), "", parts[3])
+    )
+  }
   return(lubridate::with_tz(parsed_ts_with_tz, tz = timezone))
 }
 
@@ -75,6 +92,10 @@ parse.time_with_tz <- function(x, timezone) {
   }
   if (is.na(x)) {
     return(hms::as_hms(as.POSIXct(x, tz = timezone)))
+  }
+  # Trino TIME WITH TIME ZONE type uses a different format
+  if (stringi::stri_detect_regex(x, ".+[\\+\\-]\\d\\d:\\d\\d")) {
+    x <- stringi::stri_replace_first_regex(x, "([\\+\\-])", " $1")
   }
   placeholder_date <- "2000-01-01"
   datetime_with_tz <- parse.timestamp(
