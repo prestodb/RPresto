@@ -339,22 +339,42 @@ setup_live_connection <- function(session.timezone = "",
                                   parameters = list(),
                                   extra.credentials = "",
                                   bigint = c("integer", "integer64", "numeric", "character"),
-                                  ...) {
+                                  ...,
+                                  type = "Presto") {
   skip_on_cran()
-  credentials <- read_credentials()
-  conn <- dbConnect(RPresto::Presto(),
-    schema = credentials$schema,
-    catalog = credentials$catalog,
-    host = credentials$host,
-    port = credentials$port,
-    source = credentials$source,
-    session.timezone = session.timezone,
-    parameters = parameters,
-    extra.credentials = extra.credentials,
-    user = Sys.getenv("USER"),
-    bigint = bigint,
-    ...
-  )
+  if (type == "Presto") {
+    credentials <- read_credentials()
+    conn <- dbConnect(RPresto::Presto(),
+      schema = credentials$schema,
+      catalog = credentials$catalog,
+      host = credentials$host,
+      port = credentials$port,
+      source = credentials$source,
+      session.timezone = session.timezone,
+      parameters = parameters,
+      extra.credentials = extra.credentials,
+      user = Sys.getenv("USER"),
+      bigint = bigint,
+      ...
+    )
+  } else if (type == "Trino") {
+    conn <- dbConnect(RPresto::Presto(),
+      use.trino.headers = TRUE,
+      schema = "default",
+      catalog = "memory",
+      host = "http://localhost",
+      port = 8090,
+      source = "RPresto_test",
+      session.timezone = session.timezone,
+      parameters = parameters,
+      extra.credentials = extra.credentials,
+      user = Sys.getenv("USER"),
+      bigint = bigint,
+      ...
+    )
+  } else {
+    stop("Connection type is not Presto or Trino.", call. = FALSE)
+  }
   return(conn)
 }
 
@@ -362,7 +382,8 @@ setup_live_dplyr_connection <- function(session.timezone = "",
                                         parameters = list(),
                                         extra.credentials = "",
                                         bigint = c("integer", "integer64", "numeric", "character"),
-                                        ...) {
+                                        ...,
+                                        type = "Presto") {
   skip_on_cran()
 
   credentials <- read_credentials()
@@ -372,7 +393,8 @@ setup_live_dplyr_connection <- function(session.timezone = "",
       parameters,
       extra.credentials,
       bigint,
-      ...
+      ...,
+      type = type
     )
   )
   return(list(db = db, iris_table_name = credentials[["iris_table_name"]]))
