@@ -25,11 +25,7 @@ NULL
         jsonlite::toJSON(lapply(res_list, names))
       )
     }
-    if (requireNamespace("dplyr", quietly = TRUE)) {
-      return(dplyr::bind_rows(res_list))
-    } else {
-      return(do.call("rbind", res_list))
-    }
+    return(dplyr::bind_rows(res_list))
   }
 }
 
