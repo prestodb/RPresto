@@ -185,6 +185,97 @@ tbl.iris %>%
   collect()
 ```
 
+### `BIGINT` handling
+
+RPresto's handling of `BIGINT` (i.e. 64-bit integers) is similar to other DBI
+packages (e.g. [`bigrquery`][12], [`RPostgres`][13]). We provide a `bigint`
+argument that users can use in multiple interfaces to specify how they want
+`BIGINT` typed data to be translated into R.
+
+The `bigint` argument takes one of the following 4 possible values.
+
+1. `bigint = "integer"` is the default setting. It translates `BIGINT` to R's
+native integer type (i.e. 32-bit integer). The range of 32-bit integer is
+`[-2,147,483,648, 2,147,483,647]` which should cover most integer use cases.
+
+1. In case that you need to represent integer values outside of the 32-bit
+integer range, you have 2 options: `bigint = "numeric"` which translates the
+number into a `double` floating-point type in R; and `bigint = "integer64"`
+which packages the number using the `bit64::integer64` class. Note that both of
+those two approaches actually the same precision-preservation range:
+`+/-(2^53-1) = +/-9,007,199,254,740,991`, due to the fact that the Presto REST
+API uses JSON to encode the number and JSON has a limit at 53 bits (rather than
+64 bits).
+
+1. `bigint = "character"` casts the number into a string. This is most useful
+when `BIGINT` is used to represent an ID rather than a real arithmetic number.
+
+#### Where to use `bigint`
+
+The DBI interface function `dbGetQuery()` is the most fundamental interface
+whereby `bigint` can be specified. All other interfaces are either built on top
+of `dbGetQuery()` or only take effect when used with `dbGetQuery()`.
+
+```{r dbgetquery_bigint, eval = TRUE}
+# BIGINT within the 32-bit integer range is simply translated into integer
+DBI::dbGetQuery(con, "SELECT CAST(1 AS BIGINT) AS small_bigint")
+
+# BIGINT outside of the 32-bit integer range generates a warning and returns NA
+# when bigint is not specified
+DBI::dbGetQuery(con, "SELECT CAST(POW(2, 31) AS BIGINT) AS overflow_bigint")
+
+# Using bigint to specify numeric or integer64 translations
+DBI::dbGetQuery(
+  con, "SELECT CAST(POW(2, 31) AS BIGINT) AS bigint_numeric",
+  bigint = "numeric"
+)
+DBI::dbGetQuery(
+  con, "SELECT CAST(POW(2, 31) AS BIGINT) AS bigint_integer64",
+  bigint = "integer64"
+)
+```
+
+When used with the `dplyr` interface, `bigint` can be specified in two places.
+
+1. Users can pass the `bigint` argument to `dbConnect()` when creating the
+`PrestoConnection`. All queries that use the connection later will use the
+specified `bigint` setting.
+
+```{r dbconnect_bigint, eval = TRUE}
+con.bigint <- DBI::dbConnect(
+  drv = RPresto::Presto(),
+  host = "http://localhost",
+  port = 8080,
+  user = Sys.getenv("USER"),
+  catalog = "memory",
+  schema = "default",
+  # bigint can be specified in dbConnect
+  bigint = "integer64"
+)
+
+# BIGINT outside of the 32-bit integer range is automatically translated to
+# integer64, per the connection setting earlier
+DBI::dbGetQuery(
+  con.bigint, "SELECT CAST(POW(2, 31) AS BIGINT) AS bigint_integer64"
+)
+```
+
+1. If you only want to specify `bigint` for a particular query when using the
+`dplyr` interface without affecting other queries, you can pass `bigint` to the
+`collect()` call.
+
+```{r collect_bigint, eval = TRUE}
+tbl.bigint <- dplyr::tbl(
+  con, sql("SELECT CAST(POW(2, 31) AS BIGINT) AS bigint")
+)
+
+# Default collect() generates a warning and returns NA
+dplyr::collect(tbl.bigint)
+
+# Passing bigint to collect() specifies BIGINT treatment
+dplyr::collect(tbl.bigint, bigint = "integer64")
+```
+
 ## Connecting to Trino
 
 To connect to Trino you must set the `use.trino.headers` parameter so `RPresto`
@@ -194,13 +285,13 @@ functionality is supported.
 ```{r, eval=FALSE}
 con.trino <- DBI::dbConnect(
   RPresto::Presto(),
-  use.trino.headers=TRUE,
-  host="http://localhost",
-  port=7777,
-  user=Sys.getenv("USER"),
-  schema="<schema>",
-  catalog="<catalog>",
-  source="<source>"
+  use.trino.headers = TRUE,
+  host = "http://localhost",
+  port = 8080,
+  user = Sys.getenv("USER"),
+  schema = "<schema>",
+  catalog = "<catalog>",
+  source = "<source>"
 )
 ```
 
@@ -216,13 +307,13 @@ Set `use.trino.headers` if you want to pass extraCredentials through the
 ```{r, eval=FALSE}
 con <- DBI::dbConnect(
   RPresto::Presto(),
-  host="http://localhost",
-  port=7777,
-  user=Sys.getenv("USER"),
-  schema="<schema>",
-  catalog="<catalog>",
-  source="<source>",
-  extra.credentials="test.token.foo=bar",
+  host = "http://localhost",
+  port = 7777,
+  user = Sys.getenv("USER"),
+  schema = "<schema>",
+  catalog = "<catalog>",
+  source = "<source>",
+  extra.credentials = "test.token.foo=bar",
 )
 ```
 
@@ -231,8 +322,7 @@ con <- DBI::dbConnect(
 Presto exposes its interface via a REST based API[^1]. We utilize the
 [httr](https://github.com/r-lib/httr) package to make the API calls and
 use [jsonlite](https://github.com/jeroen/jsonlite) to reshape the
-data into a `tibble`. Note that as of now, only read operations are
-supported.
+data into a `tibble`.
 
 RPresto has been tested on Presto 0.100.
 
@@ -253,3 +343,5 @@ description of the API.
 [9]: https://dbplyr.tidyverse.org/
 [10]: https://dplyr.tidyverse.org/reference/tbl.html
 [11]: https://dplyr.tidyverse.org/reference/copy_to.html
+[12]: https://bigrquery.r-dbi.org/reference/bigquery.html
+[13]: https://rpostgres.r-dbi.org/reference/postgres
