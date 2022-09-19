@@ -163,7 +163,8 @@ get.process.func <- function(prf) {
     function(x) {
       if (!requireNamespace("lubridate", quietly = TRUE)) {
         stop("The [", x$name_, "] field is a TIMESTAMP field. Please install ",
-          "the lubridate package before importing it to R.",
+          "the lubridate package or cast the field to VARCHAR before ",
+          "importing it to R.",
           call. = FALSE
         )
       }
@@ -179,7 +180,8 @@ get.process.func <- function(prf) {
     function(x) {
       if (!requireNamespace("hms", quietly = TRUE)) {
         stop("The [", x$name_, "] field is a TIME field. Please ",
-          "install the hms package before importing it to R.",
+          "install the hms package or cast the field to VARCHAR before ",
+          "importing it to R.",
           call. = FALSE
         )
       }
@@ -252,7 +254,8 @@ create.empty.tibble <- function(schema) {
         } else if (prf$type_ %in% c("PRESTO_TIME", "PRESTO_TIME_WITH_TZ")) {
           if (!requireNamespace("hms", quietly = TRUE)) {
             stop("The [", prf$name_, "] field is a TIME field. Please ",
-              "install the hms package before importing it to R.",
+              "install the hms package or cast the field to VARCHAR before ",
+              "importing it to R.",
               call. = FALSE
             )
           }
@@ -264,9 +267,9 @@ create.empty.tibble <- function(schema) {
           )
         ) {
           if (!requireNamespace("lubridate", quietly = TRUE)) {
-            stop("The [", prf$name_, "] field is an INTERVAL YEAR TO MONTH ",
-              "field. Please install the lubridate package before ",
-              "importing it to R.",
+            stop("The [", prf$name_, "] field is an INTERVAL ",
+              "field. Please install the lubridate package or cast the field ",
+              "to VARCHAR before importing it to R.",
               call. = FALSE
             )
           }
