@@ -67,7 +67,7 @@ parse.time_with_tz <- function(x, timezone) {
     )
   }
   if (!requireNamespace("lubridate", quietly = TRUE)) {
-    stop("The [", x$name_, "] field is a TIMESTAMP WITH TIMEZONE ",
+    stop("The [", x$name_, "] field is a TIME WITH TIMEZONE ",
       "field. Please install the lubridate package or cast the field to ",
       "VARCHAR before importing it to R.",
       call. = FALSE
@@ -104,7 +104,7 @@ parse.interval_year_to_month <- function(x) {
 
 parse.interval_day_to_second <- function(x) {
   if (!requireNamespace("lubridate", quietly = TRUE)) {
-    stop("The [", x$name_, "] field is an INTERVAL YEAR TO MONTH ",
+    stop("The [", x$name_, "] field is an INTERVAL DAY TO SECOND ",
       "field. Please install the lubridate package or cast the field to ",
       "other types before importing it to R.",
       call. = FALSE
