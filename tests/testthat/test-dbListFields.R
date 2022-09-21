@@ -36,14 +36,14 @@ test_that("dbListFields works with mock - PrestoConnection", {
         "http://localhost:8000/v1/statement",
         status_code = 200,
         state = "QUEUED",
-        request_body = 'SELECT \\* FROM "two_columns" LIMIT 0',
+        request_body = 'SHOW COLUMNS FROM "two_columns"',
         next_uri = "http://localhost:8000/query_1/1"
       ),
       mock_httr_response(
         "http://localhost:8000/v1/statement",
         status_code = 200,
         state = "QUEUED",
-        request_body = 'SELECT \\* FROM "__non_existent_table__" LIMIT 0',
+        request_body = 'SHOW COLUMNS FROM "__non_existent_table__"',
         next_uri = "http://localhost:8000/query_2/1",
         query_id = "query_2"
       )
@@ -53,8 +53,7 @@ test_that("dbListFields works with mock - PrestoConnection", {
         "http://localhost:8000/query_1/1",
         status_code = 200,
         data = data.frame(
-          column1 = integer(0),
-          column2 = logical(0)
+          Column = c("column1", "column2")
         ),
         state = "FINISHED",
       ),

@@ -15,7 +15,8 @@ setMethod(
   c("PrestoConnection", "character"),
   function(conn, name, ...) {
     quoted.name <- DBI::dbQuoteIdentifier(conn, name)
-    names(dbGetQuery(conn, paste("SELECT * FROM", quoted.name, "LIMIT 0")))
+    res <- dbGetQuery(conn, paste("SHOW COLUMNS FROM", quoted.name))
+    return(res$Column)
   }
 )
 
