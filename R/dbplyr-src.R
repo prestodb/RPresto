@@ -102,6 +102,8 @@ src_presto <- function(catalog = NULL,
 #' @param src A presto src created with `src_presto`.
 #' @param from Either a string giving the name of table in database, or
 #'   [dplyr::sql()] described a derived table or compound join.
+#' @param vars Provide column names as a character vector
+#'   to avoid retrieving them from the database.
 #' @examples
 #' \dontrun{
 #' # First create a database connection with src_presto, then reference a tbl
@@ -118,9 +120,18 @@ src_presto <- function(catalog = NULL,
 #' }
 #' @rdname dplyr_source_function_implementations
 #' @keywords internal
-tbl.src_presto <- function(src, from, ...) {
+tbl.src_presto <- function(src, from, ..., vars = NULL) {
   subclass <- class(src$con)[[1]]
-  dbplyr::tbl_sql(c("presto", subclass, "dbi"), src = src, from = from, ...)
+  # dbListFields uses SHOW COLUMNS to get field names of a table
+  if (!dbplyr::is.sql(from)) {
+    name <- dbplyr::as.sql(from, con = src$con)
+    if (is.null(vars)) {
+      vars <- dbListFields(src$con, name)
+    }
+  }
+  dbplyr::tbl_sql(
+    c("presto", subclass, "dbi"), src = src, from = from, vars = vars, ...
+  )
 }
 
 #' Create a remote database source table using a PrestoConnection
@@ -261,7 +272,7 @@ compute.tbl_presto <- function(x, name, temporary = FALSE, ..., cte = FALSE) {
       dbplyr::remote_con(x), name, sql, temporary = temporary, ...
     )
   }
-  dplyr::tbl(dbplyr::remote_src(x), dbplyr::as.sql(name), colnames(x)) %>%
+  dplyr::tbl(src = dbplyr::remote_src(x), from = dbplyr::as.sql(name), vars = colnames(x)) %>%
     dplyr::group_by(!!!rlang::syms(dbplyr::op_grps(x))) %>%
     dbplyr::window_order(!!!dbplyr::op_sort(x))
 }
