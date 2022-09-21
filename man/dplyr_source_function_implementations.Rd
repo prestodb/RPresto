@@ -7,7 +7,7 @@
 \alias{copy_to.PrestoConnection}
 \title{dplyr integration to connect to a table in a database.}
 \usage{
-\method{tbl}{src_presto}(src, from, ...)
+\method{tbl}{src_presto}(src, from, ..., vars = NULL)
 
 \method{tbl}{PrestoConnection}(conn, from, ...)
 
@@ -36,6 +36,9 @@
 \code{\link[dbplyr:sql]{dbplyr::sql()}} string.}
 
 \item{...}{Passed on to \code{\link[dbplyr:tbl_sql]{dbplyr::tbl_sql()}}}
+
+\item{vars}{Provide column names as a character vector
+to avoid retrieving them from the database.}
 
 \item{conn}{A \code{PrestoConnection} object produced by \code{DBI::dbConnect()}.}
 
