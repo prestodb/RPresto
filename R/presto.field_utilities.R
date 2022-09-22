@@ -17,8 +17,11 @@ print.presto.field <- function(prf, prefix = "", ...) {
   cat(prefix, "..Is parent Map:  ", prf$is_parent_map_, "\n", sep = "")
   cat(prefix, "..Is parent Array:  ", prf$is_parent_array_, "\n", sep = "")
   cat(prefix, "..Fields:  ", length(prf$fields_), " fields\n", sep = "")
-  if (!is.na(prf$timezone_)) {
-    cat(prefix, "..Timezone:  ", prf$timezone_, "\n", sep = "")
+  if (!is.na(prf$session_timezone_)) {
+    cat(prefix, "..Session time zone:  ", prf$session_timezone_, "\n", sep = "")
+  }
+  if (!is.na(prf$output_timezone_)) {
+    cat(prefix, "..Output time zone:  ", prf$output_timezone_, "\n", sep = "")
   }
   if (length(prf$fields_) > 0) {
     for (f in prf$fields_) {
@@ -32,16 +35,9 @@ is_simple_type <- function(prf) {
   return((!prf$type_ %in% c("PRESTO_ROW", "PRESTO_MAP")))
 }
 
-parse.timestamp <- function(x, timezone) {
-  if (!requireNamespace("lubridate", quietly = TRUE)) {
-    stop("The [", x$name_, "] field is a TIMESTAMP WITH TIMEZONE ",
-      "field. Please install the lubridate package or cast the field to ",
-      "VARCHAR in Presto before importing it to R.",
-      call. = FALSE
-    )
-  }
+parse.timestamp_with_tz <- function(x, output_timezone) {
   if (is.na(x)) {
-    return(as.POSIXct(x, tz = timezone))
+    return(as.POSIXct(x, tz = output_timezone))
   }
   # A time stamp with timezone has 3 parts separated by a spcae
   # e.g. 2000-01-01 00:01:02 America/Los_Angeles
@@ -72,10 +68,10 @@ parse.timestamp <- function(x, timezone) {
       tz = ifelse(is.na(parts[3]), "", parts[3])
     )
   }
-  return(lubridate::with_tz(parsed_ts_with_tz, tz = timezone))
+  return(lubridate::with_tz(parsed_ts_with_tz, tz = output_timezone))
 }
 
-parse.time_with_tz <- function(x, timezone) {
+parse.time_with_tz <- function(x, output_timezone, timestamp) {
   if (!requireNamespace("hms", quietly = TRUE)) {
     stop("The [", x$name_, "] field is a TIME WITH TIME ZONE ",
       "field. Please install the hms package or cast the field to VARCHAR ",
@@ -83,37 +79,24 @@ parse.time_with_tz <- function(x, timezone) {
       call. = FALSE
     )
   }
-  if (!requireNamespace("lubridate", quietly = TRUE)) {
-    stop("The [", x$name_, "] field is a TIME WITH TIMEZONE ",
-      "field. Please install the lubridate package or cast the field to ",
-      "VARCHAR before importing it to R.",
-      call. = FALSE
-    )
-  }
   if (is.na(x)) {
-    return(hms::as_hms(as.POSIXct(x, tz = timezone)))
+    return(hms::as_hms(as.POSIXct(x, tz = output_timezone)))
   }
   # Trino TIME WITH TIME ZONE type uses a different format
   if (stringi::stri_detect_regex(x, ".+[\\+\\-]\\d\\d:\\d\\d")) {
     x <- stringi::stri_replace_first_regex(x, "([\\+\\-])", " $1")
   }
-  placeholder_date <- "2000-01-01"
-  datetime_with_tz <- parse.timestamp(
+  # Use query execution date as the placeholder date
+  placeholder_date <- as.character(as.Date(timestamp))
+  datetime_with_tz <- parse.timestamp_with_tz(
     paste(placeholder_date, x, sep = " "),
-    timezone = timezone
+    output_timezone = output_timezone
   )
   time_with_tz <- hms::as_hms(datetime_with_tz)
   return(time_with_tz)
 }
 
 parse.interval_year_to_month <- function(x) {
-  if (!requireNamespace("lubridate", quietly = TRUE)) {
-    stop("The [", x$name_, "] field is an INTERVAL YEAR TO MONTH ",
-      "field. Please install the lubridate package or cast the field to ",
-      "other types before importing it to R.",
-      call. = FALSE
-    )
-  }
   if (is.na(x)) {
     return(x)
   }
@@ -124,13 +107,6 @@ parse.interval_year_to_month <- function(x) {
 }
 
 parse.interval_day_to_second <- function(x) {
-  if (!requireNamespace("lubridate", quietly = TRUE)) {
-    stop("The [", x$name_, "] field is an INTERVAL DAY TO SECOND ",
-      "field. Please install the lubridate package or cast the field to ",
-      "other types before importing it to R.",
-      call. = FALSE
-    )
-  }
   if (is.na(x)) {
     return(x)
   }

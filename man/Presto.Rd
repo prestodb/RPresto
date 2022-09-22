@@ -16,7 +16,8 @@ Presto(...)
   host = "localhost",
   port = 8080,
   source = methods::getPackageName(),
-  session.timezone = "UTC",
+  session.timezone = "",
+  output.timezone = "",
   parameters = list(),
   ctes = list(),
   request.config = httr::config(),
@@ -45,10 +46,14 @@ Presto(...)
 
 \item{source}{Source to specify for the connection}
 
-\item{session.timezone}{Time zone to use for the connection. Presto returns
+\item{session.timezone}{Time zone of the Presto server. Presto returns
 timestamps without time zones with respect to this value. The time
 arithmetic (e.g. adding hours) will also be done in the given time
-zone. See the session.timezone tests for examples.}
+zone. This value is passed to Presto server via the request headers.}
+
+\item{output.timezone}{The time zone using which TIME WITH TZ and TIMESTAMP
+values in the output should be represented. Default to the Presto
+server timezone (use \verb{show(<PrestoConnection>)} to see).}
 
 \item{parameters}{A \code{\link[=list]{list()}} of extra parameters to be passed in
 the \sQuote{X-Presto-Session} header}

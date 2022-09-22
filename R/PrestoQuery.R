@@ -60,6 +60,7 @@ wait <- function() {
 #' @slot .conn A PrestoConnection object
 #' @slot .statement The query statement
 #' @slot .id The query ID returned after the first POST request
+#' @slot .timestamp The timestamp of the query execution
 #' @slot .bigint How BIGINT fields should be converted to an R class
 #' @slot .state The query state. This changes every time the query advances to
 #'       the next stage
@@ -80,6 +81,7 @@ PrestoQuery <- setRefClass("PrestoQuery",
     ".conn",
     ".statement",
     ".id",
+    ".timestamp",
     ".bigint",
     # mutable depending on the stage of the query
     ".state",
@@ -238,6 +240,8 @@ PrestoQuery <- setRefClass("PrestoQuery",
         bigint = .bigint %||% .conn@bigint
       )
       post()
+      .timestamp <<-
+        lubridate::with_tz(.response$date, tz = .conn@session.timezone)
       responseToContent()
       .id <<- .content$id
       updateQuery()
@@ -312,7 +316,9 @@ PrestoQuery <- setRefClass("PrestoQuery",
     extractData = function() {
       df <- extract.data(
         .content,
-        timezone = .conn@session.timezone,
+        session.timezone = .conn@session.timezone,
+        output.timezone = .conn@output.timezone,
+        timestamp = .timestamp,
         bigint = .bigint %||% .conn@bigint
       )
       return(df)

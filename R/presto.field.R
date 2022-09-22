@@ -53,7 +53,9 @@ parse.presto.type <- function(presto_type) {
 create.presto.field <- function(name, type, key_type = NA_character_,
                                 is_array = NA, fields = list(),
                                 is_parent_map = FALSE, is_parent_array = FALSE,
-                                timezone = NA_character_) {
+                                session_timezone = NA_character_,
+                                output_timezone = NA_character_,
+                                timestamp = as.POSIXct(NULL)) {
   prf <- list()
   prf$name_ <- name
   prf$type_ <- parse.presto.type(type)
@@ -62,14 +64,16 @@ create.presto.field <- function(name, type, key_type = NA_character_,
   prf$is_map_ <- (type == "map")
   prf$is_row_ <- (type == "row")
   prf$fields_ <- fields
-  prf$timezone_ <- timezone
+  prf$session_timezone_ <- session_timezone
+  prf$output_timezone_ <- output_timezone
+  prf$timestamp_ <- timestamp
   prf$is_parent_map_ <- is_parent_map
   prf$is_parent_array_ <- is_parent_array
   class(prf) <- "presto.field"
   return(prf)
 }
 
-init.presto.field.from.json <- function(column.list, timezone, is_parent_map = FALSE, is_parent_array = FALSE) {
+init.presto.field.from.json <- function(column.list, session.timezone, output.timezone, timestamp, is_parent_map = FALSE, is_parent_array = FALSE) {
   stopifnot(is.list(column.list))
 
   name <- purrr::pluck(column.list, "name")
@@ -107,7 +111,7 @@ init.presto.field.from.json <- function(column.list, timezone, is_parent_map = F
       )
     )
     fields <- purrr::map(
-      fields_json, init.presto.field.from.json, timezone,
+      fields_json, init.presto.field.from.json, session.timezone, output.timezone, timestamp,
       is_parent_map = TRUE, is_parent_array = is_array
     )
   }
@@ -132,7 +136,7 @@ init.presto.field.from.json <- function(column.list, timezone, is_parent_map = F
         purrr::pluck(type_signature, "arguments", i, "value", "typeSignature")
     }
     fields <- purrr::map(
-      fields_json, init.presto.field.from.json, timezone
+      fields_json, init.presto.field.from.json, session.timezone, output.timezone, timestamp,
     )
   }
 
@@ -145,7 +149,7 @@ init.presto.field.from.json <- function(column.list, timezone, is_parent_map = F
   ) {
     prf <- create.presto.field(
       name, type, key_type, is_array, fields, is_parent_map, is_parent_array,
-      timezone
+      session.timezone, output.timezone, timestamp
     )
   } else {
     prf <- create.presto.field(
@@ -173,19 +177,15 @@ get.process.func <- function(prf) {
     function(x) as.Date(purrr::flatten_chr(x))
   } else if (prf$type_ == "PRESTO_TIMESTAMP") {
     function(x) {
-      if (!requireNamespace("lubridate", quietly = TRUE)) {
-        stop("The [", x$name_, "] field is a TIMESTAMP field. Please install ",
-          "the lubridate package or cast the field to VARCHAR before ",
-          "importing it to R.",
-          call. = FALSE
-        )
-      }
-      lubridate::ymd_hms(purrr::flatten_chr(x), tz = prf$timezone_)
+      lubridate::with_tz(
+        lubridate::ymd_hms(purrr::flatten_chr(x), tz = prf$session_timezone_),
+        tz = prf$output_timezone_
+      )
     }
   } else if (prf$type_ == "PRESTO_TIMESTAMP_WITH_TZ") {
     function(x) {
       unlist_with_attr(
-        purrr::map(x, parse.timestamp, timezone = prf$timezone_)
+        purrr::map(x, parse.timestamp_with_tz, output_timezone = prf$output_timezone_)
       )
     }
   } else if (prf$type_ == "PRESTO_TIME") {
@@ -202,7 +202,11 @@ get.process.func <- function(prf) {
   } else if (prf$type_ == "PRESTO_TIME_WITH_TZ") {
     function(x) {
       unlist_with_attr(
-        purrr::map(x, parse.time_with_tz, timezone = prf$timezone_)
+        purrr::map(
+          x,
+          parse.time_with_tz,
+          output_timezone = prf$output_timezone_, timestamp = prf$timestamp_
+        )
       )
     }
   } else if (prf$type_ == "PRESTO_INTERVAL_YEAR_TO_MONTH") {
@@ -278,13 +282,6 @@ create.empty.tibble <- function(schema) {
             "PRESTO_INTERVAL_DAY_TO_SECOND"
           )
         ) {
-          if (!requireNamespace("lubridate", quietly = TRUE)) {
-            stop("The [", prf$name_, "] field is an INTERVAL ",
-              "field. Please install the lubridate package or cast the field ",
-              "to VARCHAR before importing it to R.",
-              call. = FALSE
-            )
-          }
           lubridate::duration(integer(0))
         } else if (prf$type_ == "PRESTO_UNKNOWN") {
           character(0)
@@ -436,13 +433,17 @@ organize.data.by.schema <- function(data, schema, keep_names = TRUE) {
 
 extract.data <-
   function(response.content,
-           timezone,
+           session.timezone,
+           output.timezone,
+           timestamp,
            bigint = c("integer", "integer64", "numeric", "character")) {
     bigint <- match.arg(bigint)
     columns <- response.content$columns
     schema <- purrr::map(
       columns, init.presto.field.from.json,
-      timezone = timezone
+      session.timezone = session.timezone,
+      output.timezone = output.timezone,
+      timestamp = timestamp
     )
     data <- response.content$data
     data <- organize.data.by.schema(data, schema)
