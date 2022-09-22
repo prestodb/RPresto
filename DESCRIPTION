@@ -30,11 +30,11 @@ Imports:
     tibble,
     bit64,
     rlang,
-    lifecycle
+    lifecycle,
+    lubridate
 Suggests:
     testthat,
     hms,
-    lubridate,
     knitr,
     rmarkdown
 License: BSD_3_clause + file LICENSE

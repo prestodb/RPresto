@@ -37,6 +37,11 @@ more robust mapping between Presto data types and R types
   quotes. (#174)
 * Add an experimental feature to support common table expressions (CTEs) in both
   DBI and dplyr backends (see `vignette("common-table-expressions")`) (#175)
+* `dbConnect()` now uses empty string "" (rather than UTC) as the default
+  session.timezone which translates to the Presto server timezone.
+* `dbConnect()` and `src_presto()` gain an `output.timezone` argument which can
+  be used to control how `TIME WITH TZ` and `TIMESTAMP` values are represented
+  in the output tibble.
 
 # RPresto 1.3.8
 

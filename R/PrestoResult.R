@@ -54,6 +54,7 @@ setMethod(
         collapse = " / "
       ), "\n",
       "Session Time Zone: ", object@connection@session.timezone, "\n",
+      "Output Time Zone: ", object@connection@output.timezone, "\n",
       "BIGINT cast to: ", object@connection@bigint, "\n",
       sep = ""
     )

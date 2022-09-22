@@ -40,6 +40,10 @@ test.timezone <- function() {
   return("Asia/Kathmandu")
 }
 
+test.output.timezone <- function() {
+  return("America/New_York")
+}
+
 test.locale <- function() {
   if (.Platform[["OS.type"]] == "windows") {
     return("Turkish_Turkey.1254")
@@ -302,6 +306,18 @@ mock_httr_replies <- function(...) {
 
       if (url.matches && body.matches) {
         return(item[["response"]])
+      } else if (
+        url == "http://localhost:8000/v1/statement" &&
+          body == "SELECT current_timezone() AS tz"
+      ) {
+        item <- mock_httr_response(
+          "http://localhost:8000/v1/statement",
+          status_code = 200,
+          state = "FINISHED",
+          request_body = "SELECT current_timezone() AS tz",
+          data = data.frame(tz = Sys.timezone(), stringsAsFactors = FALSE),
+        )
+        return(item[["response"]])
       }
     }
 
@@ -401,35 +417,61 @@ setup_live_dplyr_connection <- function(session.timezone = "",
 }
 
 setup_mock_connection <- function() {
-  mock.conn <- dbConnect(
-    RPresto::Presto(),
-    schema = "test",
-    catalog = "catalog",
-    host = "http://localhost",
-    port = 8000,
-    source = "RPresto Test",
-    session.timezone = test.timezone(),
-    user = Sys.getenv("USER")
+  with_mock(
+    `httr::POST` = mock_httr_replies(
+      mock_httr_response(
+        "http://localhost:8000/v1/statement",
+        status_code = 200,
+        state = "FINISHED",
+        request_body = "SELECT current_timezone() AS tz",
+        data = data.frame(tz = Sys.timezone(), stringsAsFactors = FALSE)
+      )
+    ),
+    {
+      mock.conn <- dbConnect(
+        RPresto::Presto(),
+        schema = "test",
+        catalog = "catalog",
+        host = "http://localhost",
+        port = 8000,
+        source = "RPresto Test",
+        session.timezone = test.timezone(),
+        user = Sys.getenv("USER")
+      )
+      return(mock.conn)
+    }
   )
-  return(mock.conn)
 }
 
 setup_mock_dplyr_connection <- function() {
   if (!requireNamespace("dplyr", quietly = TRUE)) {
     skip("Skipping dplyr tests because we can't load dplyr")
   }
-  db <- src_presto(
-    schema = "test",
-    catalog = "catalog",
-    host = "http://localhost",
-    port = 8000,
-    source = "RPresto Test",
-    user = Sys.getenv("USER"),
-    session.timezone = test.timezone(),
-    parameters = list()
-  )
+  with_mock(
+    `httr::POST` = mock_httr_replies(
+      mock_httr_response(
+        "http://localhost:8000/v1/statement",
+        status_code = 200,
+        state = "FINISHED",
+        request_body = "SELECT current_timezone() AS tz",
+        data = data.frame(tz = Sys.timezone(), stringsAsFactors = FALSE)
+      )
+    ),
+    {
+      db <- src_presto(
+        schema = "test",
+        catalog = "catalog",
+        host = "http://localhost",
+        port = 8000,
+        source = "RPresto Test",
+        user = Sys.getenv("USER"),
+        session.timezone = test.timezone(),
+        parameters = list()
+      )
 
-  return(list(db = db, iris_table_name = "iris_table"))
+      return(list(db = db, iris_table_name = "iris_table"))
+    }
+  )
 }
 
 # helper functions
@@ -440,4 +482,30 @@ data_frame <- function(...) {
 get_nrow <- function(con, tbl) {
   df <- dbGetQuery(con, paste("SELECT COUNT(*) AS n FROM", tbl))
   return(df$n)
+}
+
+tz_to_offset_sec <- function(timezone, dt = Sys.Date()) {
+  offset <- as.integer(lubridate::force_tz(as.POSIXlt(dt), tz = timezone)$gmtoff)
+  if (is.null(offset)) offset <- 0L
+  return(offset)
+}
+
+tz_to_offset_hr <- function(timezone, dt = Sys.Date()) {
+  offset_sec <- tz_to_offset_sec(timezone, dt)
+  as.integer(floor(abs(offset_sec) / 3600))
+}
+
+tz_to_offset_min <- function(timezone, dt = Sys.Date()) {
+  offset_sec <- tz_to_offset_sec(timezone, dt)
+  as.integer((abs(offset_sec) %% 3600) / 60)
+}
+
+tz_to_offset <- function(timezone, dt = Sys.Date()) {
+  offset_sec <- tz_to_offset_sec(timezone, dt)
+  offset_sign <- ifelse(offset_sec >= 0, "+", "-")
+  offset_hour <- tz_to_offset_hr(timezone, dt)
+  offset_hour_string <- stringi::stri_pad_left(offset_hour, 2, "0")
+  offset_min <- tz_to_offset_min(timezone, dt)
+  offset_min_string <- stringi::stri_pad_left(offset_min, 2, "0")
+  paste0(offset_sign, offset_hour_string, ":", offset_min_string)
 }

@@ -171,7 +171,11 @@ test_that("all data types work", {
       type_date = as.Date("2015-03-01"),
       type_time = hms::as_hms("01:02:03.456"),
       type_time_with_timezone = hms::as_hms("06:47:03.456"),
-      type_timestamp = as.POSIXct("2001-08-22 03:04:05.321", tz = test.timezone()),
+      type_timestamp =
+        lubridate::with_tz(
+          as.POSIXct("2001-08-22 03:04:05.321", tz = conn@session.timezone),
+          tz = test.timezone()
+        ),
       type_timestamp_with_timezone = as.POSIXct("2001-08-22 08:49:05.321", tz = test.timezone()),
       type_interval_year_to_month = lubridate::duration(13, units = "months"),
       type_interval_day_to_second =

@@ -24,7 +24,9 @@ source("utilities.R")
 # time with timezone type
 # interval (year to month) type
 # interval (day to second) type
-.test_primitive_types <- function(conn, timezone = "America/Los_Angeles") {
+.test_primitive_types <- function(
+  conn, timezone = "America/Los_Angeles", type = "Presto"
+) {
   # bool type
   expect_equal_data_frame(
     df.boolean <- dbGetQuery(conn, "select true as type_bool"),
@@ -101,7 +103,10 @@ source("utilities.R")
       "select timestamp '2000-01-01 01:02:03' as type_timestamp"
     ),
     tibble::tibble(
-      type_timestamp = as.POSIXct("2000-01-01 01:02:03", tz = test.timezone())
+      type_timestamp = lubridate::with_tz(
+        as.POSIXct("2000-01-01 01:02:03", tz = test.timezone()),
+        tz = test.timezone()
+      )
     )
   )
   expect_s3_class(df.timestamp$type_timestamp, "POSIXct")
@@ -111,14 +116,17 @@ source("utilities.R")
     df.timestamp_with_tz <- dbGetQuery(
       conn,
       paste0(
-        "select timestamp '2000-01-01 01:02:03 ",
-        timezone,
+        "select timestamp '2022-09-21 01:02:03 ",
+        ifelse(type == "Presto", timezone, tz_to_offset(timezone)),
         "' as type_timestamp_with_tz"
       )
     ),
     tibble::tibble(
       type_timestamp_with_tz =
-        as.POSIXct("2000-01-01 14:47:03", tz = test.timezone())
+        lubridate::with_tz(
+          as.POSIXct("2022-09-21 01:02:03", tz = timezone),
+          test.timezone()
+        )
     )
   )
   expect_s3_class(df.timestamp_with_tz$type_timestamp_with_tz, "POSIXct")
@@ -140,9 +148,23 @@ source("utilities.R")
   expect_equal_data_frame(
     df.time_with_tz <- dbGetQuery(
       conn,
-      paste0("select time '01:02:03 ", timezone, "' as type_time_with_tz")
+      paste0(
+        "select time '01:02:03 ",
+        ifelse(type == "Presto", timezone, tz_to_offset(timezone)),
+        "' as type_time_with_tz"
+      )
     ),
-    tibble::tibble(type_time_with_tz = hms::as_hms("14:47:03"))
+    tibble::tibble(
+      type_time_with_tz = hms::as_hms(
+        lubridate::with_tz(
+          as.POSIXct(
+            paste(Sys.Date(), "01:02:03", sep = " "),
+            tz = timezone
+          ),
+          tz = test.timezone()
+        )
+      )
+    )
   )
   expect_s3_class(df.time_with_tz$type_time_with_tz, "difftime")
   expect_null(attr(df.time_with_tz$type_time_with_tz[[1]], "tz"))
@@ -188,15 +210,15 @@ test_that("Queries return the correct primitive types", {
     session.timezone = test.timezone(),
     type = "Presto"
   )
-  .test_primitive_types(conn.presto)
+  .test_primitive_types(conn.presto, type = "Presto")
   conn.trino <- setup_live_connection(
     session.timezone = test.timezone(),
     type = "Trino"
   )
-  .test_primitive_types(conn.trino, timezone = "-08:00")
+  .test_primitive_types(conn.trino, type = "Trino")
 })
 
-.test_primitive_arrays <- function(conn, timezone = "America/Los_Angeles") {
+.test_primitive_arrays <- function(conn, timezone = "America/Los_Angeles", type = "Presto") {
   # bool type
   expect_equal_data_frame(
     df.boolean <- dbGetQuery(conn, "select array[true, false] as type_bool"),
@@ -308,9 +330,15 @@ test_that("Queries return the correct primitive types", {
     ),
     tibble::tibble(
       type_timestamp = list(
-        c(
-          as.POSIXct("2000-01-01 01:02:03", tz = test.timezone()),
-          as.POSIXct("2000-01-02 01:02:03", tz = test.timezone())
+        lubridate::with_tz(
+          as.POSIXct(
+            c(
+              "2000-01-01 01:02:03",
+              "2000-01-02 01:02:03"
+            ),
+            tz = test.timezone()
+          ),
+          tz = test.timezone()
         )
       )
     )
@@ -327,16 +355,22 @@ test_that("Queries return the correct primitive types", {
       paste0("
       select
         array[
-          timestamp '2000-01-01 01:02:03 ", timezone, "',
-          timestamp '2000-01-02 01:02:03 ", timezone, "'
+          timestamp '2022-09-21 01:02:03 ", ifelse(type == "Presto", timezone, tz_to_offset(timezone)), "',
+          timestamp '2022-09-21 01:02:03 ", ifelse(type == "Presto", timezone, tz_to_offset(timezone)), "'
         ] as type_timestamp_with_tz
       ")
     ),
     tibble::tibble(
       type_timestamp_with_tz = list(
-        c(
-          as.POSIXct("2000-01-01 14:47:03", tz = test.timezone()),
-          as.POSIXct("2000-01-02 14:47:03", tz = test.timezone())
+        lubridate::with_tz(
+          as.POSIXct(
+            c(
+              "2022-09-21 01:02:03",
+              "2022-09-21 01:02:03"
+            ),
+            tz = timezone
+          ),
+          tz = test.timezone()
         )
       )
     )
@@ -368,14 +402,25 @@ test_that("Queries return the correct primitive types", {
       paste0("
       select
         array[
-          time '01:02:03 ", timezone, "',
-          time '04:05:06 ", timezone, "'
+          time '01:02:03 ", ifelse(type == "Presto", timezone, tz_to_offset(timezone)), "',
+          time '04:05:06 ", ifelse(type == "Presto", timezone, tz_to_offset(timezone)), "'
         ] as type_time_with_tz
       ")
     ),
     tibble::tibble(
       type_time_with_tz = list(
-        c(hms::as_hms("14:47:03"), hms::as_hms("17:50:06"))
+        hms::as_hms(
+          lubridate::with_tz(
+            as.POSIXct(
+              c(
+                paste(Sys.Date(), "01:02:03", sep = ""),
+                paste(Sys.Date(), "04:05:06", sep = "")
+              ),
+              tz = timezone
+            ),
+            tz = test.timezone()
+          )
+        )
       )
     )
   )
@@ -447,12 +492,12 @@ test_that("Queries return the correct primitive types in arrays", {
     session.timezone = test.timezone(),
     type = "Presto"
   )
-  .test_primitive_arrays(conn.presto)
+  .test_primitive_arrays(conn.presto, type = "Presto")
   conn.trino <- setup_live_connection(
     session.timezone = test.timezone(),
     type = "Trino"
   )
-  .test_primitive_arrays(conn.trino, timezone = "-08:00")
+  .test_primitive_arrays(conn.trino, type = "Trino")
 })
 
 .test_maps <- function(conn) {
@@ -911,4 +956,102 @@ test_that("Empty output can be returned", {
   .test_empty(conn.presto)
   conn.trino <- setup_live_connection(type = "Trino")
   .test_empty(conn.trino)
+})
+
+.test_time_types <- function(
+  conn, timezone = "America/Los_Angeles", type = "Presto"
+) {
+  timestamp_date <- "2022-09-21"
+  timestamp_time <- "01:02:03.456"
+  timestamp_string <- paste(timestamp_date, timestamp_time, sep = " ")
+  # timestamp without explicit timezone
+  expect_equal_data_frame(
+    df.timestamp <- dbGetQuery(
+      conn,
+      paste0(
+        "select type_timestamp, ",
+        "timezone_hour(type_timestamp) as type_timestamp_offset_hr, ",
+        "timezone_minute(type_timestamp) as type_timestamp_offset_min ",
+        "from (select timestamp '", timestamp_string, "' as type_timestamp)"
+      )
+    ),
+    tibble::tibble(
+      type_timestamp = lubridate::with_tz(
+        as.POSIXct(timestamp_string, tz = test.timezone()),
+        tz = test.output.timezone()
+      ),
+      # session.timezone is used to interpret the timestamp
+      type_timestamp_offset_hr =
+        tz_to_offset_hr(test.timezone(), timestamp_date),
+      type_timestamp_offset_min =
+        tz_to_offset_min(test.timezone(), timestamp_date)
+    )
+  )
+  expect_s3_class(df.timestamp$type_timestamp, "POSIXct")
+  expect_equal(
+    attr(df.timestamp$type_timestamp[[1]], "tz"), test.output.timezone()
+  )
+  # timestamp with timezone
+  expect_equal_data_frame(
+    df.timestamp_with_tz <- dbGetQuery(
+      conn,
+      paste0(
+        "select type_timestamp_with_tz, ",
+        "cast(type_timestamp_with_tz as varchar) AS ",
+        "type_timestamp_with_tz_string ",
+        "from (select timestamp '", timestamp_string, " ",
+        ifelse(type == "Presto", timezone, tz_to_offset(timezone)),
+        "' as type_timestamp_with_tz)"
+      )
+    ),
+    tibble::tibble(
+      type_timestamp_with_tz =
+        lubridate::with_tz(
+          as.POSIXct(timestamp_string, tz = timezone),
+          test.output.timezone()
+        ),
+      type_timestamp_with_tz_string =
+        paste0(
+          as.character(
+            as.POSIXct(timestamp_string, tz = timezone),
+            digits = 3
+          ), " ",
+          ifelse(type == "Presto", timezone, tz_to_offset(timezone))
+        )
+    )
+  )
+  expect_s3_class(df.timestamp_with_tz$type_timestamp_with_tz, "POSIXct")
+  expect_equal(
+    attr(df.timestamp_with_tz$type_timestamp_with_tz[[1]], "tz"),
+    test.output.timezone()
+  )
+}
+
+test_that("output.timezone works", {
+  conn.presto <- setup_live_connection(
+    session.timezone = test.timezone(),
+    type = "Presto"
+  )
+  # session.timezone and output.timezone should be the safe by default
+  expect_equal(conn.presto@session.timezone, test.timezone())
+  expect_equal(conn.presto@output.timezone, test.timezone())
+  dbDisconnect(conn.presto)
+  conn.presto <- setup_live_connection(
+    session.timezone = test.timezone(),
+    output.timezone = test.output.timezone(),
+    type = "Presto"
+  )
+  # session.timezone and output.timezone can be set differently
+  expect_equal(conn.presto@session.timezone, test.timezone())
+  expect_equal(conn.presto@output.timezone, test.output.timezone())
+  .test_time_types(conn.presto, type = "Presto")
+  conn.trino <- setup_live_connection(
+    session.timezone = test.timezone(),
+    output.timezone = test.output.timezone(),
+    type = "Trino"
+  )
+  # session.timezone and output.timezone can be set differently
+  expect_equal(conn.trino@session.timezone, test.timezone())
+  expect_equal(conn.trino@output.timezone, test.output.timezone())
+  .test_time_types(conn.trino, type = "Trino")
 })
