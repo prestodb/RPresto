@@ -43,7 +43,7 @@ Important methods:
 | sqlCreateTableAs | PrestoConnection | Created | sqlCreateTableAs.R |
 | dbWriteTable | PrestoConnection | Implemented | dbWriteTable.R |
 | dbRemoveTable | PrestoConnection | Implemented | dbRemoveTable.R |
-| dbReadTable | PrestoConnection | Default | |
+| dbReadTable | PrestoConnection | Implemented | dbReadTable.R |
 | dbAppendtable | PrestoConnection | Not implemented | |
 | dbListFields | PrestoConnection | Implemented | dbListFields.R |
 | dbBegin | PrestoConnection | Not implemented | |
