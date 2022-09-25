@@ -8,6 +8,19 @@
 \description{
 Implements a 'DBI' compliant interface to Presto. Presto is an open source distributed SQL query engine for running interactive analytic queries against data sources of all sizes ranging from gigabytes to petabytes: \url{https://prestodb.io/}.
 }
+\section{Package options}{
+
+\describe{
+\item{\code{rpresto.max.rows}}{Max number of rows to be fetched before
+a warning is given.}
+
+\item{\code{rpresto.quiet}}{Verbose output during processing? The default
+value, \code{NA}, turns on verbose output for interactive queries that
+run longer than two seconds.  Use \code{FALSE} for immediate verbose
+output, \code{TRUE} for quiet operation.}
+}
+}
+
 \seealso{
 Useful links:
 \itemize{

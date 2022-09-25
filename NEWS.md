@@ -42,6 +42,8 @@ more robust mapping between Presto data types and R types
 * `dbConnect()` and `src_presto()` gain an `output.timezone` argument which can
   be used to control how `TIME WITH TZ` and `TIMESTAMP` values are represented
   in the output tibble.
+* `dbGetQuery()` and `dbSendQuery()` gain a `quiet` argument which defaults to
+  `getOption("rpresto.quiet")` which is `NA` if not set. (#191)
 
 # RPresto 1.3.8
 

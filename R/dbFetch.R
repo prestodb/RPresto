@@ -51,6 +51,19 @@ setMethod(
       res_list[[chunk.count]] <- chunk
       chunk.count <- chunk.count + 1
     }
+    if (res@query$.progress$finished) {
+      res@query$.progress$terminate()
+    }
+    max_rows <- getOption("rpresto.max.rows")
+    if (res@query$fetchedRowCount() >= max_rows) {
+      warning(
+        "You have loaded more rows than the maximum (", max_rows, ") into ",
+        "memory. ", "Please make sure that you're not fetching too much data. ",
+        "Consider sampling or aggregation before you return all the data. ",
+        "You can change the maximum rows using options(\"rpresto.max.rows\").",
+        call. = FALSE, immediate. = TRUE
+      )
+    }
     df <- .combine_results(res_list)
     return(df)
   }

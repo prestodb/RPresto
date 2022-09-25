@@ -31,7 +31,8 @@ Imports:
     bit64,
     rlang,
     lifecycle,
-    lubridate
+    lubridate,
+    progress
 Suggests:
     testthat,
     hms,
@@ -82,6 +83,7 @@ Collate:
     'request_headers.R'
     'sqlCreateTable.R'
     'sqlCreateTableAs.R'
+    'zzz.R'
 RoxygenNote: 7.2.1
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)

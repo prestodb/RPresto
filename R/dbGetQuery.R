@@ -7,8 +7,15 @@
 #' @include PrestoConnection.R
 NULL
 
-.dbGetQuery <- function(conn, statement, ..., statement_with_cte = NULL, cte_tables = c()) {
-  result <- dbSendQuery(conn, statement_with_cte %||% statement, ...)
+.dbGetQuery <- function(
+  conn, statement, ...,
+  statement_with_cte = NULL,
+  cte_tables = c(),
+  quiet = getOption("rpresto.quiet")
+) {
+  result <- dbSendQuery(
+    conn, statement_with_cte %||% statement, quiet = quiet, ...
+  )
   on.exit(dbClearResult(result))
   res <- try(
     {
@@ -46,7 +53,7 @@ NULL
 setMethod(
   "dbGetQuery",
   c("PrestoConnection", "character"),
-  function(conn, statement, ...) {
-    .dbGetQuery(conn, statement, ...)
+  function(conn, statement, ..., quiet = getOption("rpresto.quiet")) {
+    .dbGetQuery(conn, statement, quiet = quiet, ...)
   }
 )
