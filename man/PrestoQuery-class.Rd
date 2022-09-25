@@ -46,6 +46,10 @@ next stage}
 
 \item{\code{.post.data.fetched}}{A boolean flag indicating if data returned from the
 POST request has been fetched}
+
+\item{\code{.quiet}}{If a progress bar should be shown for long queries (which run
+for more than 2 seconds. Default to \code{NA} which turns on the
+progress bar for interactive queries.}
 }}
 
 

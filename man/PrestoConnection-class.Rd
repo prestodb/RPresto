@@ -44,7 +44,7 @@
 
 \S4method{dbExistsTable}{PrestoConnection,character}(conn, name, ...)
 
-\S4method{dbGetQuery}{PrestoConnection,character}(conn, statement, ...)
+\S4method{dbGetQuery}{PrestoConnection,character}(conn, statement, ..., quiet = getOption("rpresto.quiet"))
 
 \S4method{dbListFields}{PrestoConnection,character}(conn, name, ...)
 
@@ -54,7 +54,7 @@
 
 \S4method{dbRemoveTable}{PrestoConnection,character}(conn, name, ..., fail_if_missing = TRUE)
 
-\S4method{dbSendQuery}{PrestoConnection,character}(conn, statement, ...)
+\S4method{dbSendQuery}{PrestoConnection,character}(conn, statement, ..., quiet = getOption("rpresto.quiet"))
 
 \S4method{dbWriteTable}{PrestoConnection,character,data.frame}(
   conn,
@@ -110,6 +110,11 @@ A data frame: field types are generated using
 
 \item{overwrite}{a logical specifying whether to overwrite an existing table
 or not. Its default is \code{FALSE}.}
+
+\item{quiet}{If a progress bar should be shown for long queries (which run
+for more than 2 seconds. Default to \code{getOption("rpresto.quiet")} which
+if not set, defaults to \code{NA} which turns on the progress bar for
+interactive queries.}
 
 \item{pattern}{optional SQL pattern for filtering table names, e.g. '\%test\%'}
 

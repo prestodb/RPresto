@@ -74,7 +74,11 @@ wait <- function() {
 #' @slot .fetched.row.count How many rows of data have been fetched to R
 #' @slot .post.data.fetched A boolean flag indicating if data returned from the
 #'       POST request has been fetched
+#' @slot .quiet If a progress bar should be shown for long queries (which run
+#'       for more than 2 seconds. Default to `NA` which turns on the
+#'       progress bar for interactive queries.
 #' @keywords internal
+#' @importFrom progress progress_bar
 PrestoQuery <- setRefClass("PrestoQuery",
   fields = c(
     # immutable once the query is created
@@ -92,10 +96,14 @@ PrestoQuery <- setRefClass("PrestoQuery",
     ".content",
     # mutable when the result is fetched
     ".fetched.row.count",
-    ".post.data.fetched"
+    ".post.data.fetched",
+    ".progress",
+    ".quiet"
   ),
   methods = list(
-    initialize = function(conn, statement, ...) {
+    initialize = function(
+      conn, statement, ..., quiet = getOption("rpresto.quiet")
+    ) {
       dots <- list(...)
       if ("bigint" %in% names(dots)) {
         bigint <- dots$bigint
@@ -103,13 +111,17 @@ PrestoQuery <- setRefClass("PrestoQuery",
       } else {
         bigint <- NULL
       }
+      if (is.na(quiet)) {
+        quiet <- !interactive()
+      }
       initFields(
         .conn = conn,
         .statement = statement,
         .state = "",
         .fetched.row.count = 0L,
         .post.data.fetched = NA,
-        .bigint = bigint
+        .bigint = bigint,
+        .quiet = quiet
       )
     },
     # Getter functions
@@ -178,6 +190,14 @@ PrestoQuery <- setRefClass("PrestoQuery",
       .content <<- .response.to.content(.response)
       checkContentState()
     },
+    computeProgress = function() {
+      total.splits <- .stats$totalSplits
+      if ((.stats$scheduled %||% FALSE) && total.splits > 0) {
+        return(.stats$completedSplits / total.splits)
+      } else {
+        return(0)
+      }
+    },
     # Similar to the PrestoRequest.post method in the Presto Python client
     # Make a POST request to Presto and store the response
     post = function() {
@@ -245,6 +265,25 @@ PrestoQuery <- setRefClass("PrestoQuery",
       responseToContent()
       .id <<- .content$id
       updateQuery()
+      if (.quiet) {
+        .progress <<- list(
+          tick = function(...) {},
+          update = function(...) {},
+          terminate = function(...) {},
+          finished = TRUE
+        )
+      } else {
+        .progress <<- progress::progress_bar$new(
+          format = "  query :state [:bar] :percent in :elapsed",
+          clear = FALSE,
+          total = 100,
+          width = 80,
+          # Suppress progress bar for very short queries
+          show_after = 2
+        )
+        # Immediately tick() the progress bar for it to show up
+        .progress$tick(0, tokens = list(state = .state))
+      }
       df <- extractData()
       if ((NROW(df) | NCOL(df)) != 0) {
         # Store the extracted POST data in the result object
@@ -276,6 +315,8 @@ PrestoQuery <- setRefClass("PrestoQuery",
           get(),
           error = function(e) {
             state("FAILED")
+            .progress$update(1, tokens = list(state = .state))
+            .progress$terminate()
             stop(simpleError(
               paste0(
                 "Cannot fetch ", .next.uri, ", ",
@@ -286,6 +327,12 @@ PrestoQuery <- setRefClass("PrestoQuery",
         )
         responseToContent()
         updateQuery()
+        if (!.progress$finished) {
+          .progress$update(
+            ratio = computeProgress(),
+            tokens = list(state = .state)
+          )
+        }
         df <- extractData()
       }
       return(df)
