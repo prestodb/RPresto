@@ -19,6 +19,7 @@ knitr::opts_chunk$set(
 [![CRAN status](https://www.r-pkg.org/badges/version/RPresto)](https://CRAN.R-project.org/package=RPresto)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![test-coverage](https://github.com/prestodb/RPresto/actions/workflows/test-coverage.yaml/badge.svg)](https://github.com/prestodb/RPresto/actions/workflows/test-coverage.yaml)
+[![check-standard](https://github.com/prestodb/RPresto/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/prestodb/RPresto/actions/workflows/check-standard.yaml)
 <!-- badges: end -->
 
 RPresto is a [DBI](https://dbi.r-dbi.org/)-based adapter for
