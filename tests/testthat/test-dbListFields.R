@@ -28,6 +28,24 @@ test_that("dbListFields works with live database", {
   expect_true(dbClearResult(result))
 })
 
+test_that("dbListFields works with identifier", {
+  skip_if_not(presto_has_default())
+
+  conn <- DBI::dbConnect(
+    drv = Presto(),
+    host = "http://localhost",
+    port = 8080,
+    user = Sys.getenv("USER"),
+    catalog = "memory",
+    schema = "default"
+  )
+  DBI::dbWriteTable(conn, "iris", iris, overwrite = TRUE)
+  expect_equal(
+    DBI::dbListFields(conn, dbplyr::ident("iris")),
+    tolower(colnames(iris))
+  )
+})
+
 test_that("dbListFields works with mock - PrestoConnection", {
   conn <- setup_mock_connection()
   with_mock(

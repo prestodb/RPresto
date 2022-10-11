@@ -42,6 +42,39 @@ test_that("dplyr::tbl works", {
   )
 })
 
+test_that("cross-schema tbl works", {
+  skip_if_not(presto_has_default())
+
+  conn <- DBI::dbConnect(
+    drv = Presto(),
+    host = "http://localhost",
+    port = 8080,
+    user = Sys.getenv("USER"),
+    catalog = "memory",
+    schema = "default"
+  )
+  DBI::dbWriteTable(conn, "iris", iris, overwrite = TRUE)
+  if (!"testing" %in% DBI::dbGetQuery(conn, "SHOW SCHEMAS")$Schema) {
+    DBI::dbExecute(conn, "CREATE SCHEMA testing")
+  }
+  conn2 <- DBI::dbConnect(
+    drv = Presto(),
+    host = "http://localhost",
+    port = 8080,
+    user = Sys.getenv("USER"),
+    catalog = "memory",
+    schema = "testing"
+  )
+  DBI::dbWriteTable(conn2, "iris2", iris, overwrite = TRUE)
+
+  tbl_iris <- dplyr::tbl(conn, "iris")
+  tbl_iris2 <- dplyr::tbl(conn, dbplyr::in_schema("testing", "iris2"))
+  expect_equal_data_frame(
+    dplyr::collect(tbl_iris),
+    dplyr::collect(tbl_iris2)
+  )
+})
+
 test_that("bigint parameter works", {
   parts <- setup_live_dplyr_connection(bigint = "integer64")
   iris_presto <- dplyr::tbl(parts[["db"]], parts[["iris_table_name"]])

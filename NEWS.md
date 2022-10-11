@@ -1,5 +1,8 @@
 # RPresto 1.4.0.9000
 
+* `dbListFields` now works with identifier name which in turn supports the use
+  of `in_schema()` in `tbl()` (#200)
+
 # RPresto 1.4.0
 
 * Change maintainer to Jarod Meng (jarodm@fb.com)
