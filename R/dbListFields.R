@@ -14,8 +14,11 @@ setMethod(
   "dbListFields",
   c("PrestoConnection", "character"),
   function(conn, name, ...) {
-    quoted.name <- DBI::dbQuoteIdentifier(conn, name)
-    res <- dbGetQuery(conn, paste("SHOW COLUMNS FROM", quoted.name))
+    # If name is alrady IDENT, pass it as it is. Otherwise, quote it.
+    if (!dbplyr::is.ident(name)) {
+      name <- DBI::dbQuoteIdentifier(conn, name)
+    }
+    res <- dbGetQuery(conn, paste("SHOW COLUMNS FROM", name))
     return(res$Column)
   }
 )
