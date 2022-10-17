@@ -2,6 +2,7 @@
 
 * `dbListFields` now works with identifier name which in turn supports the use
   of `in_schema()` in `tbl()` (#200)
+* Fix an error whereby join query's CTEs are not properly retrieved (#203)
 
 # RPresto 1.4.0
 

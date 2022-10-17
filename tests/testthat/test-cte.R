@@ -65,3 +65,44 @@ test_that("CTEs work in dplyr backend", {
     RPresto:::is_cte_used(dbplyr::remote_query(iris_presto_mean_2_cte))
   )
 })
+
+test_that("Nested CTEs work", {
+  parts <- setup_live_dplyr_connection()
+  db <- parts[["db"]]
+  tablename <- parts[["iris_table_name"]]
+  iris_presto <- dplyr::tbl(db, tablename)
+  iris_presto.width <- dplyr::compute(
+    dplyr::summarize(
+      dplyr::group_by(iris_presto, species),
+      mean_sepal_length = mean(sepal_length, na.rm = TRUE)
+    ),
+    name = "iris_width", cte = TRUE
+  )
+  expect_equal(db$con@session$getCTENames(), c("iris_width"))
+  iris_presto.length <- dplyr::compute(
+    dplyr::summarize(
+      dplyr::group_by(iris_presto, species),
+      mean_sepal_width = mean(sepal_width, na.rm = TRUE)
+    ),
+    name = "iris_length", cte = TRUE
+  )
+  expect_equal(db$con@session$getCTENames(), c("iris_width", "iris_length"))
+  iris_presto.join <- dplyr::arrange(
+    dplyr::inner_join(
+      iris_presto.width, iris_presto.length, by = "species"
+    ),
+    species
+  )
+  iris_presto.join_cte <- dplyr::compute(
+    iris_presto.join,
+    name = "iris_join", cte = TRUE
+  )
+  expect_equal(
+    db$con@session$getCTENames(),
+    c("iris_width", "iris_length", "iris_join")
+  )
+  expect_equal_data_frame(
+    dplyr::collect(iris_presto.join),
+    dplyr::collect(iris_presto.join_cte)
+  )
+})
