@@ -382,6 +382,9 @@ organize.data.by.schema <- function(data, schema, keep_names = TRUE) {
   } else {
     col.count <- length(schema)
     if (length(data) > 0) {
+      if (length(data) == 1L && is.null(data[[1]])) {
+        return(NA)
+      }
       n_columns_by_row <- purrr::map_int(data, length)
       if (!all(n_columns_by_row == mean(n_columns_by_row))) {
         stop(
