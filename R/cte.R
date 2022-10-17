@@ -52,8 +52,12 @@ find_cte_tables_from_lazy_query <- function(con, sql, ...) {
 find_recursive_cte_tables <- function(con, cte_tables_list, ...) {
   stopifnot(is.list(cte_tables_list))
   level <- length(cte_tables_list)
-  dependent_tables <- purrr::map_chr(
-    cte_tables_list[[level]], con@session$findDependentCTEs
+  dependent_tables <- unique(
+    purrr::flatten_chr(
+      purrr::map(
+        cte_tables_list[[level]], con@session$findDependentCTEs
+      )
+    )
   )
   dependent_ctes <- intersect(con@session$getCTENames(), dependent_tables)
   if (length(dependent_ctes) > 0) {
