@@ -746,6 +746,26 @@ test_that("Queries return the correct map types", {
     ),
     tibble::tibble(type_row_single_value = list(list(x = 1)))
   )
+  # single null row value is mapped to a single NA
+  expect_equal_data_frame(
+    df.row_single_null <- dbGetQuery(
+      conn, "select cast(null as row(x int)) as type_row_single_null"
+    ),
+    tibble::tibble(type_row_single_null = list(NA))
+  )
+  # single null row value with single row value is mapped to a list consisting
+  # of a NA and a named list
+  expect_equal_data_frame(
+    df.row_single_null_and_value <- dbGetQuery(
+      conn,
+      "
+        select cast(null as row(x int)) as type_row_single_null_and_value
+        union all
+        select cast(row(1) as row(x int)) as type_row_single_null_and_value
+      "
+    ),
+    tibble::tibble(type_row_single_null_and_value = list(NA, list(x = 1)))
+  )
   # multiple row values are mapped to a multiple-value named list
   expect_equal_data_frame(
     df.row_multiple_values <- dbGetQuery(
