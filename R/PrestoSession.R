@@ -108,7 +108,7 @@ PrestoSession <- setRefClass("PrestoSession",
       dependent_ctes <- unique(
         stringi::stri_extract_all_regex(
           str = retrieveCTE(name),
-          pattern = "(?<=FROM \").+(?=\")"
+          pattern = "(?<=FROM \").+?(?=\")"
         )[[1]]
       )
       if (is.na(dependent_ctes)) {
