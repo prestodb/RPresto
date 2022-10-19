@@ -129,7 +129,9 @@ unlist_with_attr <- function(x) {
   # We use a do.call("c", ...) hack to "unlist" the list as a naive
   # call of unlist() would strip the datetime attributes.
   res <- do.call(base::c, unname(x))
-  names(res) <- nms
+  if (length(x) > 0L) {
+    names(res) <- nms
+  }
   return(res)
 }
 
