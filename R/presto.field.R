@@ -233,7 +233,7 @@ get.process.func <- function(prf) {
       nms <- names(x)
       x <- replace_null_with_na(x)
       x <- process.func(x)
-      if (keep_names) {
+      if (keep_names && length(x) > 0L) {
         return(purrr::set_names(x, nms))
       } else {
         return(x)
