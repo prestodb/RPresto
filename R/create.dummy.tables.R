@@ -51,16 +51,17 @@ create_table <- function(con, table_name, sql, verbose = TRUE, ...) {
 #' | 5 | bigint | BIGINT | \[-9007199254740991, 9007199254740991, null\] |
 #' | 6 | real | REAL | \[1.0, 2.0, null\] |
 #' | 7 | double | DOUBLE | \[1.0, 2.0, null\] |
-#' | 8 | varchar | VARCHAR | \['abc', 'def', null\] |
-#' | 9 | char | CHAR | \['a', 'b', null\] |
-#' | 10 | varbinary | VARBINARY | \['abc', 'def', null\] |
-#' | 11 | date | DATE | \['2000-01-01', '2000-01-02', null\] |
-#' | 12 | time | TIME | \['01:02:03.456', '02:03:04.567', null\] |
-#' | 13 | time_with_tz | TIME WITH TIME ZONE | \['01:02:03.456 \<tz\>', '02:03:04.567 \<tz\>', null\] |
-#' | 14 | timestamp | TIMESTAMP | \['2000-01-01 01:02:03.456', '2000-01-02 02:03:04.567', null\] |
-#' | 15 | timestamp_with_tz | TIMESTAMP WITH TIME ZONE | \['2000-01-01 01:02:03.456 \<tz\>', '2000-01-02 02:03:04.567 \<tz\>', null\] |
-#' | 16 | interval_year_to_month | INTERVAL YEAR TO MONTH | \['14' MONTH, '28' MONTH, null\] |
-#' | 17 | interval_day_to_second | INTERVAL DAY TO SECOND | \['2 4:5:6.500' DAY TO SECOND, '3 7:8:9.600' DAY TO SECOND, null\] |
+#' | 8 | decimal | DECIMAL | \[-9007199254740991.5, 9007199254740991.5, null\] |
+#' | 9 | varchar | VARCHAR | \['abc', 'def', null\] |
+#' | 10 | char | CHAR | \['a', 'b', null\] |
+#' | 11 | varbinary | VARBINARY | \['abc', 'def', null\] |
+#' | 12 | date | DATE | \['2000-01-01', '2000-01-02', null\] |
+#' | 13 | time | TIME | \['01:02:03.456', '02:03:04.567', null\] |
+#' | 14 | time_with_tz | TIME WITH TIME ZONE | \['01:02:03.456 \<tz\>', '02:03:04.567 \<tz\>', null\] |
+#' | 15 | timestamp | TIMESTAMP | \['2000-01-01 01:02:03.456', '2000-01-02 02:03:04.567', null\] |
+#' | 16 | timestamp_with_tz | TIMESTAMP WITH TIME ZONE | \['2000-01-01 01:02:03.456 \<tz\>', '2000-01-02 02:03:04.567 \<tz\>', null\] |
+#' | 17 | interval_year_to_month | INTERVAL YEAR TO MONTH | \['14' MONTH, '28' MONTH, null\] |
+#' | 18 | interval_day_to_second | INTERVAL DAY TO SECOND | \['2 4:5:6.500' DAY TO SECOND, '3 7:8:9.600' DAY TO SECOND, null\] |
 #' @keywords internal
 #' @rdname dummy_tables
 #' @md
@@ -106,6 +107,11 @@ create_primitive_arrays_table <- function(con,
         CAST(2.0 AS DOUBLE),
         CAST(null AS DOUBLE)
       ] AS array_double,
+      ARRAY[
+        CAST(-9007199254740991.5 AS DECIMAL(17,1)),
+        CAST(9007199254740991.5 AS DECIMAL(17,1)),
+        CAST(null AS DECIMAL(17,1))
+      ] AS array_decimal,
       ARRAY[
         CAST('abc' AS VARCHAR),
         CAST('def' AS VARCHAR),
@@ -191,6 +197,7 @@ create_primitive_maps_table <- function(con,
       MAP(ARRAY[1, 2, 3], array_bigint) AS map_bigint,
       MAP(ARRAY[1, 2, 3], array_real) AS map_real,
       MAP(ARRAY[1, 2, 3], array_double) AS map_double,
+      MAP(ARRAY[1, 2, 3], array_decimal) AS map_decimal,
       MAP(ARRAY[1, 2, 3], array_varchar) AS map_varchar,
       MAP(ARRAY[1, 2, 3], array_char) AS map_char,
       MAP(ARRAY[1, 2, 3], array_varbinary) AS map_varbinary,
@@ -242,6 +249,7 @@ create_primitive_types_table <- function(con,
       bigint,
       real,
       double,
+      decimal,
       varchar,
       char,
       varbinary,
@@ -262,6 +270,7 @@ create_primitive_types_table <- function(con,
       array_bigint,
       array_real,
       array_double,
+      array_decimal,
       array_varchar,
       array_char,
       array_varbinary,
@@ -280,6 +289,7 @@ create_primitive_types_table <- function(con,
       bigint,
       real,
       double,
+      decimal,
       varchar,
       char,
       varbinary,
@@ -329,6 +339,7 @@ create_primitive_rows_table <- function(con,
           bigint,
           real,
           double,
+          decimal,
           varchar,
           char,
           varbinary,
@@ -348,6 +359,7 @@ create_primitive_rows_table <- function(con,
           bigint BIGINT,
           real REAL,
           double DOUBLE,
+          decimal DECIMAL(17,1),
           varchar VARCHAR,
           char CHAR,
           varbinary VARBINARY,
@@ -429,6 +441,7 @@ create_array_of_maps_table <- function(con,
       ARRAY[map_bigint, map_bigint] AS array_map_bigint,
       ARRAY[map_real, map_real] AS array_map_real,
       ARRAY[map_double, map_double] AS array_map_double,
+      ARRAY[map_decimal, map_decimal] AS array_map_decimal,
       ARRAY[map_varchar, map_varchar] AS array_map_varchar,
       ARRAY[map_char, map_char] AS array_map_char,
       ARRAY[map_varbinary, map_varbinary] AS array_map_varbinary,

@@ -290,7 +290,7 @@ named lists, we translate the collection of `ROW`s into a tibble.
 To demonstrate how `ROW` types are translated into R types, we first create a
 table using an auxiliary `create_primitive_rows_table()` function
 included in the package. The resulting table has only 1 column named
-`row_primitive_types` which is a `ROW` that includes 17 sub-columns representing
+`row_primitive_types` which is a `ROW` that includes 18 sub-columns representing
 all supported primitive types.
 
 ```{r primitive-rows-table}

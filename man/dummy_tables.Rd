@@ -101,16 +101,17 @@ Here's the complete primitive type values included in the table\tabular{llll}{
    5 \tab bigint \tab BIGINT \tab [-9007199254740991, 9007199254740991, null] \cr
    6 \tab real \tab REAL \tab [1.0, 2.0, null] \cr
    7 \tab double \tab DOUBLE \tab [1.0, 2.0, null] \cr
-   8 \tab varchar \tab VARCHAR \tab ['abc', 'def', null] \cr
-   9 \tab char \tab CHAR \tab ['a', 'b', null] \cr
-   10 \tab varbinary \tab VARBINARY \tab ['abc', 'def', null] \cr
-   11 \tab date \tab DATE \tab ['2000-01-01', '2000-01-02', null] \cr
-   12 \tab time \tab TIME \tab ['01:02:03.456', '02:03:04.567', null] \cr
-   13 \tab time_with_tz \tab TIME WITH TIME ZONE \tab ['01:02:03.456 \<tz\>', '02:03:04.567 \<tz\>', null] \cr
-   14 \tab timestamp \tab TIMESTAMP \tab ['2000-01-01 01:02:03.456', '2000-01-02 02:03:04.567', null] \cr
-   15 \tab timestamp_with_tz \tab TIMESTAMP WITH TIME ZONE \tab ['2000-01-01 01:02:03.456 \<tz\>', '2000-01-02 02:03:04.567 \<tz\>', null] \cr
-   16 \tab interval_year_to_month \tab INTERVAL YEAR TO MONTH \tab ['14' MONTH, '28' MONTH, null] \cr
-   17 \tab interval_day_to_second \tab INTERVAL DAY TO SECOND \tab ['2 4:5:6.500' DAY TO SECOND, '3 7:8:9.600' DAY TO SECOND, null] \cr
+   8 \tab decimal \tab DECIMAL \tab [-9007199254740991.5, 9007199254740991.5, null] \cr
+   9 \tab varchar \tab VARCHAR \tab ['abc', 'def', null] \cr
+   10 \tab char \tab CHAR \tab ['a', 'b', null] \cr
+   11 \tab varbinary \tab VARBINARY \tab ['abc', 'def', null] \cr
+   12 \tab date \tab DATE \tab ['2000-01-01', '2000-01-02', null] \cr
+   13 \tab time \tab TIME \tab ['01:02:03.456', '02:03:04.567', null] \cr
+   14 \tab time_with_tz \tab TIME WITH TIME ZONE \tab ['01:02:03.456 \<tz\>', '02:03:04.567 \<tz\>', null] \cr
+   15 \tab timestamp \tab TIMESTAMP \tab ['2000-01-01 01:02:03.456', '2000-01-02 02:03:04.567', null] \cr
+   16 \tab timestamp_with_tz \tab TIMESTAMP WITH TIME ZONE \tab ['2000-01-01 01:02:03.456 \<tz\>', '2000-01-02 02:03:04.567 \<tz\>', null] \cr
+   17 \tab interval_year_to_month \tab INTERVAL YEAR TO MONTH \tab ['14' MONTH, '28' MONTH, null] \cr
+   18 \tab interval_day_to_second \tab INTERVAL DAY TO SECOND \tab ['2 4:5:6.500' DAY TO SECOND, '3 7:8:9.600' DAY TO SECOND, null] \cr
 }
 
 We construct the \strong{maps-of-primitive-types} table by first creating a table

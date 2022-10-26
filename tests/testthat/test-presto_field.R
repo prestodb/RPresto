@@ -67,6 +67,14 @@ source("utilities.R")
     tibble::tibble(type_double = 3.14)
   )
   expect_type(df.double$type_double, "double")
+  # decimal type
+  expect_equal_data_frame(
+    df.decimal <- dbGetQuery(
+      conn, "select cast(9007199254740991.5 as decimal(17,1)) as type_decimal"
+    ),
+    tibble::tibble(type_decimal = "9007199254740991.5")
+  )
+  expect_type(df.decimal$type_decimal, "character")
   # character type
   expect_equal_data_frame(
     df.character <- dbGetQuery(conn, "select 'one' as type_character"),
@@ -270,6 +278,20 @@ test_that("Queries return the correct primitive types", {
     tibble::tibble(type_double = list(c(3.14, 6.28)))
   )
   purrr::walk(df.double$type_double, expect_type, "double")
+  # decimal type
+  expect_equal_data_frame(
+    df.decimal <- dbGetQuery(
+      conn,
+      paste0(
+        "select array[cast(-9007199254740991.5 as decimal(17,1)), ",
+        "cast(9007199254740991.5 as decimal(17,1))] as type_decimal"
+      )
+    ),
+    tibble::tibble(
+      type_decimal = list(c("-9007199254740991.5", "9007199254740991.5"))
+    )
+  )
+  purrr::walk(df.decimal$type_decimal, expect_type, "character")
   # character type
   expect_equal_data_frame(
     df.character <- dbGetQuery(
