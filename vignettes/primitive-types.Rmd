@@ -52,7 +52,7 @@ what's supported and what those supported types map to in R.
 | Integer | BIGINT | \{**integer**\|integer64\|numeric\|character\} |
 | Floating-point | REAL | numeric |
 | Floating-point | DOUBLE | numeric |
-| Floating-point | DECIMAL | **not supported** |
+| Fixed-precision | DECIMAL | character |
 | String | VARCHAR | character |
 | String | CHAR | character |
 | String | VARBINARY | raw |
@@ -324,6 +324,23 @@ We can verify that both floating point types are translated to `numeric`.
 
 ```{r floating-point-check}
 purrr::map_chr(df.floating_point, class)
+```
+
+### Fixed-precision numbers
+
+Presto offers a `DECIMAL` data type that has fixed precision up to 38 digits.
+This means that it can be used to represent a very large integer which is
+obviously outside of the precision limits mentioned above. We can't decide one
+precise R class to translate the `DECIMAL` data type into, so RPresto currently
+translates the type into a string (i.e., `character`) in R.
+
+```{r fixed-precision-type}
+(
+  df.fixed_precision <- dbGetQuery(
+    con,
+    "SELECT decimal FROM presto_primitive_types"
+  )
+)
 ```
 
 ### Strings
