@@ -778,13 +778,19 @@ test_that("Queries return the correct map types", {
   # single null row value with single row value is mapped to a list consisting
   # of a NA and a named list
   expect_equal_data_frame(
-    df.row_single_null_and_value <- dbGetQuery(
-      conn,
-      "
-        select cast(null as row(x int)) as type_row_single_null_and_value
-        union all
-        select cast(row(1) as row(x int)) as type_row_single_null_and_value
-      "
+    df.row_single_null_and_value <- dplyr::select(
+      dplyr::arrange(
+        dbGetQuery(
+          conn,
+          "
+            select 0 as row, cast(null as row(x int)) as type_row_single_null_and_value
+            union all
+            select 1 as row, cast(row(1) as row(x int)) as type_row_single_null_and_value
+          "
+        ),
+        row
+      ),
+      -row
     ),
     tibble::tibble(type_row_single_null_and_value = list(NA, list(x = 1)))
   )
