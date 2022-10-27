@@ -7,35 +7,6 @@
 #' @include PrestoDriver.R
 NULL
 
-.presto.to.R <- as.data.frame(matrix(c(
-  "boolean", "logical",
-  "bigint", "integer",
-  "integer", "integer",
-  "smallint", "integer",
-  "tinyint", "integer",
-  "decimal", "character",
-  "real", "numeric",
-  "double", "numeric",
-  "varchar", "character",
-  "char", "character",
-  "varbinary", "raw",
-  "json", "character",
-  "date", "Date",
-  "time", "character",
-  "time with time zone", "character",
-  "timestamp", "POSIXct_no_time_zone",
-  "timestamp with time zone", "POSIXct_with_time_zone",
-  "interval year to month", "character",
-  "interval day to second", "character",
-  "array", "list_unnamed",
-  "map", "list_named",
-  "row", "list_named",
-  "unknown", "unknown"
-), byrow = TRUE, ncol = 2), stringsAsFactors = FALSE)
-colnames(.presto.to.R) <- c("presto.type", "R.type")
-
-
-
 .R.to.presto <- as.data.frame(matrix(c(
   "boolean", "logical",
   "bigint", "integer",
