@@ -7,7 +7,8 @@
 #' @include PrestoDriver.R
 NULL
 
-.R.to.presto <- as.data.frame(matrix(c(
+.R.to.presto <- tibble::tribble(
+  ~presto.type, ~R.type,
   "boolean", "logical",
   "bigint", "integer",
   "double", "double",
@@ -26,20 +27,19 @@ NULL
   "varchar", "factor",
   "varchar", "ordered",
   "varchar", "NULL"
-), byrow = TRUE, ncol = 2), stringsAsFactors = FALSE)
-colnames(.R.to.presto) <- c("presto.type", "R.type")
+)
 
-.R.to.presto.env <- new.env(hash = TRUE, size = NROW(.R.to.presto))
-for (i in 1:NROW(.R.to.presto)) {
-  if (is.na(.R.to.presto[i, "R.type"])) {
-    next
+.R.to.presto.env <- new.env(hash = TRUE)
+purrr::pwalk(
+  dplyr::filter(.R.to.presto, !is.na(R.type)),
+  function(R.type, presto.type) {
+    assign(
+      x = R.type,
+      value = presto.type,
+      envir = .R.to.presto.env
+    )
   }
-  assign(
-    .R.to.presto[i, "R.type"],
-    value = .R.to.presto[i, "presto.type"],
-    envir = .R.to.presto.env
-  )
-}
+)
 
 .non.complex.types <- c(
   "logical",
@@ -50,17 +50,12 @@ for (i in 1:NROW(.R.to.presto)) {
   "ordered",
   "NULL"
 )
-.non.complex.types.env <- new.env(hash = TRUE, size = length(.non.complex.types))
-for (i in seq_along(.non.complex.types)) {
-  assign(.non.complex.types[i], TRUE, envir = .non.complex.types.env)
-}
-
 
 .dbDataType <- function(dbObj, obj, ...) {
   rs.class <- data.class(obj)
   rs.mode <- storage.mode(obj)
 
-  if (!is.null(.non.complex.types.env[[rs.class]])) {
+  if (rs.class %in% .non.complex.types) {
     rv <- .R.to.presto.env[[rs.class]]
   } else if (rs.class == "numeric") {
     rv <- .R.to.presto.env[[rs.mode]]
