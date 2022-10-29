@@ -58,7 +58,8 @@
 
 \item{table}{Table name}
 
-\item{types}{Not used. Only NULL is accpeted.}
+\item{types}{Column types. If not provided, column types are inferred using
+dbDataType.}
 
 \item{values}{A \code{data.frame}.}
 

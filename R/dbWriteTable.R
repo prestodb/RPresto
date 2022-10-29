@@ -9,39 +9,90 @@ NULL
 
 #' @rdname PrestoConnection-class
 #' @inheritParams DBI::dbWriteTable
-#' @param overwrite a logical specifying whether to overwrite an existing table
-#'   or not. Its default is `FALSE`.
-#' @param append,field.types,temporary,row.names Ignored. Included for
-#'   compatibility with
-#'   generic.
 #' @usage NULL
 .dbWriteTable <- function(conn, name, value,
                           overwrite = FALSE, ...,
-                          append = FALSE, field.types = NULL, temporary = FALSE, row.names = FALSE,
-                          with = NULL) {
+                          append = FALSE, field.types = NULL, temporary = FALSE,
+                          row.names = FALSE, with = NULL) {
   stopifnot(is.data.frame(value))
-
-  if (!identical(append, FALSE)) {
-    stop("Appending not supported by RPresto yet", call. = FALSE)
-  }
-  if (!is.null(field.types)) {
-    stop("`field.types` not supported by RPresto", call. = FALSE)
-  }
   if (!identical(temporary, FALSE)) {
     stop("Temporary tables not supported by RPresto", call. = FALSE)
   }
-  if (!identical(row.names, FALSE)) {
-    stop("row.names not supported by RPresto", call. = FALSE)
+
+  if (is.null(row.names)) row.names <- FALSE
+  if (
+    (!is.logical(row.names) && !is.character(row.names)) ||
+      (length(row.names) != 1L)
+  ) {
+    stop("row.names must be a logical scalar or a string", call. = FALSE)
+  }
+  if (!is.logical(overwrite) || length(overwrite) != 1L || is.na(overwrite)) {
+    stop("overwrite must be a logical scalar", call. = FALSE)
+  }
+  if (!is.logical(append) || length(append) != 1L || is.na(append)) {
+    stop("append must be a logical scalar", call. = FALSE)
+  }
+  if (overwrite && append) {
+    stop("overwrite and append cannot both be TRUE", call. = FALSE)
+  }
+  if (
+    (!is.null(field.types)) &&
+      (!(is.character(field.types))) &&
+      (!is.null(names(field.types))) &&
+      (!anyDuplicated(names(field.types)))
+  ) {
+    stop(
+      "field.types must be a named character vector with unique names, or NULL",
+      call. = FALSE
+    )
+  }
+  if (append && !is.null(field.types)) {
+    stop("Cannot specify field.types with `append = TRUE`", call. = FALSE)
   }
 
-  sql <- dbplyr::sql_render(
-    query = dbplyr::lazy_query(
-      query_type = "values", x = value,
-      group_vars = character(), order_vars = NULL, frame = NULL
-    ),
-    con = conn
-  )
-  dbCreateTableAs(conn, name, sql, overwrite, with, ...)
+  found <- DBI::dbExistsTable(conn, name)
+  if (found && !overwrite && !append) {
+    stop("Table ", name, " exists in database, and both overwrite and",
+      " append are FALSE",
+      call. = FALSE
+    )
+  }
+  if (found && overwrite) {
+    DBI::dbRemoveTable(conn, name)
+  }
+
+  value <- DBI::sqlRownamesToColumn(value, row.names)
+
+  if (!found || overwrite) {
+    if (is.null(field.types)) {
+      combined_field_types <- lapply(value, dbDataType, dbObj = Presto())
+    } else {
+      combined_field_types <- rep("", length(value))
+      names(combined_field_types) <- names(value)
+      field_types_idx <- match(names(field.types), names(combined_field_types))
+      stopifnot(!any(is.na(field_types_idx)))
+      combined_field_types[field_types_idx] <- field.types
+      values_idx <- setdiff(seq_along(value), field_types_idx)
+      combined_field_types[values_idx] <- lapply(
+        value[values_idx], dbDataType,
+        dbObj = Presto()
+      )
+    }
+
+    DBI::dbCreateTable(
+      conn = conn,
+      name = name,
+      fields = combined_field_types,
+      with = with,
+      temporary = temporary
+    )
+  }
+
+  if (nrow(value) > 0) {
+    DBI::dbAppendTable(conn, name, value)
+  }
+
+  invisible(TRUE)
 }
 
 #' @rdname PrestoConnection-class

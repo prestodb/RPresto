@@ -5,6 +5,9 @@
 * Fix an error whereby join query's CTEs are not properly retrieved (#203)
 * Fix a bug that causes NULL values in a ROW to return data-schema mismatch
   error (#206)
+* Add `dbQuoteLiteral()` and `dbAppendTable()` implementations.
+* Rewrite `dbWriteTable()` implementation to use `dbCreateTable()` and
+  `dbAppendTable()`. It also supports all default arguments now (#199)
 
 # RPresto 1.4.0
 

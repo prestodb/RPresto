@@ -7,6 +7,9 @@
 #' @include PrestoConnection.R
 NULL
 
+#' @rdname PrestoConnection-class
+#' @inheritParams DBI::dbQuoteLiteral
+#' @usage NULL
 .dbQuoteLiteral <- function(conn, x, ...) {
   if (is(x, "SQL")) {
     return(x)
@@ -41,7 +44,8 @@ NULL
   }
 
   if (inherits(x, "difftime")) {
-    hms <- hms:::format_hms(x)
+    format_hms <- utils::getFromNamespace("format_hms", "hms")
+    hms <- format_hms(x)
     hms_str <- DBI::dbQuoteString(conn, hms)
     is_hms_null <- hms_str == DBI::SQL("NULL")
     hms_str[!is_hms_null] <- DBI::SQL(paste0("TIME ", hms_str[!is_hms_null]))
@@ -74,6 +78,7 @@ NULL
   DBI::SQL(x, names = names(x))
 }
 
+#' @rdname PrestoConnection-class
 #' @importMethodsFrom DBI dbQuoteLiteral
 #' @export
 setMethod("dbQuoteLiteral", signature("PrestoConnection"), .dbQuoteLiteral)
