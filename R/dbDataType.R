@@ -16,7 +16,7 @@ NULL
   "varbinary", "raw",
   "date", "Date",
   "json", NA,
-  "time", NA,
+  "time", "difftime",
   "time with time zone", NA,
   "timestamp", "POSIXct_no_time_zone",
   "timestamp with time zone", "POSIXct_with_time_zone",
@@ -67,6 +67,8 @@ purrr::pwalk(
       index <- "POSIXct_with_time_zone"
     }
     rv <- .R.to.presto.env[[index]]
+  } else if (rs.class == "hms" || rs.class == "difftime") {
+    rv <- .R.to.presto.env[["difftime"]]
   } else if (rs.class == "list") {
     if (length(obj) == 0) {
       inner.type <- .dbDataType(dbObj, NULL)

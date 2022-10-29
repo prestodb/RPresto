@@ -16,6 +16,7 @@ with_locale(test.locale(), test_that)("presto simple types are correct", {
   expect_equal(dbDataType(drv, ""), "VARCHAR")
   expect_equal(dbDataType(drv, vector("raw", 0)), "VARBINARY")
   expect_equal(dbDataType(drv, as.Date("2015-03-01")), "DATE")
+  expect_equal(dbDataType(drv, hms::as_hms("01:02:03")), "TIME")
   expect_equal(
     dbDataType(drv, as.POSIXct("2015-03-01 12:00:00")),
     "TIMESTAMP"
