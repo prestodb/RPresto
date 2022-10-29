@@ -16,7 +16,7 @@ NULL
 
   if (is.data.frame(fields)) {
     fields <- DBI::sqlRownamesToColumn(fields, row.names)
-    fields <- vapply(fields, function(x) DBI::dbDataType(con, x), character(1))
+    fields <- vapply(fields, function(x) DBI::dbDataType(Presto(), x), character(1))
   }
 
   field_names <- DBI::dbQuoteIdentifier(con, names(fields))
