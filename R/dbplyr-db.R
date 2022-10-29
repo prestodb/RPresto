@@ -97,7 +97,8 @@ db_has_table.PrestoConnection <- function(con, table) {
 }
 
 #' @rdname dbplyr-db
-#' @param types Not used. Only NULL is accpeted.
+#' @param types Column types. If not provided, column types are inferred using
+#'   dbDataType.
 #' @param values A `data.frame`.
 #' @param temporary If a temporary table should be used. Not supported. Only
 #'   FALSE is accepted.
