@@ -30,7 +30,7 @@ Important methods:
 | dbQuoteIdentifier | PrestoConnection | Default | |
 | dbUnquoteIdentifier | PrestoConnection | Default | |
 | dbQuoteString | PrestoConnection | Default | |
-| dbQuoteLiteral | PrestoConnection | Default | |
+| dbQuoteLiteral | PrestoConnection | Implemented | dbQuoteLiteral.R |
 | dbListTables | PrestoConnection | Implemented | dbListTables.R |
 | dbExistsTable | PrestoConnection | Implemented | dbExistsTable.R |
 | dbSendQuery | PrestoConnection | Implemented | dbSendQuery.R |
