@@ -8,13 +8,6 @@ context("dbWriteTable and db_write_table")
 
 source("utilities.R")
 
-test_df <- tibble::tibble(
-  field1 = c("a", "b"),
-  field2 = c(1L, 2L),
-  field3 = c(3.14, 2.72),
-  field4 = c(TRUE, FALSE)
-)
-
 test_that("dbWriteTable works with live connection", {
   conn <- setup_live_connection()
   test_table_name <- "test_dbwritetable"
