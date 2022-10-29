@@ -29,7 +29,7 @@ source("utilities.R")
     tbl <- copy_to(
       dest = src, df = test_df, name = test_table_name, overwrite = TRUE
     ),
-    NA
+    "The table .* is overwritten"
   )
   expect_true(dbExistsTable(con, test_table_name))
   expect_equal_data_frame(collect(tbl), test_df)
