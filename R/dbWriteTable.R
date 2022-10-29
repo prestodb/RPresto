@@ -57,39 +57,73 @@ NULL
       call. = FALSE
     )
   }
+  rn <- paste0(
+    "temp_", paste(sample(letters, 10, replace = TRUE), collapse = "")
+  )
   if (found && overwrite) {
-    DBI::dbRemoveTable(conn, name)
-  }
-
-  value <- DBI::sqlRownamesToColumn(value, row.names)
-
-  if (!found || overwrite) {
-    if (is.null(field.types)) {
-      combined_field_types <- lapply(value, dbDataType, dbObj = Presto())
-    } else {
-      combined_field_types <- rep("", length(value))
-      names(combined_field_types) <- names(value)
-      field_types_idx <- match(names(field.types), names(combined_field_types))
-      stopifnot(!any(is.na(field_types_idx)))
-      combined_field_types[field_types_idx] <- field.types
-      values_idx <- setdiff(seq_along(value), field_types_idx)
-      combined_field_types[values_idx] <- lapply(
-        value[values_idx], dbDataType,
-        dbObj = Presto()
-      )
-    }
-
-    DBI::dbCreateTable(
-      conn = conn,
-      name = name,
-      fields = combined_field_types,
-      with = with,
-      temporary = temporary
+    # Without implementation of TRANSACTION, we play it safe by renaming
+    # the to-be-overwritten table rather than deleting it right away
+    DBI::dbExecute(
+      conn,
+      DBI::SQL(paste("ALTER TABLE", name, "RENAME TO", rn))
     )
   }
 
-  if (nrow(value) > 0) {
-    DBI::dbAppendTable(conn, name, value)
+  tryCatch(
+    {
+      value <- DBI::sqlRownamesToColumn(value, row.names)
+
+      if (!found || overwrite) {
+        if (is.null(field.types)) {
+          combined_field_types <- lapply(value, dbDataType, dbObj = Presto())
+        } else {
+          combined_field_types <- rep("", length(value))
+          names(combined_field_types) <- names(value)
+          field_types_idx <- match(names(field.types), names(combined_field_types))
+          stopifnot(!any(is.na(field_types_idx)))
+          combined_field_types[field_types_idx] <- field.types
+          values_idx <- setdiff(seq_along(value), field_types_idx)
+          combined_field_types[values_idx] <- lapply(
+            value[values_idx], dbDataType,
+            dbObj = Presto()
+          )
+        }
+
+        DBI::dbCreateTable(
+          conn = conn,
+          name = name,
+          fields = combined_field_types,
+          with = with,
+          temporary = temporary
+        )
+      }
+
+      if (nrow(value) > 0) {
+        DBI::dbAppendTable(conn, name, value)
+      }
+    },
+    error = function(e) {
+      # In case of error, try revert the origin table
+      if (dbExistsTable(conn, name)) {
+        dbRemoveTable(conn, name)
+      }
+      if (dbExistsTable(conn, rn)) {
+        DBI::dbExecute(
+          conn,
+          DBI::SQL(paste("ALTER TABLE", rn, "RENAME TO", name))
+        )
+      }
+      stop(
+        "Writing table ", name, ' failed with error: "',
+        conditionMessage(e), '".',
+        call. = FALSE
+      )
+    }
+  )
+  if (dbExistsTable(conn, rn)) {
+    if (dbRemoveTable(conn, rn)) {
+      message("The table ", name, " is overwritten.")
+    }
   }
 
   invisible(TRUE)
