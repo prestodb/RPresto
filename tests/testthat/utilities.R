@@ -509,3 +509,17 @@ tz_to_offset <- function(timezone, dt = Sys.Date()) {
   offset_min_string <- stringi::stri_pad_left(offset_min, 2, "0")
   paste0(offset_sign, offset_hour_string, ":", offset_min_string)
 }
+
+test_df <- tibble::tibble(
+  field1 = c("a", "b", NA_character_),
+  field2 = c(1L, 2L, NA_integer_),
+  field3 = c(3.14, 2.72, NA_real_),
+  field4 = c(TRUE, FALSE, NA),
+  field5 = as.Date(c("2000-01-01", "2000-01-01", NA_character_)),
+  field6 = c(
+    lubridate::ymd_hms("2000-01-01 01:02:03", tz = "Asia/Singapore"),
+    lubridate::ymd_hms("2000-01-02 04:05:06", tz = "Asia/Singapore"),
+    as.POSIXct(NA)
+  ),
+  field7 = hms::as_hms(c("01:02:03", "04:05:06", NA_character_))
+)

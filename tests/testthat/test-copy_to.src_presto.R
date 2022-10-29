@@ -8,13 +8,6 @@ context("copy_to.src_presto and db_copy_to")
 
 source("utilities.R")
 
-test_df <- tibble::tibble(
-  field1 = c("a", "b"),
-  field2 = c(1L, 2L),
-  field3 = c(3.14, 2.72),
-  field4 = c(TRUE, FALSE)
-)
-
 .test_src <- function(src, test_table_name) {
   if (inherits(src, "src_presto")) {
     con <- src$con
