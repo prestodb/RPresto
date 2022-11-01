@@ -45,9 +45,9 @@ with_locale(test.locale(), test_that)(".response.to.content works", {
         ),
         list(
           name = "m",
-          type = "bigint",
+          type = "integer",
           typeSignature = list(
-            rawType = "bigint",
+            rawType = "integer",
             typeArguments = list(),
             literalArguments = list()
           )

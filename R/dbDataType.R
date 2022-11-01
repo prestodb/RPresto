@@ -7,102 +7,38 @@
 #' @include PrestoDriver.R
 NULL
 
-.R.to.presto <- tibble::tribble(
-  ~presto.type, ~R.type,
-  "boolean", "logical",
-  "bigint", "integer",
-  "double", "double",
-  "varchar", "character",
-  "varbinary", "raw",
-  "date", "Date",
-  "json", NA,
-  "time", "difftime",
-  "time with time zone", NA,
-  "timestamp", "POSIXct_no_time_zone",
-  "timestamp with time zone", "POSIXct_with_time_zone",
-  "interval year to month", NA,
-  "interval day to second", NA,
-  "array", "list_unnamed",
-  "map", "list_named",
-  "varchar", "factor",
-  "varchar", "ordered",
-  "varchar", "NULL"
-)
-
-.R.to.presto.env <- new.env(hash = TRUE)
-purrr::pwalk(
-  dplyr::filter(.R.to.presto, !is.na(R.type)),
-  function(R.type, presto.type) {
-    assign(
-      x = R.type,
-      value = presto.type,
-      envir = .R.to.presto.env
-    )
-  }
-)
-
-.non.complex.types <- c(
-  "logical",
-  "character",
-  "raw",
-  "Date",
-  "factor",
-  "ordered",
-  "NULL"
-)
+get_vector_type <- function(obj) {
+  if (is.factor(obj)) return("VARCHAR")
+  if (inherits(obj, "POSIXct")) return("TIMESTAMP")
+  if (inherits(obj, "Date")) return("DATE")
+  if (inherits(obj, "difftime")) return("TIME")
+  if (inherits(obj, "integer64")) return("BIGINT")
+  switch(typeof(obj),
+    integer = "INTEGER",
+    double = "DOUBLE",
+    character = "VARCHAR",
+    logical = "BOOLEAN",
+    raw = "VARBINARY",
+    NULL = "VARCHAR",
+    stop("Unsupported type", call. = FALSE)
+  )
+}
 
 .dbDataType <- function(dbObj, obj, ...) {
-  rs.class <- data.class(obj)
-  rs.mode <- storage.mode(obj)
-
-  if (rs.class %in% .non.complex.types) {
-    rv <- .R.to.presto.env[[rs.class]]
-  } else if (rs.class == "numeric") {
-    rv <- .R.to.presto.env[[rs.mode]]
-  } else if (rs.class == "POSIXct") {
-    tzone <- attr(obj, "tzone")
-    if (is.null(tzone) || tzone == "") {
-      index <- "POSIXct_no_time_zone"
-    } else {
-      index <- "POSIXct_with_time_zone"
-    }
-    rv <- .R.to.presto.env[[index]]
-  } else if (rs.class == "hms" || rs.class == "difftime") {
-    rv <- .R.to.presto.env[["difftime"]]
-  } else if (rs.class == "list") {
-    if (length(obj) == 0) {
-      inner.type <- .dbDataType(dbObj, NULL)
-    } else {
-      inner.types <- vapply(
-        obj,
-        function(x) .dbDataType(dbObj, x),
-        ""
-      )
-      inner.type <- inner.types[1]
-      if (!all(inner.types == inner.type)) {
-        inner.type <- NA
-      }
-    }
-    if (is.na(inner.type)) {
-      rv <- "varchar"
-    } else {
-      if (!is.null(names(obj))) {
-        rv <- paste("map<varchar, ", inner.type, ">", sep = "")
+  if (is.data.frame(obj)) return(vapply(obj, dbDataType, "", dbObj = dbObj))
+  if (is.list(obj)) {
+    element_types <- vapply(obj, dbDataType, "", dbObj = dbObj)
+    if (length(unique(element_types)) == 1L) {
+      if (all(purrr::map_lgl(obj, ~is.null(names(.))))) {
+        return(paste0("ARRAY<", unique(element_types), ">"))
       } else {
-        rv <- paste("array<", inner.type, ">", sep = "")
+        return(paste0("MAP<VARCHAR, ", unique(element_types), ">"))
       }
+    } else {
+      stop("Unsupported list type", call. = FALSE)
     }
-  } else {
-    rv <- "varchar"
   }
-
-  if (is.na(rv)) {
-    rv <- "varchar"
-  }
-  # We need to explicitly specify the locale for the upper transformation.
-  # For certain locales like tr_TR, the uppercase for 'i' is 'İ'
-  # so toupper('bigint') does not give the expected result
-  return(stringi::stri_trans_toupper(rv, "en_US.UTF-8"))
+  get_vector_type(obj)
 }
 
 #' Return the corresponding presto data type for the given R `object`
@@ -114,24 +50,26 @@ purrr::pwalk(
 #' @rdname dbDataType
 #' @details The default value for unknown classes is \sQuote{VARCHAR}.
 #'
-#' \sQuote{ARRAY}s and \sQuote{MAP}s are supported with some caveats.
-#' Unnamed lists will be treated as \sQuote{ARRAY}s and named lists
-#' will be a \sQuote{MAP}.
-#' All items are expected to be of the same corresponding Presto type,
-#' otherwise the default \sQuote{VARCHAR} value is returned.
-#' The key type for \sQuote{MAP}s is always \sQuote{VARCHAR}.
-#' The \sQuote{value} type for empty lists is always a \sQuote{VARCHAR}.
-#'
 #' @examples
 #' drv <- RPresto::Presto()
-#' dbDataType(drv, list())
 #' dbDataType(drv, 1)
 #' dbDataType(drv, NULL)
-#' dbDataType(drv, list(list(list(a = Sys.Date()))))
 #' dbDataType(drv, as.POSIXct("2015-03-01 00:00:00", tz = "UTC"))
 #' dbDataType(drv, Sys.time())
-#' # Data types for ARRAY or MAP values can be tricky
-#' all.equal("VARCHAR", dbDataType(drv, list(1, 2, 3L)))
+#' dbDataType(
+#'   drv,
+#'   list(
+#'     c("a" = 1L, "b" = 2L),
+#'     c("a" = 3L, "b" = 4L)
+#'   )
+#' )
+#' dbDataType(
+#'   drv,
+#'   list(
+#'     c(as.Date("2015-03-01"), as.Date("2015-03-02")),
+#'     c(as.Date("2016-03-01"), as.Date("2016-03-02"))
+#'   )
+#' )
 #' @importMethodsFrom DBI dbDataType
 #' @export
 setMethod("dbDataType", "PrestoDriver", .dbDataType)

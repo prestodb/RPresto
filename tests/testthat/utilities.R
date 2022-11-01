@@ -99,13 +99,9 @@ data.frame.with.all.classes <- function(row.indices) {
     character2 = c("", "z"),
     raw = list(raw(0), raw(0)),
     Date = as.Date(c("2015-03-01", "2015-03-02")),
-    POSIXct_no_time_zone = as.POSIXct(
+    POSIXct = as.POSIXct(
       c("2015-03-01 12:00:00", "2015-03-02 12:00:00.321"),
       tz = test.timezone()
-    ),
-    POSIXct_with_time_zone = as.POSIXct(
-      c("2015-03-01 12:00:00", "2015-03-02 12:00:00.321"),
-      tz = "Europe/Paris"
     ),
     # The first element is 'ıİÖğ' in iso8859-9 encoding,
     # and the second 'Face with tears of joy' in UTF-8
@@ -187,14 +183,7 @@ data.to.list <- function(data) {
         literalArguments = list()
       )
     )
-    if (
-      length(presto.type) == 1 &&
-        presto.type == "timestamp with time zone" &&
-        NROW(data)
-    ) {
-      # toJSON ignores the timezone attribute
-      data[[i]] <- paste(data[[i]], attr(data[[i]], "tzone"))
-    } else if (presto.type[1] %in% c("array", "map")) {
+    if (presto.type[1] %in% c("array", "map")) {
       # Lists need to be unboxed
       data[[i]] <- lapply( # Apply to each row
         data[[i]],
@@ -517,8 +506,8 @@ test_df <- tibble::tibble(
   field4 = c(TRUE, FALSE, NA),
   field5 = as.Date(c("2000-01-01", "2000-01-01", NA_character_)),
   field6 = c(
-    lubridate::ymd_hms("2000-01-01 01:02:03", tz = "Asia/Singapore"),
-    lubridate::ymd_hms("2000-01-02 04:05:06", tz = "Asia/Singapore"),
+    lubridate::ymd_hms("2000-01-01 01:02:03", tz = "America/Los_Angeles"),
+    lubridate::ymd_hms("2000-01-02 04:05:06", tz = "America/Los_Angeles"),
     as.POSIXct(NA)
   ),
   field7 = hms::as_hms(c("01:02:03", "04:05:06", NA_character_))

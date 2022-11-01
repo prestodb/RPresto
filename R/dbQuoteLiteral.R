@@ -28,8 +28,7 @@ NULL
     if (is.null(tz) || tz == "") {
       tz <- Sys.timezone()
     }
-    ts <- strftime(x, "%Y-%m-%d %H:%M:%S", tz = tz)
-    ts[!is.na(ts)] <- paste(ts[!is.na(ts)], tz)
+    ts <- strftime(x, "%Y-%m-%d %H:%M:%S", tz = conn@session.timezone)
     ts_str <- DBI::dbQuoteString(conn, ts)
     is_ts_null <- ts_str == DBI::SQL("NULL")
     ts_str[!is_ts_null] <- DBI::SQL(paste0("TIMESTAMP ", ts_str[!is_ts_null]))

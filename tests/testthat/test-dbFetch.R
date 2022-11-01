@@ -248,8 +248,8 @@ with_locale(test.locale(), test_that)("dbFetch rbind works correctly", {
 
       x <- dbFetch(result, -1)
       y <- data.frame.with.all.classes()
-      y$POSIXct_with_time_zone <-
-        lubridate::with_tz(y$POSIXct_with_time_zone, test.timezone())
+      y$POSIXct <-
+        lubridate::with_tz(y$POSIXct, test.timezone())
       nms <- names(y$list_named[[1]])
       y$list_named[[1]] <- purrr::flatten_dbl(y$list_named[[1]])
       names(y$list_named[[1]]) <- nms
@@ -432,8 +432,8 @@ with_locale(test.locale(), test_that)("dbFetch rbind works with zero row chunks"
       )
 
       result <- dbSendQuery(conn, "SELECT * FROM all_types")
-      full.data$POSIXct_with_time_zone <-
-        lubridate::with_tz(full.data$POSIXct_with_time_zone, test.timezone())
+      full.data$POSIXct <-
+        lubridate::with_tz(full.data$POSIXct, test.timezone())
       expect_equal_data_frame(
         dbFetch(result, -1),
         full.data,
