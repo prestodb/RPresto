@@ -9,7 +9,7 @@ context("dbAppendTable")
 source("utilities.R")
 
 test_that("dbAppendTable works with live connection", {
-  conn <- presto_default() 
+  conn <- presto_default(output.timezone = "America/Los_Angeles")
   test_table_name <- "test_dbappendtable"
   if (dbExistsTable(conn, test_table_name)) {
     dbRemoveTable(conn, test_table_name)

@@ -9,7 +9,7 @@ context("dbWriteTable and db_write_table")
 source("utilities.R")
 
 test_that("dbWriteTable works with live connection", {
-  conn <- presto_default()
+  conn <- presto_default(output.timezone = "America/Los_Angeles")
   test_table_name <- "test_dbwritetable"
   if (dbExistsTable(conn, test_table_name)) {
     dbRemoveTable(conn, test_table_name)
@@ -45,7 +45,7 @@ test_that("dbWriteTable works with live connection", {
 })
 
 test_that("db_write_table works with live connection", {
-  conn <- presto_default()
+  conn <- presto_default(output.timezone = "America/Los_Angeles")
   test_table_name <- "test_dbwritetable"
   if (dbExistsTable(conn, test_table_name)) {
     dbRemoveTable(conn, test_table_name)

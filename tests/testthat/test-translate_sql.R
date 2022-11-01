@@ -23,13 +23,6 @@ with_locale(test.locale(), test_that)("as() works", {
     dbplyr::translate_sql(pmax(x), con = s[["con"]]),
     dbplyr::sql('GREATEST("x")')
   )
-  expect_equal(
-    dbplyr::translate_sql_(
-      list(substitute(as(x, l), list(l = list()))),
-      con = s[["con"]]
-    ),
-    dbplyr::sql('CAST("x" AS ARRAY<VARCHAR>)')
-  )
 
   substituted.expression <- substitute(as(x, l), list(l = Sys.Date()))
   expect_equal(
@@ -64,17 +57,17 @@ with_locale(test.locale(), test_that)("as() works", {
     )
   }
 
-  l <- list(a = 1L)
+  l <- list(c(a = 1L))
   expect_equal(
     dbplyr::translate_sql(
       as(x, !!l),
       con = s[["con"]]
     ),
-    dbplyr::sql('CAST("x" AS MAP<VARCHAR, BIGINT>)')
+    dbplyr::sql('CAST("x" AS MAP<VARCHAR, INTEGER>)')
   )
   expect_equal(
     dbplyr::translate_sql(
-      as(x, !!local(list(a = Sys.time()))),
+      as(x, !!local(list(c(a = Sys.time())))),
       con = s[["con"]]
     ),
     dbplyr::sql('CAST("x" AS MAP<VARCHAR, TIMESTAMP>)')
@@ -94,7 +87,7 @@ with_locale(test.locale(), test_that)("as() works", {
     "SELECT ",
     '"_col0", ',
     'CAST\\("a" AS VARBINARY\\) AS "b", ',
-    'CAST\\("a" AS TIMESTAMP WITH TIME ZONE\\) AS "c", ',
+    'CAST\\("a" AS TIMESTAMP\\) AS "c", ',
     'CAST\\("a" AS BOOLEAN\\) AS "d"\n',
     "FROM \\(",
     '\\(SELECT 1\\) "[_0-9a-z]+"',
@@ -104,7 +97,7 @@ with_locale(test.locale(), test_that)("as() works", {
   new_expected_query_pattern <- paste0(
     "^SELECT\\s*",
     'CAST\\("a" AS VARBINARY\\) AS "b",\\s*',
-    'CAST\\("a" AS TIMESTAMP WITH TIME ZONE\\) AS "c",\\s*',
+    'CAST\\("a" AS TIMESTAMP\\) AS "c",\\s*',
     'CAST\\("a" AS BOOLEAN\\) AS "d"\n',
     "FROM \\(",
     '\\(SELECT 1\\) "[_0-9a-z]+"',

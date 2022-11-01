@@ -19,19 +19,29 @@ test_that("dbQuoteLiteral works with live connection", {
     dbQuoteLiteral(conn, c("a", "b", NA_character_)),
     DBI::SQL(c("'a'", "'b'", "NULL"))
   )
+  ts1 <- lubridate::ymd_hms("2000-01-01 01:02:03", tz = "America/Los_Angeles")
+  ts2 <- lubridate::ymd_hms("2000-01-02 04:05:06", tz = "America/Los_Angeles")
   expect_equal(
     dbQuoteLiteral(
       conn,
       c(
-        lubridate::ymd_hms("2000-01-01 01:02:03", tz = "America/Los_Angeles"),
-        lubridate::ymd_hms("2000-01-02 04:05:06", tz = "America/Los_Angeles"),
+        ts1,
+        ts2,
         as.POSIXct(NA)
       )
     ),
     DBI::SQL(
       c(
-        "TIMESTAMP '2000-01-01 01:02:03 America/Los_Angeles'",
-        "TIMESTAMP '2000-01-02 04:05:06 America/Los_Angeles'",
+        paste0(
+          "TIMESTAMP '",
+          strftime(ts1, "%Y-%m-%d %H:%M:%S", tz = conn@session.timezone),
+          "'"
+        ),
+        paste0(
+          "TIMESTAMP '",
+          strftime(ts2, "%Y-%m-%d %H:%M:%S", tz = conn@session.timezone),
+          "'"
+        ),
         "NULL"
       )
     )

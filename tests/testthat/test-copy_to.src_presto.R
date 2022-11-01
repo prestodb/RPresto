@@ -36,19 +36,21 @@ source("utilities.R")
 }
 
 test_that("dplyr::copy_to works for src_presto", {
-  src <- src_presto(con = presto_default())
+  src <- src_presto(
+    con = presto_default(output.timezone = "America/Los_Angeles")
+  )
   test_table_name <- "test_copyto_srcpresto"
   .test_src(src, test_table_name)
 })
 
 test_that("dplyr::copy_to works for PrestoConnection", {
-  src <- presto_default()
+  src <- presto_default(output.timezone = "America/Los_Angeles")
   test_table_name <- "test_copyto_prestoconnection"
   .test_src(src, test_table_name)
 })
 
 test_that("dbplyr::db_copy_to works for PrestoConnection", {
-  con <- presto_default()
+  con <- presto_default(output.timezone = "America/Los_Angeles")
   test_table_name <- "test_dbcopyto"
   if (dbExistsTable(con, test_table_name)) {
     dbRemoveTable(con, test_table_name)

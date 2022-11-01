@@ -11,91 +11,105 @@ with_locale(test.locale(), test_that)("presto simple types are correct", {
 
   expect_equal(dbDataType(drv, NULL), "VARCHAR")
   expect_equal(dbDataType(drv, TRUE), "BOOLEAN")
-  expect_equal(dbDataType(drv, 1L), "BIGINT")
+  expect_equal(dbDataType(drv, 1L), "INTEGER")
+  expect_equal(dbDataType(drv, bit64::as.integer64(1L)), "BIGINT")
   expect_equal(dbDataType(drv, 1.0), "DOUBLE")
   expect_equal(dbDataType(drv, ""), "VARCHAR")
   expect_equal(dbDataType(drv, vector("raw", 0)), "VARBINARY")
   expect_equal(dbDataType(drv, as.Date("2015-03-01")), "DATE")
   expect_equal(dbDataType(drv, hms::as_hms("01:02:03")), "TIME")
   expect_equal(
-    dbDataType(drv, as.POSIXct("2015-03-01 12:00:00")),
-    "TIMESTAMP"
-  )
-  expect_equal(
     dbDataType(drv, as.POSIXct("2015-03-01 12:00:00", tz = "UTC")),
-    "TIMESTAMP WITH TIME ZONE"
+    "TIMESTAMP"
   )
   expect_equal(dbDataType(drv, factor()), "VARCHAR")
   expect_equal(dbDataType(drv, factor(ordered = TRUE)), "VARCHAR")
-  expect_equal(
-    dbDataType(drv, structure(list(), class = "test_class")),
-    "VARCHAR"
-  )
 })
 
 test_that("conversion to array is correct", {
   drv <- RPresto::Presto()
 
-  expect_equal(dbDataType(drv, list()), "ARRAY<VARCHAR>")
-  expect_equal(dbDataType(drv, list(list())), "ARRAY<ARRAY<VARCHAR>>")
   expect_equal(
     dbDataType(
       drv,
-      list(as.Date("2015-03-01"), as.Date("2015-03-02"))
+      list(
+        c(as.Date("2015-03-01"), as.Date("2015-03-02")),
+        c(as.Date("2016-03-01"), as.Date("2016-03-02"))
+      )
     ),
     "ARRAY<DATE>"
   )
   expect_equal(
     dbDataType(
       drv,
-      list(list(as.Date("2015-03-01")))
+      list(
+        list(
+          c(as.Date("2015-03-01"), as.Date("2015-03-02")),
+          c(as.Date("2016-03-01"), as.Date("2016-03-02"))
+        ),
+        list(
+          c(as.Date("2015-04-01"), as.Date("2015-04-02")),
+          c(as.Date("2016-04-01"), as.Date("2016-04-02"))
+        )
+      )
     ),
     "ARRAY<ARRAY<DATE>>"
-  )
-  expect_equal(
-    dbDataType(
-      drv,
-      list(1L, list(a = 2, b = 3))
-    ),
-    "VARCHAR"
-  )
-  expect_equal(
-    dbDataType(
-      drv,
-      list(1, 2, 3L)
-    ),
-    "VARCHAR"
   )
 })
 
 test_that("conversion to map is correct", {
   drv <- RPresto::Presto()
 
-  l <- structure(list(), names = character(0))
-  expect_equal(dbDataType(drv, l), "MAP<VARCHAR, VARCHAR>")
   expect_equal(
-    dbDataType(drv, list(a = l)),
-    "MAP<VARCHAR, MAP<VARCHAR, VARCHAR>>"
+    dbDataType(
+      drv,
+      list(
+        c("a" = 1L, "b" = 2L),
+        c("a" = 3L, "b" = 4L)
+      )
+    ),
+    "MAP<VARCHAR, INTEGER>"
   )
   expect_equal(
     dbDataType(
       drv,
-      list(a = as.Date("2015-03-01"), b = as.Date("2015-03-02"))
+      list(
+        c("a" = as.Date("2015-03-01"), "b" = as.Date("2015-03-02")),
+        c("a" = as.Date("2015-04-01"), "b" = as.Date("2015-04-02"))
+      )
     ),
     "MAP<VARCHAR, DATE>"
   )
   expect_equal(
     dbDataType(
       drv,
-      list(a = list(b = as.Date("2015-03-01")))
+      list(
+        list(
+          c("a" = as.Date("2015-03-01"), "b" = as.Date("2015-03-02")),
+          c("a" = as.Date("2015-04-01"), "b" = as.Date("2015-04-02"))
+        ),
+        list(
+          c("a" = as.Date("2016-03-01"), "b" = as.Date("2016-03-02")),
+          c("a" = as.Date("2016-04-01"), "b" = as.Date("2016-04-02"))
+        )
+      )
     ),
-    "MAP<VARCHAR, MAP<VARCHAR, DATE>>"
+    "ARRAY<MAP<VARCHAR, DATE>>"
   )
   expect_equal(
     dbDataType(
       drv,
-      list(a = 1L, b = list(a = 2, b = 3))
+      list(
+        list(
+          "aa" = c("a" = as.Date("2015-03-01"), "b" = as.Date("2015-03-02")),
+          "ab" = c("a" = as.Date("2015-04-01"), "b" = as.Date("2015-04-02"))
+        ),
+        list(
+          "aa" = c("a" = as.Date("2016-03-01"), "b" = as.Date("2016-03-02")),
+          "ab" = c("a" = as.Date("2016-04-01"), "b" = as.Date("2016-04-02"))
+        )
+      )
     ),
-    "VARCHAR"
+    "MAP<VARCHAR, MAP<VARCHAR, DATE>>"
   )
 })
