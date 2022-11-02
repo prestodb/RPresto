@@ -60,7 +60,7 @@ test_that("dbQuoteLiteral works with live connection", {
   )
   expect_equal(
     dbQuoteLiteral(conn, list(charToRaw("abc"), charToRaw("def"), charToRaw(NA_character_))),
-    DBI::SQL(c("X'616263'", "X'646566'", "X'4e41'"))
+    DBI::SQL(c("X'616263'", "X'646566'", "NULL"))
   )
   expect_equal(
     dbQuoteLiteral(conn, c(1L, 2L, NA_integer_)),

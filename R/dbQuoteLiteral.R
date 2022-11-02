@@ -58,7 +58,11 @@ NULL
         if (is.null(x)) {
           "NULL"
         } else if (is.raw(x)) {
-          paste0("X'", paste(format(x), collapse = ""), "'")
+          if (rawToChar(x) == "NA") {
+            "NULL"
+          } else {
+            paste0("X'", paste(format(x), collapse = ""), "'")
+          }
         } else {
           stop("Lists must contain raw vectors or NULL", call. = FALSE)
         }
