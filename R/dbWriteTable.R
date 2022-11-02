@@ -9,11 +9,14 @@ NULL
 
 #' @rdname PrestoConnection-class
 #' @inheritParams DBI::dbWriteTable
+#' @param chunk_fields A character vector of names of the fields that should
+#'   be used to slice the value data frame into chunks for batch append.
+#'   Default to NULL which appends the entire value data frame.
 #' @usage NULL
 .dbWriteTable <- function(conn, name, value,
                           overwrite = FALSE, ...,
                           append = FALSE, field.types = NULL, temporary = FALSE,
-                          row.names = FALSE, with = NULL) {
+                          row.names = FALSE, with = NULL, chunk_fields = NULL) {
   stopifnot(is.data.frame(value))
   if (!identical(temporary, FALSE)) {
     stop("Temporary tables not supported by RPresto", call. = FALSE)
@@ -99,7 +102,7 @@ NULL
       }
 
       if (nrow(value) > 0) {
-        DBI::dbAppendTable(conn, name, value)
+        DBI::dbAppendTable(conn, name, value, chunk_fields = chunk_fields)
       }
     },
     error = function(e) {

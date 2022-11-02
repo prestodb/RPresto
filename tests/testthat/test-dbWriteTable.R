@@ -24,6 +24,14 @@ test_that("dbWriteTable works with live connection", {
     dbListFields(conn, test_table_name),
     c("row_names", colnames(test_df))
   )
+  expect_true(dbRemoveTable(conn, test_table_name))
+  expect_true(
+    dbWriteTable(conn, test_table_name, test_df, chunk_fields = c("field1"))
+  )
+  expect_equal_data_frame(
+    dplyr::arrange(dbReadTable(conn, test_table_name), field1),
+    dplyr::arrange(test_df, field1)
+  )
   expect_error(
     dbWriteTable(conn, test_table_name, test_df),
     "exists in database, and both overwrite and append are FALSE"

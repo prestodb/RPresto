@@ -35,7 +35,7 @@
 \usage{
 \S4method{show}{PrestoConnection}(object)
 
-\S4method{dbAppendTable}{PrestoConnection,character,data.frame}(conn, name, value, ..., row.names = NULL)
+\S4method{dbAppendTable}{PrestoConnection,character,data.frame}(conn, name, value, ..., chunk_fields = NULL, row.names = NULL)
 
 \S4method{dbCreateTable}{PrestoConnection}(
   conn,
@@ -75,7 +75,8 @@
   field.types = NULL,
   temporary = FALSE,
   row.names = FALSE,
-  with = NULL
+  with = NULL,
+  chunk_fields = NULL
 )
 
 \S4method{sqlCreateTable}{PrestoConnection}(
@@ -108,6 +109,10 @@ given verbatim, e.g. \code{SQL('"my_schema"."table_name"')}
 with those in the target table in the database.}
 
 \item{...}{Other parameters passed on to methods.}
+
+\item{chunk_fields}{A character vector of names of the fields that should
+be used to slice the value data frame into chunks for batch append.
+Default to NULL which appends the entire value data frame.}
 
 \item{row.names}{Must be \code{NULL}.}
 
