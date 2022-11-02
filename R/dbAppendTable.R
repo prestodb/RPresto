@@ -10,34 +10,46 @@ NULL
 #' @rdname PrestoConnection-class
 #' @inheritParams DBI::dbAppendTable
 #' @usage NULL
-.dbAppendTable <- function(conn, name, value, ...) {
+.dbAppendTable <- function(
+  conn, name, value, ..., chunk_fields = NULL, row.names = NULL
+) {
   is_factor <- vapply(value, is.factor, logical(1L))
   if (any(is_factor)) {
     value[is_factor] <- lapply(value[is_factor], as.character)
   }
-  chunks <- (as.integer(object.size(value)) %/% 7.5e5) + 1
-  if (chunks >= 100) {
-    stop("The value to append is too large.", call. = FALSE)
-  }
-  chunk_size <- nrow(value) %/% chunks
-  total_rows <- 0L
-  pb <- progress::progress_bar$new(
-    format = "  appending chunk #:chunk [:bar] :percent in :elapsed",
-    clear = FALSE,
-    total = 100,
-    width = 80,
-    show_after = 1
-  )
-  pb$tick(0, tokens = list(chunk = 0L))
-  for (i in 1:chunks) {
-    start <- (i-1)*chunk_size+1
-    end <- min(i*chunk_size, nrow(value))
-    sql <- DBI::sqlAppendTable(
-      conn, name, dplyr::slice(value, start:end), row.names = FALSE
+  if (!is.null(chunk_fields)) {
+    is_chunk_field_found <- chunk_fields %in% colnames(value)
+    if (!all(is_chunk_field_found)) {
+      stop(
+        "Fields [",
+        paste(chunk_fields[!is_chunk_field_found], collapse = ", "),
+        "] are not found.",
+        call. = FALSE
+      )
+    }
+    chunk_value <- dplyr::group_split(value, !!!rlang::syms(chunk_fields))
+    n_chunks <- length(chunk_value)
+    message(n_chunks, " chunks are found and to be inserted.")
+    total_rows <- 0L
+    pb <- progress::progress_bar$new(
+      format = "  appending chunk #:chunk [:bar] :percent in :elapsed",
+      clear = FALSE,
+      total = 100,
+      width = 80,
+      show_after = 1
     )
-    rows <- DBI::dbExecute(conn, sql, quiet = TRUE)
-    pb$update(ratio = i/chunks, tokens = list(chunk = i))
-    total_rows <- total_rows + rows
+    pb$tick(0, tokens = list(chunk = 0L))
+    for (i in 1:n_chunks) {
+      sql <- DBI::sqlAppendTable(
+        conn, name, chunk_value[[i]], row.names = row.names
+      )
+      rows <- DBI::dbExecute(conn, sql, quiet = TRUE)
+      pb$update(ratio = i/n_chunks, tokens = list(chunk = i))
+      total_rows <- total_rows + rows
+    }
+  } else {
+    sql <- DBI::sqlAppendTable(conn, name, value, row.names = row.names)
+    total_rows <- DBI::dbExecute(conn, sql)
   }
   return(total_rows)
 }
