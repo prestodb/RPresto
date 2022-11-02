@@ -510,5 +510,6 @@ test_df <- tibble::tibble(
     lubridate::ymd_hms("2000-01-02 04:05:06", tz = "America/Los_Angeles"),
     as.POSIXct(NA)
   ),
-  field7 = hms::as_hms(c("01:02:03", "04:05:06", NA_character_))
+  field7 = hms::as_hms(c("01:02:03", "04:05:06", NA_character_)),
+  field8 = list(c(1L, 2L), c(3L, NA_integer_), NA_integer_)
 )
