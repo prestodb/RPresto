@@ -70,4 +70,22 @@ test_that("dbQuoteLiteral works with live connection", {
     dbQuoteLiteral(conn, c(1.1, 2.2, NA_real_)),
     DBI::SQL(c("1.1", "2.2", "NULL"))
   )
+  expect_equal(
+    dbQuoteLiteral(conn, list(c(1L, 2L), c(3L, NA_integer_), NA_integer_)),
+    DBI::SQL(c("ARRAY[1, 2]", "ARRAY[3, NULL]", "NULL"))
+  )
+  expect_equal(
+    dbQuoteLiteral(
+      conn,
+      list(c("a", "b"), c("c", NA_character_), NA_character_)
+    ),
+    DBI::SQL(c("ARRAY['a', 'b']", "ARRAY['c', NULL]", "NULL"))
+  )
+  expect_error(
+    dbQuoteLiteral(
+      conn,
+      list(c("a" = 1L, "b" = 2L), c("a" = 3L, "b" = NA_integer_), NA_integer_)
+    ),
+    "MAP values are not supported."
+  )
 })

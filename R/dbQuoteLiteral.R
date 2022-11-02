@@ -55,7 +55,7 @@ NULL
     blob_data <- vapply(
       x,
       function(x) {
-        if (is.null(x)) {
+        if (length(x) == 1L && (is.null(x) || is.na(x))) {
           "NULL"
         } else if (is.raw(x)) {
           if (rawToChar(x) == "NA") {
@@ -64,7 +64,11 @@ NULL
             paste0("X'", paste(format(x), collapse = ""), "'")
           }
         } else {
-          stop("Lists must contain raw vectors or NULL", call. = FALSE)
+          if (!is.null(names(x))) {
+            stop("MAP values are not supported.", call. = FALSE)
+          }
+          inner_values <- .dbQuoteLiteral(conn, x, ...)
+          paste0("ARRAY[", paste(inner_values, collapse = ", "), "]")
         }
       },
       character(1)
