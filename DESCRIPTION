@@ -50,6 +50,7 @@ Collate:
     'PrestoQuery.R'
     'PrestoResult.R'
     'RPresto-package.R'
+    'chunk.R'
     'create.dummy.tables.R'
     'cte.R'
     'dbAppendTable.R'

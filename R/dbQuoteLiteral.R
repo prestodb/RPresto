@@ -11,7 +11,7 @@ NULL
 #' @inheritParams DBI::dbQuoteLiteral
 #' @usage NULL
 .dbQuoteLiteral <- function(conn, x, ...) {
-  if (is(x, "SQL")) {
+  if (methods::is(x, "SQL")) {
     return(x)
   }
 
