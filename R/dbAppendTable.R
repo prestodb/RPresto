@@ -11,23 +11,23 @@ NULL
 #' @inheritParams DBI::dbAppendTable
 #' @usage NULL
 .dbAppendTable <- function(
-  conn, name, value, ..., chunk_fields = NULL, row.names = NULL
+  conn, name, value, ..., chunk.fields = NULL, row.names = NULL
 ) {
   is_factor <- vapply(value, is.factor, logical(1L))
   if (any(is_factor)) {
     value[is_factor] <- lapply(value[is_factor], as.character)
   }
-  if (!is.null(chunk_fields)) {
-    is_chunk_field_found <- chunk_fields %in% colnames(value)
+  if (!is.null(chunk.fields)) {
+    is_chunk_field_found <- chunk.fields %in% colnames(value)
     if (!all(is_chunk_field_found)) {
       stop(
         "Fields [",
-        paste(chunk_fields[!is_chunk_field_found], collapse = ", "),
+        paste(chunk.fields[!is_chunk_field_found], collapse = ", "),
         "] are not found.",
         call. = FALSE
       )
     }
-    chunk_value <- dplyr::group_split(value, !!!rlang::syms(chunk_fields))
+    chunk_value <- dplyr::group_split(value, !!!rlang::syms(chunk.fields))
     n_chunks <- length(chunk_value)
     message(n_chunks, " chunks are found and to be inserted.")
     total_rows <- 0L

@@ -9,14 +9,23 @@ NULL
 
 #' @rdname PrestoConnection-class
 #' @inheritParams DBI::dbWriteTable
-#' @param chunk_fields A character vector of names of the fields that should
-#'   be used to slice the value data frame into chunks for batch append.
-#'   Default to NULL which appends the entire value data frame.
+#' @param chunk.fields A character vector of names of the fields that should
+#'   be used to slice the value data frame into chunks for batch append. This is
+#'   necessary when the data frame is too big to be uploaded at once in one
+#'   single INSERT INTO statement. Default to NULL which inserts the entire
+#'   value data frame.
+#' @param use.one.query A boolean to indicate if to use a single CREATE TABLE AS
+#'   statement rather than the default implementation of using
+#'   separate CREATE TABLE and INSERT INTO statements. Some Presto backends
+#'   might have different requirements between the two approaches. e.g.
+#'   INSERT INTO might not be allowed to mutate an unpartitioned table created
+#'   by CREATE TABLE. If set to TRUE, chunk.fields cannot be used.
 #' @usage NULL
 .dbWriteTable <- function(conn, name, value,
                           overwrite = FALSE, ...,
                           append = FALSE, field.types = NULL, temporary = FALSE,
-                          row.names = FALSE, with = NULL, chunk_fields = NULL) {
+                          row.names = FALSE, with = NULL, chunk.fields = NULL,
+                          use.one.query = FALSE) {
   stopifnot(is.data.frame(value))
   if (!identical(temporary, FALSE)) {
     stop("Temporary tables not supported by RPresto", call. = FALSE)
@@ -32,25 +41,44 @@ NULL
   if (!is.logical(overwrite) || length(overwrite) != 1L || is.na(overwrite)) {
     stop("overwrite must be a logical scalar", call. = FALSE)
   }
-  if (!is.logical(append) || length(append) != 1L || is.na(append)) {
-    stop("append must be a logical scalar", call. = FALSE)
-  }
-  if (overwrite && append) {
-    stop("overwrite and append cannot both be TRUE", call. = FALSE)
-  }
-  if (
-    (!is.null(field.types)) &&
-      (!(is.character(field.types))) &&
-      (!is.null(names(field.types))) &&
-      (!anyDuplicated(names(field.types)))
-  ) {
-    stop(
-      "field.types must be a named character vector with unique names, or NULL",
-      call. = FALSE
-    )
-  }
-  if (append && !is.null(field.types)) {
-    stop("Cannot specify field.types with `append = TRUE`", call. = FALSE)
+
+  if (use.one.query) {
+    if (append) {
+      stop("append and use.one.query cannot both be TRUE", call. = FALSE)
+    }
+    if (!is.null(field.types)) {
+      stop(
+        "field.types is not supported when use.one.query is TRUE",
+        call. = FALSE
+      )
+    }
+    if (!is.null(chunk.fields)) {
+      stop(
+        "chunk.fields is not supported when use.one.query is TRUE",
+        call. = FALSE
+      )
+    }
+  } else {
+    if (
+      (!is.null(field.types)) &&
+        (!(is.character(field.types))) &&
+        (!is.null(names(field.types))) &&
+        (!anyDuplicated(names(field.types)))
+    ) {
+      stop(
+        "field.types must be a named character vector with unique names, or NULL",
+        call. = FALSE
+      )
+    }
+    if (!is.logical(append) || length(append) != 1L || is.na(append)) {
+      stop("append must be a logical scalar", call. = FALSE)
+    }
+    if (overwrite && append) {
+      stop("overwrite and append cannot both be TRUE", call. = FALSE)
+    }
+    if (append && !is.null(field.types)) {
+      stop("Cannot specify field.types with `append = TRUE`", call. = FALSE)
+    }
   }
 
   found <- DBI::dbExistsTable(conn, name)
@@ -72,37 +100,55 @@ NULL
     )
   }
 
+  value <- DBI::sqlRownamesToColumn(value, row.names)
   tryCatch(
     {
-      value <- DBI::sqlRownamesToColumn(value, row.names)
-
       if (!found || overwrite) {
-        if (is.null(field.types)) {
-          combined_field_types <- lapply(value, dbDataType, dbObj = Presto())
+        if (use.one.query) {
+          sql_values <- DBI::sqlData(conn, value)
+          fields <- DBI::dbQuoteIdentifier(conn, names(sql_values))
+          rows <- do.call(paste, c(unname(sql_values), sep = ", "))
+          sql <- DBI::SQL(paste0(
+            "SELECT * FROM (\n",
+            "VALUES\n",
+            paste0("  (", rows, ")", collapse = ",\n"),
+            ") AS t (", paste(fields, collapse = ", "), ")\n"
+          ))
+          dbCreateTableAs(
+            conn = conn,
+            name = name,
+            sql = sql,
+            overwrite = overwrite,
+            with = with
+          )
         } else {
-          combined_field_types <- rep("", length(value))
-          names(combined_field_types) <- names(value)
-          field_types_idx <- match(names(field.types), names(combined_field_types))
-          stopifnot(!any(is.na(field_types_idx)))
-          combined_field_types[field_types_idx] <- field.types
-          values_idx <- setdiff(seq_along(value), field_types_idx)
-          combined_field_types[values_idx] <- lapply(
-            value[values_idx], dbDataType,
-            dbObj = Presto()
+          if (is.null(field.types)) {
+            combined_field_types <- lapply(value, dbDataType, dbObj = Presto())
+          } else {
+            combined_field_types <- rep("", length(value))
+            names(combined_field_types) <- names(value)
+            field_types_idx <- match(
+              names(field.types), names(combined_field_types)
+            )
+            stopifnot(!any(is.na(field_types_idx)))
+            combined_field_types[field_types_idx] <- field.types
+            values_idx <- setdiff(seq_along(value), field_types_idx)
+            combined_field_types[values_idx] <- lapply(
+              value[values_idx], dbDataType,
+              dbObj = Presto()
+            )
+          }
+          DBI::dbCreateTable(
+            conn = conn,
+            name = name,
+            fields = combined_field_types,
+            with = with,
+            temporary = temporary
           )
         }
-
-        DBI::dbCreateTable(
-          conn = conn,
-          name = name,
-          fields = combined_field_types,
-          with = with,
-          temporary = temporary
-        )
       }
-
-      if (nrow(value) > 0) {
-        DBI::dbAppendTable(conn, name, value, chunk_fields = chunk_fields)
+      if (!use.one.query && nrow(value) > 0) {
+        DBI::dbAppendTable(conn, name, value, chunk.fields = chunk.fields)
       }
     },
     error = function(e) {

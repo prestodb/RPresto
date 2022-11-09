@@ -8,6 +8,8 @@
 * Add `dbQuoteLiteral()` and `dbAppendTable()` implementations.
 * Rewrite `dbWriteTable()` implementation to use `dbCreateTable()` and
   `dbAppendTable()`. It also supports all default arguments now (#199)
+* `dbWriteTable()` gains a `use.one.query` option to use a single `CREATE TABLE
+  AS` query.
 
 # RPresto 1.4.0
 

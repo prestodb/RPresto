@@ -35,7 +35,7 @@
 \usage{
 \S4method{show}{PrestoConnection}(object)
 
-\S4method{dbAppendTable}{PrestoConnection,character,data.frame}(conn, name, value, ..., chunk_fields = NULL, row.names = NULL)
+\S4method{dbAppendTable}{PrestoConnection,character,data.frame}(conn, name, value, ..., chunk.fields = NULL, row.names = NULL)
 
 \S4method{dbCreateTable}{PrestoConnection}(
   conn,
@@ -76,7 +76,8 @@
   temporary = FALSE,
   row.names = FALSE,
   with = NULL,
-  chunk_fields = NULL
+  chunk.fields = NULL,
+  use.one.query = FALSE
 )
 
 \S4method{sqlCreateTable}{PrestoConnection}(
@@ -110,9 +111,11 @@ with those in the target table in the database.}
 
 \item{...}{Other parameters passed on to methods.}
 
-\item{chunk_fields}{A character vector of names of the fields that should
-be used to slice the value data frame into chunks for batch append.
-Default to NULL which appends the entire value data frame.}
+\item{chunk.fields}{A character vector of names of the fields that should
+be used to slice the value data frame into chunks for batch append. This is
+necessary when the data frame is too big to be uploaded at once in one
+single INSERT INTO statement. Default to NULL which inserts the entire
+value data frame.}
 
 \item{row.names}{Must be \code{NULL}.}
 
@@ -140,6 +143,13 @@ interactive queries.}
 
 \item{fail_if_missing}{If \code{FALSE}, \code{dbRemoveTable()} succeeds if the
 table doesn't exist.}
+
+\item{use.one.query}{A boolean to indicate if to use a single CREATE TABLE AS
+statement rather than the default implementation of using
+separate CREATE TABLE and INSERT INTO statements. Some Presto backends
+might have different requirements between the two approaches. e.g.
+INSERT INTO might not be allowed to mutate an unpartitioned table created
+by CREATE TABLE. If set to TRUE, chunk.fields cannot be used.}
 
 \item{con}{A database connection.}
 

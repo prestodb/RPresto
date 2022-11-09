@@ -18,6 +18,12 @@ test_that("dbWriteTable works with live connection", {
   expect_true(dbExistsTable(conn, test_table_name))
   expect_equal_data_frame(dbReadTable(conn, test_table_name), test_df)
   expect_true(dbRemoveTable(conn, test_table_name))
+  expect_true(
+    dbWriteTable(conn, test_table_name, test_df, use.one.query = TRUE)
+  )
+  expect_true(dbExistsTable(conn, test_table_name))
+  expect_equal_data_frame(dbReadTable(conn, test_table_name), test_df)
+  expect_true(dbRemoveTable(conn, test_table_name))
   expect_true(dbWriteTable(conn, test_table_name, test_df, row.names = TRUE))
   expect_true(dbExistsTable(conn, test_table_name))
   expect_equal(
@@ -26,7 +32,7 @@ test_that("dbWriteTable works with live connection", {
   )
   expect_true(dbRemoveTable(conn, test_table_name))
   expect_true(
-    dbWriteTable(conn, test_table_name, test_df, chunk_fields = c("field1"))
+    dbWriteTable(conn, test_table_name, test_df, chunk.fields = c("field1"))
   )
   expect_equal_data_frame(
     dplyr::arrange(dbReadTable(conn, test_table_name), field1),
