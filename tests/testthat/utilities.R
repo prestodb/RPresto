@@ -511,5 +511,6 @@ test_df <- tibble::tibble(
     as.POSIXct(NA)
   ),
   field7 = hms::as_hms(c("01:02:03", "04:05:06", NA_character_)),
-  field8 = list(c(1L, 2L), c(3L, NA_integer_), NA_integer_)
+  field8 = list(c(1L, 2L), c(3L, NA_integer_), NA_integer_),
+  field9 = list(c(1.1, 2.2), c(3.3, NA_real_), NA_real_)
 )
