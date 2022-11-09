@@ -23,6 +23,13 @@ NULL
     return(DBI::dbQuoteString(conn, x))
   }
 
+  # This is necessary because a simple double literal is interpreted as DECIMAL
+  if (is.numeric(x) & typeof(x) == "double") {
+    x_str <- as.character(x)
+    x_str[is.na(x_str)] <- "NULL"
+    return(DBI::SQL(paste0("CAST(", x_str, " AS DOUBLE)")))
+  }
+
   if (inherits(x, "POSIXct")) {
     tz <- attr(x, "tzone")
     if (is.null(tz) || tz == "") {
