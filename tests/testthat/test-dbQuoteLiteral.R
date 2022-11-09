@@ -68,7 +68,9 @@ test_that("dbQuoteLiteral works with live connection", {
   )
   expect_equal(
     dbQuoteLiteral(conn, c(1.1, 2.2, NA_real_)),
-    DBI::SQL(c("1.1", "2.2", "NULL"))
+    DBI::SQL(
+      c("CAST(1.1 AS DOUBLE)", "CAST(2.2 AS DOUBLE)", "CAST(NULL AS DOUBLE)")
+    )
   )
   expect_equal(
     dbQuoteLiteral(conn, list(c(1L, 2L), c(3L, NA_integer_), NA_integer_)),
