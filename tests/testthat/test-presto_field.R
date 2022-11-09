@@ -120,19 +120,24 @@ source("utilities.R")
   expect_s3_class(df.timestamp$type_timestamp, "POSIXct")
   expect_equal(attr(df.timestamp$type_timestamp[[1]], "tz"), test.timezone())
   # timestamp with timezone type
+  timestamp_date <- "2022-09-21"
   expect_equal_data_frame(
     df.timestamp_with_tz <- dbGetQuery(
       conn,
       paste0(
-        "select timestamp '2022-09-21 01:02:03 ",
-        ifelse(type == "Presto", timezone, tz_to_offset(timezone)),
+        "select timestamp '", timestamp_date, " 01:02:03 ",
+        ifelse(
+          type == "Presto",
+          timezone,
+          tz_to_offset(timezone, dt = as.Date(timestamp_date))
+        ),
         "' as type_timestamp_with_tz"
       )
     ),
     tibble::tibble(
       type_timestamp_with_tz =
         lubridate::with_tz(
-          as.POSIXct("2022-09-21 01:02:03", tz = timezone),
+          as.POSIXct(paste0(timestamp_date, " 01:02:03"), tz = timezone),
           test.timezone()
         )
     )
@@ -371,14 +376,25 @@ test_that("Queries return the correct primitive types", {
     ~ expect_equal(attr(., "tz"), test.timezone())
   )
   # timestamp with timezone type
+  timestamp_date <- "2022-09-21"
   expect_equal_data_frame(
     df.timestamp_with_tz <- dbGetQuery(
       conn,
       paste0("
       select
         array[
-          timestamp '2022-09-21 01:02:03 ", ifelse(type == "Presto", timezone, tz_to_offset(timezone)), "',
-          timestamp '2022-09-21 01:02:03 ", ifelse(type == "Presto", timezone, tz_to_offset(timezone)), "'
+          timestamp '", timestamp_date, " 01:02:03 ",
+          ifelse(
+            type == "Presto",
+            timezone,
+            tz_to_offset(timezone, dt = as.Date(timestamp_date))
+          ), "',
+          timestamp '", timestamp_date, " 01:02:03 ",
+          ifelse(
+            type == "Presto",
+            timezone,
+            tz_to_offset(timezone, dt = as.Date(timestamp_date))
+          ), "'
         ] as type_timestamp_with_tz
       ")
     ),
@@ -387,8 +403,8 @@ test_that("Queries return the correct primitive types", {
         lubridate::with_tz(
           as.POSIXct(
             c(
-              "2022-09-21 01:02:03",
-              "2022-09-21 01:02:03"
+              paste0(timestamp_date, " 01:02:03"),
+              paste0(timestamp_date, " 01:02:03")
             ),
             tz = timezone
           ),
@@ -1048,7 +1064,11 @@ test_that("Empty output can be returned", {
         "cast(type_timestamp_with_tz as varchar) AS ",
         "type_timestamp_with_tz_string ",
         "from (select timestamp '", timestamp_string, " ",
-        ifelse(type == "Presto", timezone, tz_to_offset(timezone)),
+        ifelse(
+          type == "Presto",
+          timezone,
+          tz_to_offset(timezone, dt = as.Date(timestamp_date))
+        ),
         "' as type_timestamp_with_tz)"
       )
     ),
@@ -1064,7 +1084,11 @@ test_that("Empty output can be returned", {
             as.POSIXct(timestamp_string, tz = timezone),
             digits = 3
           ), " ",
-          ifelse(type == "Presto", timezone, tz_to_offset(timezone))
+          ifelse(
+            type == "Presto",
+            timezone,
+            tz_to_offset(timezone, dt = as.Date(timestamp_date))
+          )
         )
     )
   )
