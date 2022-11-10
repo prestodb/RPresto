@@ -6,6 +6,8 @@
 
 context("dbDataType")
 
+source("utilities.R")
+
 with_locale(test.locale(), test_that)("presto simple types are correct", {
   drv <- RPresto::Presto()
 
@@ -24,6 +26,20 @@ with_locale(test.locale(), test_that)("presto simple types are correct", {
   )
   expect_equal(dbDataType(drv, factor()), "VARCHAR")
   expect_equal(dbDataType(drv, factor(ordered = TRUE)), "VARCHAR")
+  expect_equal(
+    dbDataType(drv, test_df),
+    c(
+      field1 = "VARCHAR",
+      field2 = "INTEGER",
+      field3 = "DOUBLE",
+      field4 = "BOOLEAN",
+      field5 = "DATE",
+      field6 = "TIMESTAMP",
+      field7 = "TIME",
+      field8 = "ARRAY<INTEGER>",
+      field9 = "ARRAY<DOUBLE>"
+    )
+  )
 })
 
 test_that("conversion to array is correct", {
