@@ -43,4 +43,5 @@ dbDataType(
     c(as.Date("2016-03-01"), as.Date("2016-03-02"))
   )
 )
+dbDataType(drv, iris)
 }

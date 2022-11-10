@@ -70,6 +70,7 @@ get_vector_type <- function(obj) {
 #'     c(as.Date("2016-03-01"), as.Date("2016-03-02"))
 #'   )
 #' )
+#' dbDataType(drv, iris)
 #' @importMethodsFrom DBI dbDataType
 #' @export
 setMethod("dbDataType", "PrestoDriver", .dbDataType)
