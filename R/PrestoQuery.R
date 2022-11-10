@@ -205,13 +205,26 @@ PrestoQuery <- setRefClass("PrestoQuery",
       status <- 503L
       retries <- 3
       headers <- .request_headers(.conn)
+      extra_credentials <- .conn@extra.credentials
+      request_config <- .conn@request.config
+      statement <- enc2utf8(.statement)
       while (status == 503L || (retries > 0 && status >= 400L)) {
         wait()
-        post.response <- httr::POST(
-          url,
-          body = enc2utf8(.statement),
+        post_args <- list(
+          url = url,
+          body = statement,
           config = headers
         )
+
+        if (grepl("use.kerberos.headers=TRUE", extra_credentials)) {
+          post_args[["config"]] <- c(
+             post_args[["config"]],
+             request_config,
+             httr::authenticate(user = "", password = "", type = "gssnegotiate")
+          )
+        }
+
+        post.response <- do.call(httr::POST, post_args)
         status <- as.integer(httr::status_code(post.response))
         if (status >= 400L && status != 503L) {
           retries <- retries - 1

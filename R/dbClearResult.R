@@ -32,7 +32,22 @@ setMethod(
       res@connection@host, ":", res@connection@port,
       "/v1/query/", res@query$id()
     )
-    delete.result <- httr::DELETE(delete.uri, config = headers)
+    extra_credentials <- res@connection@extra.credentials
+    request_config <- res@connection@request.config
+    delete_args <- list(
+      url = delete.uri,
+      config = headers
+    )
+
+    if (grepl("use.kerberos.headers=TRUE", extra_credentials)) {
+      delete_args[["config"]] <- c(
+        delete_args[["config"]],
+        request_config,
+        httr::authenticate(user = "", password = "", type = "gssnegotiate")
+      )
+    }
+
+    delete.result <- do.call(httr::DELETE, delete_args)
     s <- httr::status_code(delete.result)
     if (s >= 200 && s < 300) {
       res@query$state("__KILLED")

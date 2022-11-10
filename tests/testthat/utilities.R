@@ -329,13 +329,24 @@ read_credentials <- function() {
     ))
   }
   dcf <- read.dcf("credentials.dcf")
+  extra_creds <- ""
+  httr_config <- httr::config()
+  if ("extra_credentials" %in% colnames(dcf)) {
+    extra_creds <- as.vector(dcf[1, "extra_credentials"])
+  }
+  if (grepl("use.kerberos.headers=TRUE", extra_creds)) {
+    httr_config <- httr::config(service_name = "presto", ssl_verifypeer = FALSE,
+                                 ssl_verifyhost = FALSE)
+  }
   credentials <- list(
     host = as.vector(dcf[1, "host"]),
     port = as.integer(as.vector(dcf[1, "port"])),
     catalog = as.vector(dcf[1, "catalog"]),
     schema = as.vector(dcf[1, "schema"]),
     iris_table_name = as.vector(dcf[1, "iris_table_name"]),
-    source = as.vector(dcf[1, "source"])
+    source = as.vector(dcf[1, "source"]),
+    extra_credentials = extra_creds,
+    request_config = httr_config
   )
   return(credentials)
 }
@@ -357,7 +368,8 @@ setup_live_connection <- function(session.timezone = "",
       source = credentials$source,
       session.timezone = session.timezone,
       parameters = parameters,
-      extra.credentials = extra.credentials,
+      extra.credentials = credentials$extra_credentials,
+      request.config = credentials$request_config,
       user = Sys.getenv("USER"),
       bigint = bigint,
       ...
