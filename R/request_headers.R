@@ -31,3 +31,22 @@
   request_combine <- utils::getFromNamespace("request_combine", "httr")
   return(request_combine(headers, conn@request.config))
 }
+
+#' A convenient wrapper around Kerberos config
+#'
+#' The configs specify authentication protocol and additional settings.
+#' @param user User name to pass to httr::authenticate(). Default to "".
+#' @param password Password to pass to httr::authenticate(). Default to "".
+#' @param service_name The service name. Default to "presto".
+#' @return A httr::config() output that can be passed to the request.config
+#'   argument of dbConnect().
+#' @export
+kerberos_configs <- function(user = "", password = "", service_name = "presto") {
+  httr::config(
+    httpauth = 4,
+    userpwd = paste0(user, ":", password),
+    service_name = service_name,
+    ssl_verifypeer = FALSE,
+    ssl_verifyhost=FALSE
+  )
+}

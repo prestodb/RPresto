@@ -381,6 +381,27 @@ con <- DBI::dbConnect(
 )
 ```
 
+## Use RPresto with Kerberos
+
+Assuming that you have Kerberos already set up with the Presto
+coordinator, you can use `RPresto` with Kerberos by passing a Kerberos
+config header to the `request.config` argument of `dbConnect()`. We
+provide a convenient wrapper `kerberos_configs()` to further simplify
+the workflow.
+
+``` r
+con <- DBI::dbConnect(
+  RPresto::Presto(),
+  host = "http://localhost",
+  port = 7777,
+  user = Sys.getenv("USER"),
+  schema = "<schema>",
+  catalog = "<catalog>",
+  source = "<source>",
+  request.config = kerberos_configs()
+)
+```
+
 ## How RPresto works
 
 Presto exposes its interface via a REST based API[^1]. We utilize the
