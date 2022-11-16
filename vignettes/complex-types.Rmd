@@ -251,7 +251,7 @@ Let's import all the data into R.
 (
   df.array_of_maps <- dbGetQuery(
     con,
-    "SELECT * FROM presto_primitive_maps",
+    "SELECT * FROM presto_array_of_maps",
     bigint = "integer64"
   )
 )
