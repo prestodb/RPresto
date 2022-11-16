@@ -55,7 +55,7 @@ add_chunk <- function(
     start <- 0L
     res <- vector(mode = "list", length = length(split_values))
     for (i in seq_along(res)) {
-      res[[i]] <- .add_chunk(split_values[[i]], start = start + 1)
+      res[[i]] <- .add_chunk(split_values[[i]], start = start + 1L)
       start <-
         max(dplyr::pull(res[[i]], !!rlang::sym(new_chunk_field_name)))
     }
