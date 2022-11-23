@@ -13,6 +13,7 @@ NULL
 .dbAppendTable <- function(
   conn, name, value, ..., chunk.fields = NULL, row.names = NULL
 ) {
+  name <- DBI::dbQuoteIdentifier(conn, name)
   is_factor <- vapply(value, is.factor, logical(1L))
   if (any(is_factor)) {
     value[is_factor] <- lapply(value[is_factor], as.character)
@@ -59,6 +60,6 @@ NULL
 #' @export
 setMethod(
   "dbAppendTable",
-  c("PrestoConnection", "character", "data.frame"),
+  signature("PrestoConnection", "ANY", "data.frame"),
   .dbAppendTable
 )

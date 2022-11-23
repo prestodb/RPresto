@@ -20,4 +20,24 @@ NULL
 #' @rdname PrestoConnection-class
 #' @importMethodsFrom DBI dbReadTable
 #' @export
-setMethod("dbReadTable", c("PrestoConnection", "character"), .dbReadTable)
+setMethod("dbReadTable", signature("PrestoConnection"), .dbReadTable)
+
+#' @rdname PrestoConnection-class
+#' @importMethodsFrom DBI dbReadTable
+#' @export
+setMethod("dbReadTable", signature("PrestoConnection", "character"), .dbReadTable)
+
+#' @rdname PrestoConnection-class
+#' @importMethodsFrom DBI dbReadTable
+#' @export
+setMethod("dbReadTable", signature("PrestoConnection", "dbplyr_schema"), .dbReadTable)
+
+#' @rdname PrestoConnection-class
+#' @importMethodsFrom DBI dbReadTable
+#' @export
+setMethod("dbReadTable", signature("PrestoConnection", "Id"), .dbReadTable)
+
+#' @rdname PrestoConnection-class
+#' @importMethodsFrom DBI dbReadTable
+#' @export
+setMethod("dbReadTable", signature("PrestoConnection", "SQL"), .dbReadTable)

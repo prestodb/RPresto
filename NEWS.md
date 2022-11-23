@@ -3,6 +3,9 @@
 * Add a convenient wrapper `kerberos_configs()` to generate Kerberos header
   configs that can be passed to the `request.config` argument of `dbConnect()`.
   (#202 and #221). Thanks to @suzzettedetorres for providing this solution.
+* All functions that take table name as argument now work with
+  `dbplyr::in_schema()` and `DBI::Id()` besides the usual character table name.
+  (#228)
 
 # RPresto 1.4.1
 

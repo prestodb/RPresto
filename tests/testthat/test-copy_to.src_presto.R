@@ -18,9 +18,23 @@ source("utilities.R")
   if (dbExistsTable(con, test_table_name)) {
     dbRemoveTable(con, test_table_name)
   }
+  # character name works
   tbl <- copy_to(dest = src, df = test_df, name = test_table_name)
   expect_true(dbExistsTable(con, test_table_name))
   expect_equal_data_frame(collect(tbl), test_df)
+  expect_true(dbRemoveTable(con, test_table_name))
+  # in_schema() name works
+  test_table_name_2 <- dbplyr::in_schema(con@schema, test_table_name)
+  tbl <- copy_to(dest = src, df = test_df, name = test_table_name_2)
+  expect_true(dbExistsTable(con, test_table_name_2))
+  expect_equal_data_frame(collect(tbl), test_df)
+  expect_true(dbRemoveTable(con, test_table_name_2))
+  # Id() name works
+  test_table_name_3 <- DBI::Id(table = test_table_name)
+  tbl <- copy_to(dest = src, df = test_df, name = test_table_name_3)
+  expect_true(dbExistsTable(con, test_table_name_3))
+  expect_equal_data_frame(collect(tbl), test_df)
+  # overwrite warning
   expect_error(
     tbl <- copy_to(dest = src, df = test_df, name = test_table_name),
     "exists in database, and both overwrite and append are FALSE"

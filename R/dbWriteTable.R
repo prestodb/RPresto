@@ -183,6 +183,6 @@ NULL
 #' @export
 setMethod(
   "dbWriteTable",
-  c("PrestoConnection", "character", "data.frame"),
+  signature("PrestoConnection", "ANY", "data.frame"),
   .dbWriteTable
 )

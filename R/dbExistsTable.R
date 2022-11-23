@@ -12,10 +12,8 @@ NULL
 #' @export
 setMethod(
   "dbExistsTable",
-  c("PrestoConnection", "character"),
+  signature("PrestoConnection"),
   function(conn, name, ...) {
-    # This is necessary because name might be a quoted identifier rather than
-    # just a string (see #167)
     table_id <- DBI::dbQuoteIdentifier(conn, name)
     table_name <- DBI::dbUnquoteIdentifier(conn, table_id)[[1]]@name
     res <- DBI::dbGetQuery(
@@ -25,8 +23,8 @@ setMethod(
         FROM information_schema.columns
         WHERE
           table_catalog = '", conn@catalog, "' AND
-          table_schema = '", conn@schema, "' AND
-          table_name = '", table_name, "'
+          table_schema = '", ifelse(!"schema" %in% names(table_name), conn@schema, table_name["schema"]), "' AND
+          table_name = '", table_name["table"], "'
       ")
     )
     return((res$n > 0))

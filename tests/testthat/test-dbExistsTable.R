@@ -16,4 +16,8 @@ test_that("dbExistsTable works with live database", {
   expect_true(db_has_table(conn, "iris"))
   expect_true(dbExistsTable(conn, dbQuoteIdentifier(conn, "iris")))
   expect_true(db_has_table(conn, dbQuoteIdentifier(conn, "iris")))
+  expect_true(dbExistsTable(conn, dbplyr::in_schema(conn@schema, "iris")))
+  expect_true(db_has_table(conn, dbplyr::in_schema(conn@schema, "iris")))
+  expect_true(dbExistsTable(conn, DBI::Id(table = "iris")))
+  expect_true(db_has_table(conn, DBI::Id(table = "iris")))
 })
