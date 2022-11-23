@@ -2,8 +2,8 @@
 % Please edit documentation in R/PrestoConnection.R, R/dbAppendTable.R,
 %   R/dbCreateTable.R, R/dbCreateTableAs.R, R/dbExistsTable.R,
 %   R/dbGetQuery.R, R/dbListFields.R, R/dbListTables.R, R/dbQuoteIdentifier.R,
-%   R/dbQuoteLiteral.R, R/dbReadTable.R, R/dbRemoveTable.R, R/dbSendQuery.R,
-%   R/dbWriteTable.R, R/sqlCreateTable.R, R/sqlCreateTableAs.R
+%   R/dbQuoteLiteral.R, R/dbReadTable.R, R/dbRemoveTable.R, R/dbRenameTable.R,
+%   R/dbSendQuery.R, R/dbWriteTable.R, R/sqlCreateTable.R, R/sqlCreateTableAs.R
 \docType{class}
 \name{PrestoConnection-class}
 \alias{PrestoConnection-class}
@@ -35,6 +35,8 @@
 \alias{dbReadTable,PrestoConnection,SQL-method}
 \alias{.dbRemoveTable}
 \alias{dbRemoveTable,PrestoConnection,ANY-method}
+\alias{.dbRenameTable}
+\alias{dbRenameTable,PrestoConnection-method}
 \alias{dbSendQuery,PrestoConnection,character-method}
 \alias{.dbWriteTable}
 \alias{dbWriteTable,PrestoConnection,ANY,data.frame-method}
@@ -91,6 +93,8 @@
 \S4method{dbReadTable}{PrestoConnection,SQL}(conn, name, ...)
 
 \S4method{dbRemoveTable}{PrestoConnection,ANY}(conn, name, ..., fail_if_missing = TRUE)
+
+\S4method{dbRenameTable}{PrestoConnection}(conn, name, new_name, ...)
 
 \S4method{dbSendQuery}{PrestoConnection,character}(conn, statement, ..., quiet = getOption("rpresto.quiet"))
 

@@ -43,20 +43,14 @@ setGeneric("dbCreateTableAs",
       rn <- paste0(
         "temp_", paste(sample(letters, 10, replace = TRUE), collapse = "")
       )
-      DBI::dbExecute(
-        conn,
-        dbplyr::sql(paste("ALTER TABLE", name, "RENAME TO", rn))
-      )
+      dbRenameTable(conn, name, rn)
       tryCatch(
         {
           DBI::dbExecute(conn, query)
         },
         error = function(e) {
           # In case of error, revert the original table's name
-          DBI::dbExecute(
-            conn,
-            dbplyr::sql(paste("ALTER TABLE", rn, "RENAME TO", name))
-          )
+          dbRenameTable(conn, rn, name)
           stop(
             "Overwriting table ", name, ' failed with error: "',
             conditionMessage(e), '".',

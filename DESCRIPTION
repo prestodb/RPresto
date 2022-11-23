@@ -75,6 +75,7 @@ Collate:
     'dbQuoteLiteral.R'
     'dbReadTable.R'
     'dbRemoveTable.R'
+    'dbRenameTable.R'
     'dbSendQuery.R'
     'dbUnloadDriver.R'
     'dbWriteTable.R'

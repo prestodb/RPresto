@@ -94,10 +94,7 @@ NULL
   if (found && overwrite) {
     # Without implementation of TRANSACTION, we play it safe by renaming
     # the to-be-overwritten table rather than deleting it right away
-    DBI::dbExecute(
-      conn,
-      DBI::SQL(paste("ALTER TABLE", name, "RENAME TO", rn))
-    )
+    dbRenameTable(conn, name, rn)
   }
 
   value <- DBI::sqlRownamesToColumn(value, row.names)
@@ -157,10 +154,7 @@ NULL
         dbRemoveTable(conn, name)
       }
       if (dbExistsTable(conn, rn)) {
-        DBI::dbExecute(
-          conn,
-          DBI::SQL(paste("ALTER TABLE", rn, "RENAME TO", name))
-        )
+        dbRenameTable(conn, rn, name)
       }
       stop(
         "Writing table ", name, ' failed with error: "',
