@@ -21,6 +21,21 @@ test_that("dbReadTable works with live database", {
     dbReadTable(conn, test_table_name),
     tibble::tibble(field1 = 1L)
   )
+  # in_schema() works
+  expect_equal_data_frame(
+    dbReadTable(conn, dbplyr::in_schema(conn@schema, test_table_name)),
+    tibble::tibble(field1 = 1L)
+  )
+  # Id() works
+  expect_equal_data_frame(
+    dbReadTable(conn, DBI::Id(table = test_table_name)),
+    tibble::tibble(field1 = 1L)
+  )
+  # dbQuoteIdentifier() works
+  expect_equal_data_frame(
+    dbReadTable(conn, DBI::dbQuoteIdentifier(conn, test_table_name)),
+    tibble::tibble(field1 = 1L)
+  )
   # bigint works
   expect_equal_data_frame(
     dbReadTable(conn, test_table_name, bigint = "character"),

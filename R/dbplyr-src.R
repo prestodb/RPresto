@@ -124,7 +124,7 @@ tbl.src_presto <- function(src, from, ..., vars = NULL) {
   subclass <- class(src$con)[[1]]
   # dbListFields uses SHOW COLUMNS to get field names of a table
   if (!dbplyr::is.sql(from)) {
-    name <- dbplyr::as.sql(from, con = src$con)
+    name <- DBI::dbQuoteIdentifier(src$con, from)
     if (is.null(vars)) {
       vars <- dbListFields(src$con, name)
     }
@@ -177,7 +177,6 @@ tbl.PrestoConnection <- function(conn, from, ...) {
 copy_to.src_presto <- function(dest, df, name = deparse(substitute(df)), overwrite = FALSE,
                                ...,
                                with = NULL) {
-  name <- dbplyr::as.sql(name, con = dest$con)
   if (inherits(df, "tbl_sql") && dplyr::same_src(df$src, dest)) {
     out <- dplyr::compute(df,
       name = name,

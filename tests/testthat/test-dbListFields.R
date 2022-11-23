@@ -41,7 +41,15 @@ test_that("dbListFields works with identifier", {
   )
   DBI::dbWriteTable(conn, "iris", iris, overwrite = TRUE)
   expect_equal(
-    DBI::dbListFields(conn, dbplyr::ident("iris")),
+    DBI::dbListFields(conn, DBI::Id(table = "iris")),
+    tolower(colnames(iris))
+  )
+  expect_equal(
+    DBI::dbListFields(conn, dbplyr::in_schema(conn@schema, "iris")),
+    tolower(colnames(iris))
+  )
+  expect_equal(
+    DBI::dbListFields(conn, DBI::dbQuoteIdentifier(conn, "iris")),
     tolower(colnames(iris))
   )
 })

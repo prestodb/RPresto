@@ -15,6 +15,7 @@ test_that("dbAppendTable works with live connection", {
     dbRemoveTable(conn, test_table_name)
   }
   expect_true(dbCreateTable(conn, test_table_name, test_df))
+  # character name works
   expect_equal(
     dbAppendTable(conn, test_table_name, test_df),
     3L
@@ -22,5 +23,20 @@ test_that("dbAppendTable works with live connection", {
   expect_equal_data_frame(
     dbReadTable(conn, test_table_name),
     test_df
+  )
+  # in_schema() works
+  expect_equal(
+    dbAppendTable(conn, dbplyr::in_schema(conn@schema, test_table_name), test_df),
+    3L
+  )
+  # Id() works
+  expect_equal(
+    dbAppendTable(conn, DBI::Id(table = test_table_name), test_df),
+    3L
+  )
+  # dbQuoteIdentifier() works
+  expect_equal(
+    dbAppendTable(conn, DBI::dbQuoteIdentifier(conn, test_table_name), test_df),
+    3L
   )
 })

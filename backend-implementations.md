@@ -27,7 +27,7 @@ Important methods:
 | dbConnect | PrestoDriver | Implemented | dbConnect.R |
 | dbGetInfo | PrestoConnection | Implemented | dbGetInfo.R |
 | dbDisconnect | PrestoConnection | Implemented | dbDisconnect.R |
-| dbQuoteIdentifier | PrestoConnection | Default | |
+| dbQuoteIdentifier | PrestoConnection | Partially implemented | dbQuoteIdentifier.R |
 | dbUnquoteIdentifier | PrestoConnection | Default | |
 | dbQuoteString | PrestoConnection | Default | |
 | dbQuoteLiteral | PrestoConnection | Implemented | dbQuoteLiteral.R |

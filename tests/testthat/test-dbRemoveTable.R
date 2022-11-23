@@ -18,6 +18,31 @@ test_that("dbRemoveTable works with live database", {
     )
   }
   expect_true(dbExistsTable(conn, test_table_name))
+  # character name works
   expect_true(dbRemoveTable(conn, test_table_name))
+  expect_false(dbExistsTable(conn, test_table_name))
+  # in_schema() works
+  dbExecute(
+    conn,
+    paste("CREATE TABLE", test_table_name, "(field1 BIGINT, field2 VARCHAR)")
+  )
+  expect_true(dbExistsTable(conn, test_table_name))
+  expect_true(dbRemoveTable(conn, dbplyr::in_schema(conn@schema, test_table_name)))
+  expect_false(dbExistsTable(conn, test_table_name))
+  # Id() works
+  dbExecute(
+    conn,
+    paste("CREATE TABLE", test_table_name, "(field1 BIGINT, field2 VARCHAR)")
+  )
+  expect_true(dbExistsTable(conn, test_table_name))
+  expect_true(dbRemoveTable(conn, DBI::Id(table = test_table_name)))
+  expect_false(dbExistsTable(conn, test_table_name))
+  # dbQuoteIdentfier() works
+  dbExecute(
+    conn,
+    paste("CREATE TABLE", test_table_name, "(field1 BIGINT, field2 VARCHAR)")
+  )
+  expect_true(dbExistsTable(conn, test_table_name))
+  expect_true(dbRemoveTable(conn, DBI::dbQuoteIdentifier(conn, test_table_name)))
   expect_false(dbExistsTable(conn, test_table_name))
 })

@@ -25,4 +25,4 @@ NULL
 #' @rdname PrestoConnection-class
 #' @importMethodsFrom DBI dbRemoveTable
 #' @export
-setMethod("dbRemoveTable", c("PrestoConnection", "character"), .dbRemoveTable)
+setMethod("dbRemoveTable", signature("PrestoConnection"), .dbRemoveTable)

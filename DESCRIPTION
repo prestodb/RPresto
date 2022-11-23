@@ -71,6 +71,7 @@ Collate:
     'dbIsValid.R'
     'dbListFields.R'
     'dbListTables.R'
+    'dbQuoteIdentifier.R'
     'dbQuoteLiteral.R'
     'dbReadTable.R'
     'dbRemoveTable.R'

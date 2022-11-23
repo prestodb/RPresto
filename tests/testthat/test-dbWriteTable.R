@@ -56,6 +56,22 @@ test_that("dbWriteTable works with live connection", {
     nrow(dbReadTable(conn, test_table_name)),
     nrow(test_df) * 2L
   )
+  expect_true(dbRemoveTable(conn, test_table_name))
+  # in_schema() works
+  expect_true(dbWriteTable(conn, dbplyr::in_schema(conn@schema, test_table_name), test_df))
+  expect_true(dbExistsTable(conn, test_table_name))
+  expect_equal_data_frame(dbReadTable(conn, test_table_name), test_df)
+  expect_true(dbRemoveTable(conn, test_table_name))
+  # Id() works
+  expect_true(dbWriteTable(conn, DBI::Id(table = test_table_name), test_df))
+  expect_true(dbExistsTable(conn, test_table_name))
+  expect_equal_data_frame(dbReadTable(conn, test_table_name), test_df)
+  expect_true(dbRemoveTable(conn, test_table_name))
+  # dbQuoteIdentifier() works
+  expect_true(dbWriteTable(conn, DBI::dbQuoteIdentifier(conn, test_table_name), test_df))
+  expect_true(dbExistsTable(conn, test_table_name))
+  expect_equal_data_frame(dbReadTable(conn, test_table_name), test_df)
+  expect_true(dbRemoveTable(conn, test_table_name))
 })
 
 test_that("db_write_table works with live connection", {

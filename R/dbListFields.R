@@ -8,20 +8,40 @@
 NULL
 
 #' @rdname PrestoConnection-class
-#' @importMethodsFrom DBI dbListFields
-#' @export
-setMethod(
-  "dbListFields",
-  c("PrestoConnection", "character"),
-  function(conn, name, ...) {
-    # If name is alrady IDENT, pass it as it is. Otherwise, quote it.
-    if (!dbplyr::is.ident(name)) {
-      name <- DBI::dbQuoteIdentifier(conn, name)
-    }
+#' @inheritParams DBI::dbListFields
+#' @usage NULL
+.dbListFields_PrestoConnection <- function(conn, name, ...) {
+    name <- DBI::dbQuoteIdentifier(conn, name)
     res <- dbGetQuery(conn, paste("SHOW COLUMNS FROM", name))
     return(res$Column)
-  }
-)
+}
+
+#' @rdname PrestoConnection-class
+#' @importMethodsFrom DBI dbListFields
+#' @export
+setMethod("dbListFields", signature("PrestoConnection"), .dbListFields_PrestoConnection)
+
+#' @rdname PrestoConnection-class
+#' @importMethodsFrom DBI dbListFields
+#' @export
+setMethod("dbListFields", signature("PrestoConnection", "character"), .dbListFields_PrestoConnection)
+
+setOldClass("dbplyr_schema")
+
+#' @rdname PrestoConnection-class
+#' @importMethodsFrom DBI dbListFields
+#' @export
+setMethod("dbListFields", signature("PrestoConnection", "dbplyr_schema"), .dbListFields_PrestoConnection)
+
+#' @rdname PrestoConnection-class
+#' @importMethodsFrom DBI dbListFields
+#' @export
+setMethod("dbListFields", signature("PrestoConnection", "Id"), .dbListFields_PrestoConnection)
+
+#' @rdname PrestoConnection-class
+#' @importMethodsFrom DBI dbListFields
+#' @export
+setMethod("dbListFields", signature("PrestoConnection", "SQL"), .dbListFields_PrestoConnection)
 
 #' @rdname PrestoResult-class
 #' @importMethodsFrom DBI dbListFields
