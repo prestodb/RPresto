@@ -30,7 +30,7 @@ NULL
     }
     chunk_value <- dplyr::group_split(value, !!!rlang::syms(chunk.fields))
     n_chunks <- length(chunk_value)
-    message(n_chunks, " chunks are found and to be inserted.")
+    message("\n", n_chunks, " chunks are found and to be inserted.")
     total_rows <- 0L
     pb <- progress::progress_bar$new(
       format = "  appending chunk #:chunk [:bar] :percent in :elapsed",
