@@ -150,7 +150,7 @@ NULL
     },
     error = function(e) {
       # In case of error, try revert the origin table
-      if (dbExistsTable(conn, name)) {
+      if (dbExistsTable(conn, name) && !found) {
         dbRemoveTable(conn, name)
       }
       if (dbExistsTable(conn, rn)) {
