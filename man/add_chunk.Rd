@@ -6,22 +6,22 @@
 \usage{
 add_chunk(
   value,
-  chunk_size = 750000,
-  chunk_fields = NULL,
-  new_chunk_field_name = "chunk_idx"
+  base_chunk_fields = NULL,
+  chunk_size = 1e+06,
+  new_chunk_field_name = "aux_chunk_idx"
 )
 }
 \arguments{
 \item{value}{The original data frame.}
 
-\item{chunk_size}{Maximum size (in bytes) of each unique chunk. Default to
-750,000 bytes.}
+\item{base_chunk_fields}{A character vector of existing field names that are
+used to split the data frame before checking the chunk size.}
 
-\item{chunk_fields}{A character vector of existing field names that are used
-to split the data frame.}
+\item{chunk_size}{Maximum size (in bytes) of the VALUES statement encoding
+each unique chunk. Default to 1,000,000 bytes (i.e. 1Mb).}
 
 \item{new_chunk_field_name}{A string indicating the new chunk field name.
-Default to "chunk".}
+Default to "aux_chunk_idx".}
 }
 \description{
 This auxiliary function adds a field, if necessary, to a data frame so that
@@ -34,9 +34,9 @@ size limit on any discrete INSERT INTO statement.
 \dontrun{
 # returns the original data frame because it's within size
 add_chunk(iris)
-# add a new chunk_idx field
+# add a new aux_chunk_idx field
 add_chunk(iris, chunk_size = 2000)
-# the new chunk_idx field is added on top of Species
-add_chunk(iris, chunk_size = 2000, chunk_fields = c("Species"))
+# the new aux_chunk_idx field is added on top of Species
+add_chunk(iris, chunk_size = 2000, base_chunk_fields = c("Species"))
 }
 }
