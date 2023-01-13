@@ -102,13 +102,10 @@ NULL
     {
       if (!found || overwrite) {
         if (use.one.query) {
-          sql_values <- DBI::sqlData(conn, value)
-          fields <- DBI::dbQuoteIdentifier(conn, names(sql_values))
-          rows <- do.call(paste, c(unname(sql_values), sep = ", "))
+          fields <- DBI::dbQuoteIdentifier(conn, colnames(value))
           sql <- DBI::SQL(paste0(
             "SELECT * FROM (\n",
-            "VALUES\n",
-            paste0("  (", rows, ")", collapse = ",\n"),
+            .create_values_statement(conn, value),
             ") AS t (", paste(fields, collapse = ", "), ")\n"
           ))
           dbCreateTableAs(
@@ -180,3 +177,9 @@ setMethod(
   signature("PrestoConnection", "ANY", "data.frame"),
   .dbWriteTable
 )
+
+.create_values_statement <- function(conn, value, row.names = FALSE) {
+  sql_values <- DBI::sqlData(conn, value, row.names)
+  rows <- do.call(paste, c(unname(sql_values), sep = ", "))
+  DBI::SQL(paste0("VALUES\n", paste0("  (", rows, ")", collapse = ",\n")))
+}

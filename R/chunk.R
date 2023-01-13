@@ -13,26 +13,26 @@
 #' size limit on any discrete INSERT INTO statement.
 #'
 #' @param value The original data frame.
-#' @param chunk_size Maximum size (in bytes) of each unique chunk. Default to
-#'   750,000 bytes.
-#' @param chunk_fields A character vector of existing field names that are used
-#'   to split the data frame.
+#' @param base_chunk_fields A character vector of existing field names that are
+#'   used to split the data frame before checking the chunk size.
+#' @param chunk_size Maximum size (in bytes) of the VALUES statement encoding
+#'   each unique chunk. Default to 1,000,000 bytes (i.e. 1Mb).
 #' @param new_chunk_field_name A string indicating the new chunk field name.
-#'   Default to "chunk".
+#'   Default to "aux_chunk_idx".
 #' @importFrom rlang :=
 #' @export
 #' @examples
 #' \dontrun{
 #' # returns the original data frame because it's within size
 #' add_chunk(iris)
-#' # add a new chunk_idx field
+#' # add a new aux_chunk_idx field
 #' add_chunk(iris, chunk_size = 2000)
-#' # the new chunk_idx field is added on top of Species
-#' add_chunk(iris, chunk_size = 2000, chunk_fields = c("Species"))
+#' # the new aux_chunk_idx field is added on top of Species
+#' add_chunk(iris, chunk_size = 2000, base_chunk_fields = c("Species"))
 #' }
 add_chunk <- function(
-  value, chunk_size = 7.5e5,
-  chunk_fields = NULL, new_chunk_field_name = "chunk_idx"
+  value, base_chunk_fields = NULL, chunk_size = 1e6,
+  new_chunk_field_name = "aux_chunk_idx"
 ) {
   .add_chunk <- function(value, start = 1L) {
     if (new_chunk_field_name %in% colnames(value)) {
@@ -41,17 +41,23 @@ add_chunk <- function(
         call. = FALSE
       )
     }
-    n_chunks <- (as.integer(utils::object.size(value)) %/% chunk_size) + 1
-    chunk_size <- nrow(value) %/% n_chunks
+    sample_value <- dplyr::slice(
+      value, sample(1:nrow(value), 100, replace = TRUE)
+    )
+    sample_value_query_size <- utils::object.size(
+      .create_values_statement(dummyPrestoConnection(), sample_value)
+    )
+    avg_row_query_size = as.integer(sample_value_query_size)/100
+    n_rows_per_chunk <- chunk_size %/% avg_row_query_size
     dplyr::mutate(
       dplyr::ungroup(value),
       !!rlang::sym(new_chunk_field_name) :=
-        start + as.integer((dplyr::row_number() - 1L) %/% chunk_size)
+        start + as.integer((dplyr::row_number() - 1L) %/% n_rows_per_chunk)
     )
   }
 
-  if (!is.null(chunk_fields)) {
-    split_values <- dplyr::group_split(value, !!!rlang::syms(chunk_fields))
+  if (!is.null(base_chunk_fields)) {
+    split_values <- dplyr::group_split(value, !!!rlang::syms(base_chunk_fields))
     start <- 0L
     res <- vector(mode = "list", length = length(split_values))
     for (i in seq_along(res)) {
@@ -65,7 +71,10 @@ add_chunk <- function(
       return(dplyr::bind_rows(res))
     }
   } else {
-    if (utils::object.size(value) <= chunk_size) {
+    value_query_size <- utils::object.size(
+      .create_values_statement(dummyPrestoConnection(), value)
+    )
+    if (value_query_size <= chunk_size) {
       return(value)
     } else {
       return(.add_chunk(value))
