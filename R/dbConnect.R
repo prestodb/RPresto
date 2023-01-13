@@ -135,3 +135,18 @@ setMethod(
     return(conn)
   }
 )
+
+#' A dummy PrestoConnection
+#' 
+#' @export
+#' @keywords internal
+#' @examples
+#' dummyPrestoConnection()
+dummyPrestoConnection <- function() {
+  methods::new("PrestoConnection",
+    session.timezone = Sys.timezone(),
+    output.timezone = Sys.timezone(),
+    request.config = httr::config(),
+    session = PrestoSession$new(list(), list())
+  )
+}
