@@ -8,8 +8,8 @@ context("dbQuoteLiteral")
 
 source("utilities.R")
 
-test_that("dbQuoteLiteral works with live connection", {
-  conn <- presto_default()
+test_that("dbQuoteLiteral works", {
+  conn <- dummyPrestoConnection()
   expect_equal(dbQuoteLiteral(conn, DBI::SQL("foo")), DBI::SQL("foo"))
   expect_equal(
     dbQuoteLiteral(conn, factor(c("a", "b", NA_character_))),
