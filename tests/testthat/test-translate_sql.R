@@ -43,7 +43,7 @@ with_locale(test.locale(), test_that)("as() works", {
       s,
       from = dplyr::sql_subquery(
         s[["con"]],
-        dbplyr::sql("SELECT 1")
+        dbplyr::sql("SELECT 1 AS a")
       )
     )
   } else {
@@ -100,7 +100,7 @@ with_locale(test.locale(), test_that)("as() works", {
     'CAST\\("a" AS TIMESTAMP\\) AS "c",\\s*',
     'CAST\\("a" AS BOOLEAN\\) AS "d"\n',
     "FROM \\(",
-    '\\(SELECT 1\\) "[_0-9a-z]+"',
+    '\\(SELECT 1 AS a\\) "[_0-9a-z]+"',
     '\\) "[_0-9a-z]+"$'
   )
   # newer versions of dplyr have a simpler pattern
