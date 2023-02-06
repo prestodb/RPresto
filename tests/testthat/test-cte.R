@@ -32,10 +32,9 @@ test_that("CTEs work in dplyr backend", {
   iris_presto_mean <- iris_presto %>%
     dplyr::group_by(species) %>%
     dplyr::summarize(
-      across(.fns = mean, na.rm = TRUE, .names = "mean_{.col}"),
+      across(.fns = ~mean(., na.rm = TRUE), .names = "mean_{.col}"),
       .groups = "drop"
-    ) %>%
-    dplyr::arrange(species)
+    )
   expect_is(iris_presto_mean$lazy_query, "lazy_select_query")
   # One-level CTE works
   iris_presto_mean_cte <- iris_presto_mean %>%
@@ -43,14 +42,14 @@ test_that("CTEs work in dplyr backend", {
   expect_true(db$con@session$hasCTE("iris_species_mean"))
   expect_is(iris_presto_mean_cte$lazy_query, "lazy_base_remote_query")
   expect_equal_data_frame(
-    dplyr::collect(iris_presto_mean),
-    dplyr::collect(iris_presto_mean_cte)
+    dplyr::arrange(dplyr::collect(iris_presto_mean), species),
+    dplyr::arrange(dplyr::collect(iris_presto_mean_cte), species)
   )
   expect_true(RPresto:::is_cte_used(dbplyr::remote_query(iris_presto_mean_cte)))
   # Nested CTEs work
   iris_presto_mean_2 <- iris_presto_mean_cte %>%
     dplyr::summarize(
-      across(-species, mean, na.rm = TRUE)
+      across(-species, ~mean(., na.rm = TRUE))
     )
   expect_is(iris_presto_mean_2$lazy_query, "lazy_select_query")
   iris_presto_mean_2_cte <- iris_presto_mean_2 %>%

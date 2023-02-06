@@ -19,8 +19,14 @@ get_tables_from_sql.lazy_base_remote_query <- function(query) {
 }
 
 #' @export
+# backward compatible with dbplyr 2.2.1
 get_tables_from_sql.lazy_join_query <- function(query) {
   c(get_tables_from_sql(query$x), get_tables_from_sql(query$y))
+}
+
+#' @export
+get_tables_from_sql.lazy_multi_join_query <- function(query) {
+  c(get_tables_from_sql(query$x), sapply(query$joins$table, get_tables_from_sql))
 }
 
 #' @export
