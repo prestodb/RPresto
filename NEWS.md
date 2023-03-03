@@ -1,4 +1,4 @@
-# RPresto 1.4.2.9000
+# RPresto 1.4.3
 
 * Fixed `dbplyr` 2.3.0 compatibility issues. (#237)
 
