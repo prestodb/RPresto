@@ -81,4 +81,15 @@ test_that("dplyr integration works", {
   expect_is(iris_presto_summary_saved, "tbl_presto")
   expect_true(dplyr::db_has_table(db$con, "iris_presto_summary"))
   expect_true(DBI::dbRemoveTable(db$con, "iris_presto_summary"))
+
+  # compute() works with CTE
+  iris_presto_summary_cte <- dplyr::compute(
+    iris_presto_summary, "iris_presto_summary", cte = TRUE
+  )
+  iris_presto_summary_cte_saved <- dplyr::compute(
+    iris_presto_summary_cte, "iris_presto_summary_cte"
+  )
+  expect_is(iris_presto_summary_cte_saved, "tbl_presto")
+  expect_true(dplyr::db_has_table(db$con, "iris_presto_summary_cte"))
+  expect_true(DBI::dbRemoveTable(db$con, "iris_presto_summary_cte"))
 })

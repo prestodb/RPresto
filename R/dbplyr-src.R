@@ -256,7 +256,6 @@ copy_to.PrestoConnection <- function(dest, df, name = deparse(substitute(df)), o
 #' @rdname dplyr_function_implementations
 compute.tbl_presto <- function(x, name, temporary = FALSE, ..., cte = FALSE) {
   name <- unname(name)
-  sql <- dbplyr::db_sql_render(dbplyr::remote_con(x), x, use_presto_cte = FALSE)
   if (identical(cte, TRUE)) {
     if (inherits(x$lazy_query, "lazy_base_remote_query")) {
       stop(
@@ -265,8 +264,14 @@ compute.tbl_presto <- function(x, name, temporary = FALSE, ..., cte = FALSE) {
       )
     }
     con <- dbplyr::remote_con(x)
+    sql <- dbplyr::db_sql_render(
+      dbplyr::remote_con(x), x, use_presto_cte = FALSE
+    )
     con@session$addCTE(name, sql, replace = TRUE)
   } else {
+    sql <- dbplyr::db_sql_render(
+      dbplyr::remote_con(x), x, use_presto_cte = TRUE
+    )
     name <- dbplyr::db_compute(
       dbplyr::remote_con(x), name, sql, temporary = temporary, ...
     )
