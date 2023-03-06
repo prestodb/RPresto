@@ -1,5 +1,8 @@
 # RPresto 1.4.3.9000
 
+* Fixed error whereby `compute()` returns a "table doesn't exist" error when the
+  computed table contains CTE. (#243)
+
 # RPresto 1.4.3
 
 * Fixed `dbplyr` 2.3.0 compatibility issues. (#237)
