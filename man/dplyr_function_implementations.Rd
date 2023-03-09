@@ -16,7 +16,7 @@
 
 \method{db_explain}{PrestoConnection}(con, sql, ...)
 
-\method{db_query_rows}{PrestoConnection}(con, sql)
+\method{db_query_rows}{PrestoConnection}(con, sql, ...)
 
 \method{db_collect}{PrestoConnection}(con, sql, n = -1, warn_incomplete = TRUE, ...)
 

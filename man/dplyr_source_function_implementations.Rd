@@ -9,7 +9,7 @@
 \usage{
 \method{tbl}{src_presto}(src, from, ..., vars = NULL)
 
-\method{tbl}{PrestoConnection}(conn, from, ...)
+\method{tbl}{PrestoConnection}(src, from, ...)
 
 \method{copy_to}{src_presto}(
   dest,
@@ -30,7 +30,7 @@
 )
 }
 \arguments{
-\item{src}{A presto src created with \code{src_presto}.}
+\item{src}{A \code{PrestoConnection} object produced by \code{DBI::dbConnect()}.}
 
 \item{from}{Either a string (giving a table name) or a literal
 \code{\link[dbplyr:sql]{dbplyr::sql()}} string.}
@@ -39,8 +39,6 @@
 
 \item{vars}{Provide column names as a character vector
 to avoid retrieving them from the database.}
-
-\item{conn}{A \code{PrestoConnection} object produced by \code{DBI::dbConnect()}.}
 
 \item{dest}{remote data source}
 

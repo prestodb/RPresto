@@ -90,6 +90,6 @@ Collate:
     'sqlCreateTable.R'
     'sqlCreateTableAs.R'
     'zzz.R'
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 VignetteBuilder: knitr
 Roxygen: list(markdown = TRUE)

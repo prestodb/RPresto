@@ -141,7 +141,7 @@ tbl.src_presto <- function(src, from, ..., vars = NULL) {
 #'
 #' @importFrom dplyr tbl
 #' @export
-#' @param conn A `PrestoConnection` object produced by `DBI::dbConnect()`.
+#' @param src A `PrestoConnection` object produced by `DBI::dbConnect()`.
 #' @param from Either a string (giving a table name) or a literal
 #'          [dbplyr::sql()] string.
 #' @param ... Passed on to [dbplyr::tbl_sql()]
@@ -162,8 +162,8 @@ tbl.src_presto <- function(src, from, ..., vars = NULL) {
 #' )
 #' my_tbl <- tbl(my_con, "my_table")
 #' }
-tbl.PrestoConnection <- function(conn, from, ...) {
-  dplyr::tbl(src_presto(con = conn), from = from, ...)
+tbl.PrestoConnection <- function(src, from, ...) {
+  dplyr::tbl(src_presto(con = src), from = from, ...)
 }
 
 #' S3 implementation of [dplyr::copy_to()] for remote Presto source

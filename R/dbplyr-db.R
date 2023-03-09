@@ -70,7 +70,7 @@ db_explain.PrestoConnection <- function(con, sql, ...) {
 #' @export
 #' @rdname dplyr_function_implementations
 #' @keywords internal
-db_query_rows.PrestoConnection <- function(con, sql) {
+db_query_rows.PrestoConnection <- function(con, sql, ...) {
   # We shouldn't be doing a COUNT(*) over arbitrary tables because Hive tables
   # can be prohibitively long. There may be something smarter we can do for
   # smaller tables though.
