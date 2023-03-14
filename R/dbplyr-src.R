@@ -276,7 +276,7 @@ compute.tbl_presto <- function(x, name, temporary = FALSE, ..., cte = FALSE) {
       dbplyr::remote_con(x), name, sql, temporary = temporary, ...
     )
   }
-  dplyr::tbl(src = dbplyr::remote_src(x), from = dbplyr::as.sql(name), vars = colnames(x)) %>%
+  dplyr::tbl(src = dbplyr::remote_src(x), from = name, vars = colnames(x)) %>%
     dplyr::group_by(!!!rlang::syms(dbplyr::op_grps(x))) %>%
     dbplyr::window_order(!!!dbplyr::op_sort(x))
 }
