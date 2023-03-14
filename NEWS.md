@@ -1,3 +1,5 @@
+# RPresto 1.4.4.9000
+
 # RPresto 1.4.4
 
 * Fixed error whereby `compute()` returns a "table doesn't exist" error when the
