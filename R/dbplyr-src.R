@@ -243,18 +243,7 @@ copy_to.PrestoConnection <- function(dest, df, name = deparse(substitute(df)), o
   )
 }
 
-#' S3 implementation of `compute` for Presto.
-#'
-#' @importFrom dplyr compute
-#' @importFrom dplyr %>%
-#' @importFrom rlang !!!
-#' @export
-#' @param x A lazy data frame backed by a database query.
-#' @param cte `r lifecycle::badge("experimental")`
-#'   An experimental feature to save the query to a common table expression.
-#'   Default to FALSE. See `vignette("common-table-expressions")`
-#' @rdname dplyr_function_implementations
-compute.tbl_presto <- function(x, name, temporary = FALSE, ..., cte = FALSE) {
+.compute_tbl_presto <- function(x, name, temporary = FALSE, ..., cte = FALSE) {
   name <- unname(name)
   if (identical(cte, TRUE)) {
     if (inherits(x$lazy_query, "lazy_base_remote_query")) {
@@ -276,6 +265,24 @@ compute.tbl_presto <- function(x, name, temporary = FALSE, ..., cte = FALSE) {
       dbplyr::remote_con(x), name, sql, temporary = temporary, ...
     )
   }
+  name
+}
+
+#' S3 implementation of `compute` for Presto.
+#'
+#' @importFrom dplyr compute
+#' @importFrom dplyr %>%
+#' @importFrom rlang !!!
+#' @export
+#' @param x A lazy data frame backed by a database query.
+#' @param cte `r lifecycle::badge("experimental")`
+#'   An experimental feature to save the query to a common table expression.
+#'   Default to FALSE. See `vignette("common-table-expressions")`
+#' @rdname dplyr_function_implementations
+compute.tbl_presto <- function(x, name, temporary = FALSE, ..., cte = FALSE) {
+  name <- .compute_tbl_presto(
+    x = x, name = name, temporary = temporary, ..., cte = cte
+  )
   dplyr::tbl(src = dbplyr::remote_src(x), from = name, vars = colnames(x)) %>%
     dplyr::group_by(!!!rlang::syms(dbplyr::op_grps(x))) %>%
     dbplyr::window_order(!!!dbplyr::op_sort(x))
