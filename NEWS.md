@@ -1,5 +1,7 @@
 # RPresto 1.4.4.9000
 
+* `compute()` uses simple table name rather than wrapped it in `as.sql()`.
+
 # RPresto 1.4.4
 
 * Fixed error whereby `compute()` returns a "table doesn't exist" error when the
