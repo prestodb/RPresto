@@ -1,4 +1,4 @@
-# RPresto 1.4.4.9000
+# RPresto 1.4.5
 
 * `compute()` uses simple table name rather than wrapped it in `as.sql()`.
 
