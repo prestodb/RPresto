@@ -4,31 +4,31 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-print.presto.field <- function(prf, prefix = "", ...) {
+print.presto.field <- function(x, ..., prefix = "") {
   cat(prefix, "presto.field: \n", sep = "")
-  cat(prefix, "..Name: ", prf$name_, "\n", sep = "")
-  cat(prefix, "..Type:  ", prf$type_, "\n", sep = "")
-  if (prf$is_map_) {
-    cat(prefix, "..Key Type:  ", prf$key_type_, "\n", sep = "")
+  cat(prefix, "..Name: ", x$name_, "\n", sep = "")
+  cat(prefix, "..Type:  ", x$type_, "\n", sep = "")
+  if (x$is_map_) {
+    cat(prefix, "..Key Type:  ", x$key_type_, "\n", sep = "")
   }
-  cat(prefix, "..Is Array:  ", prf$is_array_, "\n", sep = "")
-  cat(prefix, "..Is Map:  ", prf$is_map_, "\n", sep = "")
-  cat(prefix, "..Is Row:  ", prf$is_row_, "\n", sep = "")
-  cat(prefix, "..Is parent Map:  ", prf$is_parent_map_, "\n", sep = "")
-  cat(prefix, "..Is parent Array:  ", prf$is_parent_array_, "\n", sep = "")
-  cat(prefix, "..Fields:  ", length(prf$fields_), " fields\n", sep = "")
-  if (!is.na(prf$session_timezone_)) {
-    cat(prefix, "..Session time zone:  ", prf$session_timezone_, "\n", sep = "")
+  cat(prefix, "..Is Array:  ", x$is_array_, "\n", sep = "")
+  cat(prefix, "..Is Map:  ", x$is_map_, "\n", sep = "")
+  cat(prefix, "..Is Row:  ", x$is_row_, "\n", sep = "")
+  cat(prefix, "..Is parent Map:  ", x$is_parent_map_, "\n", sep = "")
+  cat(prefix, "..Is parent Array:  ", x$is_parent_array_, "\n", sep = "")
+  cat(prefix, "..Fields:  ", length(x$fields_), " fields\n", sep = "")
+  if (!is.na(x$session_timezone_)) {
+    cat(prefix, "..Session time zone:  ", x$session_timezone_, "\n", sep = "")
   }
-  if (!is.na(prf$output_timezone_)) {
-    cat(prefix, "..Output time zone:  ", prf$output_timezone_, "\n", sep = "")
+  if (!is.na(x$output_timezone_)) {
+    cat(prefix, "..Output time zone:  ", x$output_timezone_, "\n", sep = "")
   }
-  if (length(prf$fields_) > 0) {
-    for (f in prf$fields_) {
+  if (length(x$fields_) > 0) {
+    for (f in x$fields_) {
       print(f, prefix = paste0(prefix, "...."))
     }
   }
-  invisible(prf)
+  invisible(x)
 }
 
 is_simple_type <- function(prf) {
