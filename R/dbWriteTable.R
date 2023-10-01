@@ -26,6 +26,9 @@ NULL
                           append = FALSE, field.types = NULL, temporary = FALSE,
                           row.names = FALSE, with = NULL, chunk.fields = NULL,
                           use.one.query = FALSE) {
+  force(with)
+  force(chunk.fields)
+  force(use.one.query)
   stopifnot(is.data.frame(value))
   if (!identical(temporary, FALSE)) {
     stop("Temporary tables not supported by RPresto", call. = FALSE)

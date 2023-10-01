@@ -26,13 +26,14 @@ Imports:
     utils,
     purrr,
     dplyr (>= 0.7.0),
-    dbplyr (>= 2.0.0),
+    dbplyr (>= 2.3.3),
     tibble,
     bit64,
     rlang,
     lifecycle,
     lubridate,
-    progress
+    progress,
+    vctrs
 Suggests:
     testthat,
     hms,

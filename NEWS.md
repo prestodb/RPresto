@@ -1,5 +1,8 @@
 # RPresto 1.4.5.9000
 
+* `RPresto` is now compatible with `dbplyr` 2.4.0. We updated the minimum
+  version requirement of `dbplyr` to be 2.3.3.
+
 # RPresto 1.4.5
 
 * `compute()` uses simple table name rather than wrapped it in `as.sql()`.

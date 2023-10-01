@@ -105,3 +105,51 @@ test_that("Nested CTEs work", {
     dplyr::collect(iris_presto.join_cte)
   )
 })
+
+test_that("CTEs using union work", {
+  parts <- setup_live_dplyr_connection()
+  db <- parts[["db"]]
+  tablename <- parts[["iris_table_name"]]
+  iris_presto <- dplyr::tbl(db, tablename)
+  iris_presto.virginica <- dplyr::compute(
+    dplyr::summarize(
+      dplyr::group_by(
+        dplyr::filter(
+          iris_presto,
+          species == "virginica"
+        ),
+        species
+      ),
+      mean_sepal_length = mean(sepal_length, na.rm = TRUE)
+    ),
+    name = "iris_width_virginica", cte = TRUE
+  )
+  expect_equal(db$con@session$getCTENames(), c("iris_width_virginica"))
+  iris_presto.setosa <- dplyr::compute(
+    dplyr::summarize(
+      dplyr::group_by(
+        dplyr::filter(
+          iris_presto,
+          species == "setosa"
+        ),
+        species
+      ),
+      mean_sepal_length = mean(sepal_length, na.rm = TRUE)
+    ),
+    name = "iris_width_setosa", cte = TRUE
+  )
+  expect_equal(
+    db$con@session$getCTENames(), c("iris_width_virginica", "iris_width_setosa")
+  )
+  iris_presto.union <- dplyr::compute(
+    dplyr::union_all(
+      iris_presto.virginica,
+      iris_presto.setosa
+    ),
+    name = "iris_presto_union", cte = TRUE
+  )
+  expect_equal(
+    db$con@session$getCTENames(),
+    c("iris_width_virginica", "iris_width_setosa", "iris_presto_union")
+  )
+})

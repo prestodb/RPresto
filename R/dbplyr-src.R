@@ -186,7 +186,7 @@ copy_to.src_presto <- function(dest, df, name = deparse(substitute(df)), overwri
     )
   } else {
     df <- as.data.frame(dplyr::collect(df))
-    name <- dbplyr::db_copy_to(dest$con, name, df,
+    name <- dbplyr::db_copy_to(con = dest$con, table = name, values = df,
       overwrite = overwrite,
       types = NULL,
       temporary = FALSE,
@@ -196,7 +196,7 @@ copy_to.src_presto <- function(dest, df, name = deparse(substitute(df)), overwri
       ...
     )
     vars <- names(df)
-    out <- dplyr::tbl(dest, name, vars)
+    out <- dplyr::tbl(src = dest, from = name, vars = vars)
   }
   invisible(out)
 }
