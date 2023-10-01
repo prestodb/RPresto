@@ -15,7 +15,11 @@ get_tables_from_sql.lazy_select_query <- function(query) {
 
 #' @export
 get_tables_from_sql.lazy_base_remote_query <- function(query) {
-  as.character(query$x)
+  if (inherits(query$x, "dbplyr_table_ident")) {
+    vctrs::field(query$x, "table")
+  } else {
+    as.character(query$x)
+  }
 }
 
 #' @export
@@ -35,8 +39,19 @@ get_tables_from_sql.lazy_semi_join_query <- function(query) {
 }
 
 #' @export
+# for compatibility with dbplyr < 2.4.0
 get_tables_from_sql.lazy_set_op_query <- function(query) {
   c(get_tables_from_sql(query$x), get_tables_from_sql(query$y))
+}
+
+#' @export
+# for compatibility with dbplyr >= 2.4.0
+get_tables_from_sql.lazy_union_query <- function(query) {
+  tables_from_x <- get_tables_from_sql(query$x)
+  tables_from_y <- purrr::map_chr(
+    query$unions$table, ~ get_tables_from_sql(.$lazy_query)
+  )
+  c(tables_from_x, tables_from_y)
 }
 
 is_cte_used <- function(sql) {

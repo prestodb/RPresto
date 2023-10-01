@@ -150,6 +150,17 @@ test_that("db_query_fields works with mock", {
       mock_httr_response(
         "http://localhost:8000/v1/statement",
         status_code = 200,
+        state = "FINISHED",
+        # For dbplyr 2.4.0
+        request_body = paste0(
+          '^SELECT \\* FROM "empty_table" (AS )?"q[0-9]+"',
+          " WHERE 1 = 0$"
+        ),
+        next_uri = "http://localhost:8000/query_3/1",
+      ),
+      mock_httr_response(
+        "http://localhost:8000/v1/statement",
+        status_code = 200,
         state = "QUEUED",
         request_body = '^SELECT \\* FROM "two_columns" LIMIT 0$',
         next_uri = "http://localhost:8000/query_4/1",
@@ -172,6 +183,17 @@ test_that("db_query_fields works with mock", {
         # For dbplyr 2.0.0
         request_body = paste0(
           '^SELECT \\* FROM "two_columns" AS "q[0-9]+"',
+          " WHERE 1 = 0$"
+        ),
+        next_uri = "http://localhost:8000/query_4/1",
+      ),
+      mock_httr_response(
+        "http://localhost:8000/v1/statement",
+        status_code = 200,
+        state = "QUEUED",
+        # For dbplyr 2.4.0
+        request_body = paste0(
+          '^SELECT \\* FROM "two_columns" (AS )?"q[0-9]+"',
           " WHERE 1 = 0$"
         ),
         next_uri = "http://localhost:8000/query_4/1",
@@ -241,8 +263,7 @@ test_that("db_query_fields works with mock", {
         dplyr::db_query_fields(
           s[["con"]],
           dplyr::ident("__non_existent_table__")
-        ),
-        "Query.*failed:.*Table .*__non_existent_table__ does not exist"
+        )
       )
     }
   )

@@ -6,6 +6,7 @@
 
 library("testthat")
 library("DBI")
+library("dplyr")
 library("RPresto")
 
 test_check("RPresto")
