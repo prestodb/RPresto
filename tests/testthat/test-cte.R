@@ -106,6 +106,102 @@ test_that("Nested CTEs work", {
   )
 })
 
+test_that("CTEs using joins work", {
+  parts <- setup_live_dplyr_connection()
+  db <- parts[["db"]]
+  tablename <- parts[["iris_table_name"]]
+  iris_presto <- dplyr::tbl(db, tablename)
+  iris_presto.avg <- dplyr::compute(
+    dplyr::summarize(
+      dplyr::group_by(iris_presto, species),
+      dplyr::across(
+        sepal_length:petal_width,
+        ~ mean(., na.rm = TRUE),
+        .names = "{.col}_avg"
+      )
+    ),
+    name = "iris_avg",
+    cte = TRUE
+  )
+  iris.avg <- dplyr::summarize(
+    dplyr::group_by(iris, Species),
+    dplyr::across(
+      Sepal.Length:Petal.Width,
+      ~ mean(., na.rm = TRUE),
+      .names = "{.col}_avg"
+    )
+  )
+  expect_equal(dplyr::pull(dplyr::tally(iris_presto.avg), n), nrow(iris.avg))
+  iris_presto.inner_join <- dplyr::compute(
+    dplyr::inner_join(
+      iris_presto,
+      iris_presto.avg,
+      by = "species"
+    ),
+    name = "iris_inner_join",
+    cte = TRUE
+  )
+  iris.inner_join <- dplyr::inner_join(
+    iris,
+    iris.avg,
+    by = "Species"
+  )
+  expect_equal(
+    dplyr::pull(dplyr::tally(iris.inner_join), n), nrow(iris.inner_join)
+  )
+  iris_presto.left_join <- dplyr::compute(
+    dplyr::left_join(
+      iris_presto,
+      iris_presto.avg,
+      by = "species"
+    ),
+    name = "iris_left_join",
+    cte = TRUE
+  )
+  iris.left_join <- dplyr::left_join(
+    iris,
+    iris.avg,
+    by = "Species"
+  )
+  expect_equal(
+    dplyr::pull(dplyr::tally(iris.left_join), n), nrow(iris.left_join)
+  )
+  iris_presto.right_join <- dplyr::compute(
+    dplyr::right_join(
+      iris_presto,
+      dplyr::filter(iris_presto.avg, species == "virginica"),
+      by = "species"
+    ),
+    name = "iris_right_join",
+    cte = TRUE
+  )
+  iris.right_join <- dplyr::right_join(
+    iris,
+    iris.avg,
+    by = "Species"
+  )
+  expect_equal(
+    dplyr::pull(dplyr::tally(iris.right_join), n), nrow(iris.right_join)
+  )
+  iris_presto.full_join <- dplyr::compute(
+    dplyr::full_join(
+      iris_presto,
+      dplyr::filter(iris_presto.avg, species == "virginica"),
+      by = "species"
+    ),
+    name = "iris_full_join",
+    cte = TRUE
+  )
+  iris.full_join <- dplyr::full_join(
+    iris,
+    iris.avg,
+    by = "Species"
+  )
+  expect_equal(
+    dplyr::pull(dplyr::tally(iris.full_join), n), nrow(iris.full_join)
+  )
+})
+
 test_that("CTEs using union work", {
   parts <- setup_live_dplyr_connection()
   db <- parts[["db"]]
