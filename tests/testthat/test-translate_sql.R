@@ -396,3 +396,32 @@ with_locale(test.locale(), test_that)("quantile() and median() throw errors", {
       collect()
   )
 })
+
+with_locale(test.locale(), test_that)("first(), last(), and nth() work", {
+  testthat::skip_if_not_installed("dbplyr", "2.4.0")
+  s <- setup_mock_dplyr_connection()[["db"]]
+  expect_equal(
+    dbplyr::translate_sql(first(x, order_by = y), con = s[["con"]]),
+    dbplyr::sql('FIRST_VALUE("x") OVER (ORDER BY "y")')
+  )
+  expect_equal(
+    dbplyr::translate_sql(last(x, order_by = y), con = s[["con"]]),
+    dbplyr::sql('LAST_VALUE("x") OVER (ORDER BY "y" ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)')
+  )
+  expect_equal(
+    dbplyr::translate_sql(nth(x, 2, order_by = y), con = s[["con"]]),
+    dbplyr::sql('NTH_VALUE("x", 2) OVER (ORDER BY "y")')
+  )
+  expect_equal(
+    dbplyr::translate_sql(first(x, order_by = y, na_rm = TRUE), con = s[["con"]]),
+    dbplyr::sql('FIRST_VALUE("x") IGNORE NULLS OVER (ORDER BY "y")')
+  )
+  expect_equal(
+    dbplyr::translate_sql(last(x, order_by = y, na_rm = TRUE), con = s[["con"]]),
+    dbplyr::sql('LAST_VALUE("x") IGNORE NULLS OVER (ORDER BY "y" ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)')
+  )
+  expect_equal(
+    dbplyr::translate_sql(nth(x, 2, order_by = y, na_rm = TRUE), con = s[["con"]]),
+    dbplyr::sql('NTH_VALUE("x", 2) IGNORE NULLS OVER (ORDER BY "y")')
+  )
+})

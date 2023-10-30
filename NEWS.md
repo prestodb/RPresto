@@ -1,5 +1,8 @@
 # RPresto 1.4.5.9000
 
+* `tidyr::fill()` now works with PrestoConnection. (#233, thanks to @copernican
+for reporting the issue and @mgirlich for providing upstream utility functions
+in dbplyr)
 * `RPresto` is now compatible with `dbplyr` 2.4.0. We updated the minimum
   version requirement of `dbplyr` to be 2.3.3.
 

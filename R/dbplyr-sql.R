@@ -64,6 +64,9 @@ sql_escape_datetime.PrestoConnection <- function(con, x) {
 }
 
 presto_window_functions <- function() {
+  if (utils::packageVersion("dbplyr") >= "2.4.0") {
+    sql_nth <- utils::getFromNamespace("sql_nth", "dbplyr")
+  }
   return(dbplyr::sql_translator(
     .parent = dbplyr::base_win,
     all = dbplyr::win_recycled("bool_and"),
@@ -71,7 +74,50 @@ presto_window_functions <- function() {
     n_distinct = dbplyr::win_absent("n_distinct"),
     sd = dbplyr::win_recycled("stddev_samp"),
     quantile = function(...) stop(quantile_error_message(), call. = FALSE),
-    median = function(...) stop(quantile_error_message("median"), call. = FALSE)
+    median = function(...) stop(quantile_error_message("median"), call. = FALSE),
+    # adapted from the default translations in dbplyr
+    # we need modifications because the default translations use
+    # `ignore_nulls = "inside"` while Presto requires `IGNORE NULLS` to be
+    # outside
+    first = function(x, order_by = NULL, na_rm = FALSE) {
+      if (utils::packageVersion("dbplyr") >= "2.4.0") {
+        sql_nth(
+          x = x,
+          n = 1L,
+          order_by = order_by,
+          na_rm = na_rm,
+          ignore_nulls = "outside"
+        )
+      } else {
+        stop("first() is not supported for dbplyr < 2.4.0.", call. = FALSE)
+      }
+    },
+    last = function(x, order_by = NULL, na_rm = FALSE) {
+      if (utils::packageVersion("dbplyr") >= "2.4.0") {
+        sql_nth(
+          x = x,
+          n = Inf,
+          order_by = order_by,
+          na_rm = na_rm,
+          ignore_nulls = "outside"
+        )
+      } else {
+        stop("last() is not supported for dbplyr < 2.4.0.", call. = FALSE)
+      }
+    },
+    nth = function(x, n, order_by = NULL, na_rm = FALSE) {
+      if (utils::packageVersion("dbplyr") >= "2.4.0") {
+        sql_nth(
+          x = x,
+          n = n,
+          order_by = order_by,
+          na_rm = na_rm,
+          ignore_nulls = "outside"
+        )
+      } else {
+        stop("nth() is not supported for dbplyr < 2.4.0.", call. = FALSE)
+      }
+    }
   ))
 }
 
