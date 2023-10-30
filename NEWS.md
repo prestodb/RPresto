@@ -1,4 +1,4 @@
-# RPresto 1.4.5.9000
+# RPresto 1.4.6
 
 * `tidyr::fill()` now works with PrestoConnection. (#233, thanks to @copernican
 for reporting the issue and @mgirlich for providing upstream utility functions
