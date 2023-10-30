@@ -29,6 +29,11 @@ get_tables_from_sql.lazy_join_query <- function(query) {
 }
 
 #' @export
+get_tables_from_sql.lazy_rf_join_query <- function(query) {
+  c(get_tables_from_sql(query$x), get_tables_from_sql(query$y))
+}
+
+#' @export
 get_tables_from_sql.lazy_multi_join_query <- function(query) {
   c(get_tables_from_sql(query$x), sapply(query$joins$table, get_tables_from_sql))
 }
