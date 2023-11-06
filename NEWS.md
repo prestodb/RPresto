@@ -1,5 +1,7 @@
 # RPresto 1.4.6.9000
 
+* Fixed a bug whereby nested CTEs result in nested WITH. (#261)
+
 # RPresto 1.4.6
 
 * `tidyr::fill()` now works with PrestoConnection. (#233, thanks to @copernican

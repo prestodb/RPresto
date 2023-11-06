@@ -253,8 +253,12 @@ copy_to.PrestoConnection <- function(dest, df, name = deparse(substitute(df)), o
       )
     }
     con <- dbplyr::remote_con(x)
+    # We need to speicify sql_options here so that use_presto_cte is passed to
+    # db_sql_render correctly
+    # (see https://github.com/tidyverse/dbplyr/issues/1394)
     sql <- dbplyr::db_sql_render(
-      dbplyr::remote_con(x), x, use_presto_cte = FALSE
+      con = dbplyr::remote_con(x), sql = x,
+      sql_options = dbplyr::sql_options(), use_presto_cte = FALSE
     )
     con@session$addCTE(name, sql, replace = TRUE)
   } else {
