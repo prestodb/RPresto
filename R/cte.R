@@ -15,7 +15,9 @@ get_tables_from_sql.lazy_select_query <- function(query) {
 
 #' @export
 get_tables_from_sql.lazy_base_remote_query <- function(query) {
-  if (inherits(query$x, "dbplyr_table_ident")) {
+  if (inherits(query$x, "dbplyr_table_path")) { # dbplyr >= 2.5.0
+    utils::getFromNamespace("table_path_name", "dbplyr")(query$x)
+  } else if (inherits(query$x, "dbplyr_table_ident")) { # dbplyr >= 2.4.0
     vctrs::field(query$x, "table")
   } else {
     as.character(query$x)
