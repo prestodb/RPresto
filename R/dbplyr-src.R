@@ -136,7 +136,7 @@ tbl.src_presto <- function(src, from, ..., vars = NULL) {
 
 #' Create a remote database source table using a PrestoConnection
 #'
-#' Automatically create a Presto remote database source to wrap aroudn the
+#' Automatically create a Presto remote database source to wrap around the
 #' `PrestoConnection` object via which DBI APIs can be called.
 #'
 #' @importFrom dplyr tbl
