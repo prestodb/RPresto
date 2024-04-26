@@ -1,6 +1,7 @@
 # RPresto 1.4.6.9000
 
 * Fixed a bug whereby nested CTEs result in nested WITH. (#261)
+* Fixed `paste()` and `paste0()` translation (#266)
 
 # RPresto 1.4.6
 
