@@ -244,7 +244,13 @@ copy_to.PrestoConnection <- function(dest, df, name = deparse(substitute(df)), o
 }
 
 .compute_tbl_presto <- function(x, name, temporary = FALSE, ..., cte = FALSE) {
-  name <- unname(name)
+  if (utils::packageVersion("dbplyr") >= "2.5.0"){
+    name <- dbplyr::as_table_path(name, x$src$con)
+  } else {
+    if (is_bare_character(x) || dbplyr::is.ident(x) || dbplyr::is.sql(x)) {
+      name <- unname(name)
+    }
+  }
   if (identical(cte, TRUE)) {
     if (inherits(x$lazy_query, "lazy_base_remote_query")) {
       stop(
