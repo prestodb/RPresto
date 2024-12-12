@@ -294,6 +294,14 @@ create.empty.tibble <- function(schema) {
   return(tibble::as_tibble(rv))
 }
 
+.fromJSON.if.any <- function(x, .start) {
+  if (is.character(x) && length(x) == 1 && any(startsWith(x, .start))) {
+    jsonlite::fromJSON(x, simplifyVector = FALSE)
+  } else {
+    x
+  }
+}
+
 # data contains all rows of data in a list
 organize_simple_type_data <- function(data, prf, keep_names) {
   # primitive (simple) types -> scalars
@@ -302,6 +310,7 @@ organize_simple_type_data <- function(data, prf, keep_names) {
   }
   # array of primitive (simple) types -> vectors
   if (prf$is_array_) {
+    data <- purrr::map(data, ~ .fromJSON.if.any(.x, "["))
     data <- purrr::map(data, get.process.func(prf))
   }
   return(data)
@@ -311,6 +320,7 @@ organize_simple_type_data <- function(data, prf, keep_names) {
 organize_map_type_data <- function(data, prf, keep_names) {
   .organize_map_type_data <- function(data, prf, keep_names) {
     if (is_simple_type(prf)) {
+      data <- purrr::map(data, ~ .fromJSON.if.any(.x, "{"))
       data <- purrr::map(data, organize_simple_type_data, prf, keep_names)
       return(data)
     }
@@ -325,6 +335,14 @@ organize_map_type_data <- function(data, prf, keep_names) {
     return(data)
   }
   if (!prf$is_parent_array_) {
+    data <- purrr::map(
+      data,
+      ~ if (is.null(.x)) {
+        .x
+      } else {
+        purrr::map(.x, ~ .fromJSON.if.any(.x, c("{", "[")))
+      }
+    )
     return(.organize_map_type_data(data, prf, keep_names))
   } else {
     return(purrr::map(data, .organize_map_type_data, prf, keep_names))
@@ -370,6 +388,7 @@ organize_row_type_data <- function(data, prf, keep_names) {
   }
   # array of rows -> tibble
   if (prf$is_array_) {
+    data <- purrr::map(data, ~ purrr::map(.x, ~ .fromJSON.if.any(.x, "[")))
     data <- purrr::map(data, ~ organize.data.by.schema(., prf$fields_))
     data <- purrr::map(data, ~ tibble::as_tibble(.))
   }
@@ -420,12 +439,20 @@ organize.data.by.schema <- function(data, schema, keep_names = TRUE) {
     # map type
     if (prf$is_map_) {
       # process all rows
+      data[[col.idx]] <- purrr::map(
+        data[[col.idx]],
+        ~ .fromJSON.if.any(.x, c("{", "["))
+      )
       data[[col.idx]] <- organize_map_type_data(
         data[[col.idx]], prf$fields_[[1]], keep_names
       )
     }
     # row type
     if (prf$is_row_) {
+      data[[col.idx]] <- purrr::map(
+        data[[col.idx]],
+        ~ .fromJSON.if.any(.x, "[")
+      )
       data[[col.idx]] <- organize_row_type_data(
         data[[col.idx]], prf, keep_names
       )
