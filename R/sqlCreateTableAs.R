@@ -31,7 +31,11 @@ setGeneric("sqlCreateTableAs",
 #' @rdname PrestoConnection-class
 #' @usage NULL
 .sqlCreateTableAs <- function(con, name, sql, with = NULL, ...) {
-  name <- DBI::dbQuoteIdentifier(con, name)
+  if (inherits(name, "dbplyr_table_path")) { # dbplyr >= 2.5.0
+    name <- dbplyr::table_path_name(name, con)
+  } else {
+    name <- DBI::dbQuoteIdentifier(con, name)
+  }
 
   DBI::SQL(paste0(
     "CREATE TABLE ", name, "\n",
