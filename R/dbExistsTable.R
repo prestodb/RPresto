@@ -23,8 +23,8 @@ setMethod(
         FROM information_schema.columns
         WHERE
           table_catalog = '", conn@catalog, "' AND
-          table_schema = '", ifelse(!"schema" %in% names(table_name), conn@schema, table_name["schema"]), "' AND
-          table_name = '", table_name["table"], "'
+          table_schema = '", ifelse(length(table_name) == 2L, table_name[1], conn@schema), "' AND
+          table_name = '", table_name[length(table_name)], "'
       ")
     )
     return((res$n > 0))
