@@ -47,6 +47,20 @@ source("utilities.R")
   )
   expect_true(dbExistsTable(con, test_table_name))
   expect_equal_data_frame(collect(tbl), test_df)
+  # a different schema works
+  new_schema_name <- paste0(con@schema, "2")
+  DBI::dbExecute(con, paste0("CREATE SCHEMA IF NOT EXISTS ", new_schema_name))
+  test_table_name_4 <- dbplyr::in_schema(new_schema_name, test_table_name)
+  tbl <- copy_to(dest = src, df = test_df, name = test_table_name_4)
+  expect_true(dbExistsTable(con, test_table_name_4))
+  expect_equal_data_frame(collect(tbl), test_df)
+  # overwriting a different schema works
+  tbl <- copy_to(
+    dest = src, df = test_df, name = test_table_name_4, overwrite = TRUE
+  )
+  expect_true(dbExistsTable(con, test_table_name_4))
+  expect_equal_data_frame(collect(tbl), test_df)
+  expect_true(dbRemoveTable(con, test_table_name_4))
 }
 
 test_that("dplyr::copy_to works for src_presto", {

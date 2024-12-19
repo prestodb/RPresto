@@ -94,6 +94,11 @@ NULL
   rn <- paste0(
     "temp_", paste(sample(letters, 10, replace = TRUE), collapse = "")
   )
+  if (inherits(name, "dbplyr_schema")) {
+    name_sql <- DBI::dbQuoteIdentifier(conn, name)
+    name_with_schema <- DBI::dbUnquoteIdentifier(conn, name_sql)[[1]]@name
+    rn <- dbplyr::in_schema(name_with_schema[1], rn)
+  }
   if (found && overwrite) {
     # Without implementation of TRANSACTION, we play it safe by renaming
     # the to-be-overwritten table rather than deleting it right away
