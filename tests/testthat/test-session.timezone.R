@@ -6,8 +6,6 @@
 
 context("session.timezone")
 
-source("utilities.R")
-
 test_that("session.timezone works", {
   # We suppress warnings because R now uses timedatectl for timezone
   # inference on systemd systems which can give an 'access denied' warning

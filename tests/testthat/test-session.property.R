@@ -6,8 +6,6 @@
 
 context("session.property")
 
-source("utilities.R")
-
 query_session_property <- function(conn, property) {
   properties <- dbGetQuery(conn, "SHOW SESSION")
   properties[properties[["Name"]] == property, "Value", drop = TRUE]

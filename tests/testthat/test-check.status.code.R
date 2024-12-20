@@ -6,8 +6,6 @@
 
 context(".check.response.status")
 
-source("utilities.R")
-
 .check.response.status <- RPresto:::.check.response.status
 
 test_that(".check.response.status works", {

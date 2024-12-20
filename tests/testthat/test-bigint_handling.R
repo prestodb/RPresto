@@ -6,8 +6,6 @@
 
 context("bigint handling")
 
-source("utilities.R")
-
 test_that("Non 32-bit integers give warning", {
   conn <- setup_live_connection()
 

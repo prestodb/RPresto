@@ -6,8 +6,6 @@
 
 context("dbExistsTable and db_has_table")
 
-source("utilities.R")
-
 test_that("dbExistsTable works with live database", {
   conn <- setup_live_connection()
   expect_false(dbExistsTable(conn, "_non_existent_table_"))

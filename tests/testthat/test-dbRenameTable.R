@@ -6,8 +6,6 @@
 
 context("dbRenameTable")
 
-source("utilities.R")
-
 .test_rename_table <- function(conn, test_table_name, test_new_table_name) {
   # create test table from origin table
   if (dbExistsTable(conn, test_table_name)) {

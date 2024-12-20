@@ -6,8 +6,6 @@
 
 context("copy_to.src_presto and db_copy_to")
 
-source("utilities.R")
-
 .test_src <- function(src, test_table_name) {
   if (inherits(src, "src_presto")) {
     con <- src$con
@@ -55,8 +53,11 @@ source("utilities.R")
   expect_true(dbExistsTable(con, test_table_name_4))
   expect_equal_data_frame(collect(tbl), test_df)
   # overwriting a different schema works
-  tbl <- copy_to(
-    dest = src, df = test_df, name = test_table_name_4, overwrite = TRUE
+  expect_message(
+    tbl <- copy_to(
+      dest = src, df = test_df, name = test_table_name_4, overwrite = TRUE
+    ),
+    "The table .* is overwritten"
   )
   expect_true(dbExistsTable(con, test_table_name_4))
   expect_equal_data_frame(collect(tbl), test_df)

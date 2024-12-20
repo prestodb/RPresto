@@ -6,8 +6,6 @@
 
 context("dbDisconnect")
 
-source("utilities.R")
-
 test_that("dbDisconnect works with live database", {
   conn <- setup_live_connection()
   expect_true(dbDisconnect(conn))

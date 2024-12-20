@@ -6,8 +6,6 @@
 
 context("dbQuoteLiteral")
 
-source("utilities.R")
-
 test_that("dbQuoteLiteral works", {
   conn <- dummyPrestoConnection()
   expect_equal(dbQuoteLiteral(conn, DBI::SQL("foo")), DBI::SQL("foo"))

@@ -6,8 +6,6 @@
 
 context("db_query_fields")
 
-source("utilities.R")
-
 test_that("db_query_fields works with live database", {
   s <- setup_live_dplyr_connection()
 

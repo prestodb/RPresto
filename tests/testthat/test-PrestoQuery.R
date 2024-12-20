@@ -6,8 +6,6 @@
 
 context("PrestoQuery")
 
-source("utilities.R")
-
 test_that("PrestoQuery methods work correctly", {
   conn <- setup_mock_connection()
   post.response <- structure(

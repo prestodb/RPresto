@@ -6,8 +6,6 @@
 
 context("dbAppendTable")
 
-source("utilities.R")
-
 test_that("dbAppendTable works with live connection", {
   conn <- presto_default(output.timezone = "America/Los_Angeles")
   test_table_name <- "test_dbappendtable"

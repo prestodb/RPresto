@@ -6,8 +6,6 @@
 
 context("sql_escape_datetime")
 
-source("utilities.R")
-
 with_locale(test.locale(), test_that)("as() works", {
   dbplyr_version <- try(as.character(utils::packageVersion("dbplyr")))
   if (inherits(dbplyr_version, "try-error")) {

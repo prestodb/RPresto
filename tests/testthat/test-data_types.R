@@ -6,8 +6,6 @@
 
 context("data types")
 
-source("utilities.R")
-
 test_that("Queries return the correct primitive types", {
   conn <- setup_live_connection()
 

@@ -6,8 +6,6 @@
 
 context("dbSendQuery")
 
-source("utilities.R")
-
 test_that("dbSendQuery works with live database", {
   conn <- setup_live_connection()
 

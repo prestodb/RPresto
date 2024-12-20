@@ -6,8 +6,6 @@
 
 context("dbGetStatement")
 
-source("utilities.R")
-
 test_that("dbGetStatement works with live database", {
   conn <- setup_live_connection()
 

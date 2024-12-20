@@ -6,8 +6,6 @@
 
 context(".stop.with.error.message")
 
-source("utilities.R")
-
 .stop.with.error.message <- RPresto:::.stop.with.error.message
 
 test_that(".stop.with.error.message works", {

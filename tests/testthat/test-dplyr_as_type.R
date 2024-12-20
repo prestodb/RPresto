@@ -6,8 +6,6 @@
 
 context("dplyr_as.<type>")
 
-source("utilities.R")
-
 with_locale(test.locale(), test_that)("dplyr as.<type> works with live database", {
   parts <- setup_live_dplyr_connection()
   db <- parts[["db"]]

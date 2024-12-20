@@ -6,8 +6,6 @@
 
 context("add_chunk")
 
-source("utilities.R")
-
 test_that("add_chunk returns the original data frame if within size", {
   expect_equal_data_frame(
     add_chunk(iris),

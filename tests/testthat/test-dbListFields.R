@@ -6,8 +6,6 @@
 
 context("dbListFields")
 
-source("utilities.R")
-
 test_that("dbListFields works with live database", {
   conn <- setup_live_connection()
 

@@ -6,8 +6,6 @@
 
 context("dbGetRowCount")
 
-source("utilities.R")
-
 test_that("dbGetRowCount works with live database", {
   conn <- setup_live_connection()
 

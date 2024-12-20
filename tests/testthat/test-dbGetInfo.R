@@ -6,8 +6,6 @@
 
 context("dbGetInfo")
 
-source("utilities.R")
-
 test_that("dbGetInfo works with live database", {
   conn <- setup_live_connection()
   connection.info <- dbGetInfo(conn)

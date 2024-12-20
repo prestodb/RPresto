@@ -6,8 +6,6 @@
 
 context("translate_sql")
 
-source("utilities.R")
-
 with_locale(test.locale(), test_that)("as() works", {
   if (!requireNamespace("dplyr", quietly = TRUE)) {
     skip("dplyr not available")

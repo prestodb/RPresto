@@ -6,8 +6,6 @@
 
 context("dbIsValid")
 
-source("utilities.R")
-
 test_that("dbIsValid works with live database", {
   conn <- setup_live_connection()
 
