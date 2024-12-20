@@ -6,8 +6,6 @@
 
 context("dbGetQuery")
 
-source("utilities.R")
-
 with_locale(test.locale(), test_that)("dbGetQuery works with live database", {
   conn <- setup_live_connection()
   expect_equal_data_frame(

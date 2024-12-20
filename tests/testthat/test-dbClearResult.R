@@ -6,8 +6,6 @@
 
 context("dbClearResult")
 
-source("utilities.R")
-
 test_that("dbClearResult works with live database", {
   conn <- setup_live_connection()
   result <- dbSendQuery(conn, "SELECT 1")

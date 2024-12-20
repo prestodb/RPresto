@@ -6,8 +6,6 @@
 
 context("integration")
 
-source("utilities.R")
-
 test_that("Connections handle port argument correctly", {
   test_port <- function(port) {
     dbConnect(RPresto::Presto(),

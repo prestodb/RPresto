@@ -6,8 +6,6 @@
 
 context("presto_field")
 
-source("utilities.R")
-
 # bool type
 # tinyint type
 # smallint type

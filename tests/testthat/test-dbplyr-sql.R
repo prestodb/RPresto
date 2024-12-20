@@ -6,8 +6,6 @@
 
 context("dbplyr-sql")
 
-source("utilities.R")
-
 test_that("save_query_save works", {
   conn <- setup_live_connection()
   test_table_name <- "test_dbquerysave"

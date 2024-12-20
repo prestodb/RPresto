@@ -6,8 +6,6 @@
 
 context("dplyr")
 
-source("utilities.R")
-
 test_that("dplyr integration works", {
   parts <- setup_live_dplyr_connection()
   db <- parts[["db"]]

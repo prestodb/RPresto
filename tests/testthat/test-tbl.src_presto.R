@@ -6,8 +6,6 @@
 
 context("tbl.src_presto")
 
-source("utilities.R")
-
 test_that("dplyr::tbl works", {
   parts <- setup_live_dplyr_connection()
 

@@ -6,8 +6,6 @@
 
 context("dbWriteTable and db_write_table")
 
-source("utilities.R")
-
 test_that("dbWriteTable works with live connection", {
   conn <- presto_default(output.timezone = "America/Los_Angeles")
   test_table_name <- "test_dbwritetable"

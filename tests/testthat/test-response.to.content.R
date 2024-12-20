@@ -6,8 +6,6 @@
 
 context(".response.to.content")
 
-source("utilities.R")
-
 with_locale(test.locale(), test_that)(".response.to.content works", {
   .response.to.content <- RPresto:::.response.to.content
 

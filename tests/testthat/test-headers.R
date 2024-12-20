@@ -6,8 +6,6 @@
 
 context("request headers")
 
-source("utilities.R")
-
 test_that("kerberos configs can be generated", {
   config <- kerberos_configs()
   expect_true(

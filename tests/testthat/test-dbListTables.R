@@ -6,8 +6,6 @@
 
 context("dbListTables and db_list_tables")
 
-source("utilities.R")
-
 test_that("dbListTables works with live database", {
   conn <- setup_live_connection()
 

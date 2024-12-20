@@ -6,8 +6,6 @@
 
 context("db_explain")
 
-source("utilities.R")
-
 test_that("db_explain works with live database", {
   s <- setup_live_dplyr_connection()[["db"]]
 

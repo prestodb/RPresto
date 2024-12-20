@@ -6,8 +6,6 @@
 
 context("fetch")
 
-source("utilities.R")
-
 test_that("fetch works with live database", {
   conn <- setup_live_connection()
 

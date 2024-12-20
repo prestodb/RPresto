@@ -6,9 +6,6 @@
 
 context(".get.content.state")
 
-source("utilities.R")
-
-
 with_locale(test.locale(), test_that)(
   ".get.content.state works", {
     .get.content.state <- RPresto:::.get.content.state

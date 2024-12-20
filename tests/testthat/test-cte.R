@@ -6,8 +6,6 @@
 
 context("ctes")
 
-source("utilities.R")
-
 test_that("CTEs created in dbConnect() works", {
   conn <- setup_live_connection(
     ctes = list(

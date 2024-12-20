@@ -6,8 +6,6 @@
 
 context("dbDataType")
 
-source("utilities.R")
-
 with_locale(test.locale(), test_that)("presto simple types are correct", {
   drv <- RPresto::Presto()
 

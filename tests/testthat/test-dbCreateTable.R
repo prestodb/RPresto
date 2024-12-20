@@ -6,8 +6,6 @@
 
 context("dbCreateTable and sqlCreateTable")
 
-source("utilities.R")
-
 test_that("sqlCreateTable works", {
   conn <- setup_live_connection()
   test_table_name <- "test_sqlcreatetable"

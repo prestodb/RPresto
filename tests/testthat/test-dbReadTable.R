@@ -6,8 +6,6 @@
 
 context("dbReadTable")
 
-source("utilities.R")
-
 test_that("dbReadTable works with live database", {
   conn <- setup_live_connection()
   test_table_name <- "test_dbreadtable"

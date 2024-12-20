@@ -6,8 +6,6 @@
 
 context("extra.credentials")
 
-source("utilities.R")
-
 test_that("extra.credentials should be set in the connection as a string", {
   conn <- setup_live_connection(extra.credentials = "test.token.foo=bar")
   expect_equal(conn@extra.credentials, "test.token.foo=bar")
