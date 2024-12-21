@@ -19,7 +19,7 @@ test_that("dplyr integration works", {
   # collect() works
   expect_that(
     nrow(dplyr::collect(iris_presto, n = Inf)),
-    equals(nrow(iris))
+    equals(nrow(iris_df))
   )
 
   iris_presto_summary <- dplyr::arrange(
@@ -70,7 +70,7 @@ test_that("dplyr integration works", {
   # so it should be tested.
   expect_that(
     nrow(dplyr::collect(dplyr::collapse(iris_presto), n = Inf)),
-    equals(nrow(iris))
+    equals(nrow(iris_df))
   )
 
   # compute() collapses a lazy query into a table
