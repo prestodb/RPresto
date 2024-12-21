@@ -29,26 +29,18 @@ test_that("dbListFields works with live database", {
 test_that("dbListFields works with identifier", {
   skip_if_not(presto_has_default())
 
-  conn <- DBI::dbConnect(
-    drv = Presto(),
-    host = "http://localhost",
-    port = 8080,
-    user = Sys.getenv("USER"),
-    catalog = "memory",
-    schema = "default"
-  )
-  DBI::dbWriteTable(conn, "iris", iris, overwrite = TRUE)
+  conn <- setup_live_connection()
   expect_equal(
     DBI::dbListFields(conn, DBI::Id(table = "iris")),
-    tolower(colnames(iris))
+    tolower(colnames(iris_df))
   )
   expect_equal(
     DBI::dbListFields(conn, dbplyr::in_schema(conn@schema, "iris")),
-    tolower(colnames(iris))
+    tolower(colnames(iris_df))
   )
   expect_equal(
     DBI::dbListFields(conn, DBI::dbQuoteIdentifier(conn, "iris")),
-    tolower(colnames(iris))
+    tolower(colnames(iris_df))
   )
 })
 

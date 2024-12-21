@@ -21,6 +21,15 @@ iris.sql <- function() {
   return(sql)
 }
 
+iris_df <- dplyr::rename(
+  iris,
+  sepal_length = Sepal.Length,
+  sepal_width = Sepal.Width,
+  petal_length = Petal.Length,
+  petal_width = Petal.Width,
+  species = Species
+)
+
 test_df <- tibble::tibble(
   field1 = c("a", "b", NA_character_),
   field2 = c(1L, 2L, NA_integer_),

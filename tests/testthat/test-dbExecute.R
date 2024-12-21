@@ -43,7 +43,7 @@ test_that("dbExecute works with live database to replicate existing table", {
       conn,
       paste("CREATE TABLE", test_table_name, "AS SELECT * FROM iris")
     ),
-    NROW(iris)
+    NROW(iris_df)
   )
   expect_true(dbExistsTable(conn, test_table_name))
   expect_equal(

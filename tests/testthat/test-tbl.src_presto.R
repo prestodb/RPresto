@@ -13,7 +13,7 @@ test_that("dplyr::tbl works", {
   iris_presto_materialized <- dplyr::collect(iris_presto, n = Inf)
   expect_that(
     nrow(iris_presto_materialized),
-    equals(nrow(iris))
+    equals(nrow(iris_df))
   )
 
   iris_from_sql <- dplyr::tbl(
@@ -43,30 +43,11 @@ test_that("dplyr::tbl works", {
 test_that("cross-schema tbl works", {
   skip_if_not(presto_has_default())
 
-  conn <- DBI::dbConnect(
-    drv = Presto(),
-    host = "http://localhost",
-    port = 8080,
-    user = Sys.getenv("USER"),
-    catalog = "memory",
-    schema = "default"
-  )
-  DBI::dbWriteTable(conn, "iris", iris, overwrite = TRUE)
-  if (!"testing" %in% DBI::dbGetQuery(conn, "SHOW SCHEMAS")$Schema) {
-    DBI::dbExecute(conn, "CREATE SCHEMA testing")
-  }
-  conn2 <- DBI::dbConnect(
-    drv = Presto(),
-    host = "http://localhost",
-    port = 8080,
-    user = Sys.getenv("USER"),
-    catalog = "memory",
-    schema = "testing"
-  )
-  DBI::dbWriteTable(conn2, "iris2", iris, overwrite = TRUE)
+  conn <- setup_live_connection()
+  conn2 <- setup_live_connection(schema = "testing")
 
   tbl_iris <- dplyr::tbl(conn, "iris")
-  tbl_iris2 <- dplyr::tbl(conn, dbplyr::in_schema("testing", "iris2"))
+  tbl_iris2 <- dplyr::tbl(conn, dbplyr::in_schema("testing", "iris"))
   expect_equal_data_frame(
     dplyr::collect(tbl_iris),
     dplyr::collect(tbl_iris2)
