@@ -192,3 +192,5 @@ sql_translation.PrestoConnection <- function(con) {
     presto_window_functions()
   ))
 }
+
+utils::globalVariables(c("cast", "%as%", "varchar"))
