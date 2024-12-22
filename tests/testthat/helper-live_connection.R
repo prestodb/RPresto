@@ -12,37 +12,53 @@ setup_live_connection <- function(schema = "default",
                                   ...,
                                   type = Sys.getenv("PRESTO_TYPE", "Presto")) {
   skip_on_cran()
-  if (type == "Presto") {
-    conn <- dbConnect(RPresto::Presto(),
-                      schema = schema,
-                      catalog = "memory",
-                      host = "http://localhost",
-                      port = 8080,
-                      source = "RPresto_test",
-                      session.timezone = session.timezone,
-                      parameters = parameters,
-                      extra.credentials = extra.credentials,
-                      user = Sys.getenv("USER"),
-                      bigint = bigint,
-                      ...
-    )
-  } else if (type == "Trino") {
-    conn <- dbConnect(RPresto::Presto(),
-                      use.trino.headers = TRUE,
-                      schema = schema,
-                      catalog = "memory",
-                      host = "http://localhost",
-                      port = 8090,
-                      source = "RPresto_test",
-                      session.timezone = session.timezone,
-                      parameters = parameters,
-                      extra.credentials = extra.credentials,
-                      user = Sys.getenv("USER"),
-                      bigint = bigint,
-                      ...
-    )
-  } else {
+  if (!type %in% c("Presto", "Trino")) {
     stop("Connection type is not Presto or Trino.", call. = FALSE)
+  }
+  if (type == "Presto") {
+    tryCatch(
+      {
+        conn <- dbConnect(RPresto::Presto(),
+                          schema = schema,
+                          catalog = "memory",
+                          host = "http://localhost",
+                          port = 8080,
+                          source = "RPresto_test",
+                          session.timezone = session.timezone,
+                          parameters = parameters,
+                          extra.credentials = extra.credentials,
+                          user = Sys.getenv("USER"),
+                          bigint = bigint,
+                          ...
+        )
+        DBI::dbGetQuery(conn, "SELECT 1")
+      },
+      error = function(...) {
+        testthat::skip("Test database not available")
+      })
+  }
+  if (type == "Trino") {
+    tryCatch(
+      {
+        conn <- dbConnect(RPresto::Presto(),
+                          use.trino.headers = TRUE,
+                          schema = schema,
+                          catalog = "memory",
+                          host = "http://localhost",
+                          port = 8090,
+                          source = "RPresto_test",
+                          session.timezone = session.timezone,
+                          parameters = parameters,
+                          extra.credentials = extra.credentials,
+                          user = Sys.getenv("USER"),
+                          bigint = bigint,
+                          ...
+        )
+        DBI::dbGetQuery(conn, "SELECT 1")
+      },
+      error = function(...) {
+        testthat::skip("Test database not available")
+      })
   }
   return(conn)
 }
@@ -55,17 +71,16 @@ setup_live_dplyr_connection <- function(schema = "default",
                                         ...,
                                         type = Sys.getenv("PRESTO_TYPE", "Presto")) {
   skip_on_cran()
-
-  db <- src_presto(
-    con = setup_live_connection(
-      schema = schema,
-      session.timezone = session.timezone,
-      parameters = parameters,
-      extra.credentials = extra.credentials,
-      bigint = bigint,
-      ...,
-      type = type
-    )
+  conn <- setup_live_connection(
+    schema = schema,
+    session.timezone = session.timezone,
+    parameters = parameters,
+    extra.credentials = extra.credentials,
+    bigint = bigint,
+    ...,
+    type = type
   )
+
+  db <- src_presto(con = conn)
   return(list(db = db, iris_table_name = "iris"))
 }
