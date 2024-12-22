@@ -4,6 +4,7 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
+#' @export
 print.presto.field <- function(x, ..., prefix = "") {
   cat(prefix, "presto.field: \n", sep = "")
   cat(prefix, "..Name: ", x$name_, "\n", sep = "")
