@@ -341,7 +341,12 @@ PrestoQuery <- setRefClass("PrestoQuery",
       if (!is.null(.content$updateType)) {
         switch(.content$updateType,
           "SET SESSION" = {
-            properties <- httr::headers(.response)[["x-presto-set-session"]]
+            header_name = ifelse(
+              .conn@use.trino.headers,
+              "x-trino-set-session",
+              "x-presto-set-session"
+            )
+            properties <- httr::headers(.response)[[header_name]]
             if (!is.null(properties)) {
               for (pair in strsplit(properties, ",", fixed = TRUE)) {
                 pair <- unlist(strsplit(pair, "=", fixed = TRUE))
@@ -350,7 +355,12 @@ PrestoQuery <- setRefClass("PrestoQuery",
             }
           },
           "RESET SESSION" = {
-            properties <- httr::headers(.response)[["x-presto-clear-session"]]
+            header_name = ifelse(
+              .conn@use.trino.headers,
+              "x-trino-clear-session",
+              "x-presto-clear-session"
+            )
+            properties <- httr::headers(.response)[[header_name]]
             if (!is.null(properties)) {
               for (key in strsplit(properties, ",", fixed = TRUE)) {
                 .conn@session$unsetParameter(key)

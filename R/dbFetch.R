@@ -19,7 +19,7 @@ NULL
       Filter(function(df) NROW(df) || NCOL(df), res_list),
       names
     ))
-    if (length(unique.chunk.column.names) != 1) {
+    if (length(unique.chunk.column.names) > 1) {
       stop(
         "Chunk column names are different across chunks: ",
         jsonlite::toJSON(lapply(res_list, names))
