@@ -106,7 +106,7 @@ find_recursive_cte_tables <- function(con, cte_tables_list, ...) {
 
 find_cte_tables_from_try_result <- function(con, res, ...) {
   if (inherits(res, "try-error")) {
-    regex_pattern <- ".* Table (.+) does not exist"
+    regex_pattern <- ".* Table '?(.+?)'? does not exist"
     error_msg <- conditionMessage(attr(res, "condition"))
     if (grepl(regex_pattern, error_msg)) {
       missing_table <-
