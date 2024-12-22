@@ -16,7 +16,13 @@
   df,
   name = deparse(substitute(df)),
   overwrite = FALSE,
+  types = NULL,
+  temporary = FALSE,
+  unique_indexes = NULL,
+  indexes = NULL,
+  analyze = FALSE,
   ...,
+  in_transaction = FALSE,
   with = NULL
 )
 
@@ -25,7 +31,13 @@
   df,
   name = deparse(substitute(df)),
   overwrite = FALSE,
+  types = NULL,
+  temporary = FALSE,
+  unique_indexes = NULL,
+  indexes = NULL,
+  analyze = FALSE,
   ...,
+  in_transaction = FALSE,
   with = NULL
 )
 }
@@ -58,7 +70,7 @@ and \code{tbl} to connect to tables within that database.
 If you're unsure of the arguments to pass, please ask your database
 administrator for the values of these variables.
 
-Automatically create a Presto remote database source to wrap aroudn the
+Automatically create a Presto remote database source to wrap around the
 \code{PrestoConnection} object via which DBI APIs can be called.
 }
 \examples{

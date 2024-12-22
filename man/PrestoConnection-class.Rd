@@ -139,8 +139,7 @@ e.g. \code{Id(schema = "my_schema", table = "table_name")}
 given verbatim, e.g. \code{SQL('"my_schema"."table_name"')}
 }}
 
-\item{value}{A data frame of values. The column names must be consistent
-with those in the target table in the database.}
+\item{value}{A \link{data.frame} (or coercible to data.frame).}
 
 \item{...}{Other parameters passed on to methods.}
 
@@ -163,7 +162,7 @@ A data frame: field types are generated using
 
 \item{with}{An optional WITH clause for the CREATE TABLE statement.}
 
-\item{temporary}{If \code{TRUE}, will generate a temporary table statement.}
+\item{temporary}{If \code{TRUE}, will generate a temporary table.}
 
 \item{quiet}{If a progress bar should be shown for long queries (which run
 for more than 2 seconds. Default to \code{getOption("rpresto.quiet")} which
