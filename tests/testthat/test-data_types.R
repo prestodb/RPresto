@@ -4,7 +4,7 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-context("data types")
+context(paste(Sys.getenv("PRESTO_TYPE", "Presto"), "data types"))
 
 test_that("Queries return the correct primitive types", {
   conn <- setup_live_connection()
@@ -128,7 +128,7 @@ test_that("all data types work", {
   conn <- setup_live_connection(session.timezone = test.timezone())
 
   expect_equal_data_frame(
-    dbGetQuery(conn, "
+    dbGetQuery(conn, paste0("
       SELECT
         true AS type_boolean,
         CAST(1 AS TINYINT) AS type_tinyint,
@@ -144,7 +144,7 @@ test_that("all data types work", {
         JSON_PARSE('{\"a\": 1}') AS type_json,
         DATE '2015-03-01' AS type_date,
         TIME '01:02:03.456' AS type_time,
-        TIME '01:02:03.456 UTC' AS type_time_with_timezone,
+        TIME '01:02:03.456 ", ifelse(conn@use.trino.headers, tz_to_offset("UTC"), "UTC"), "' AS type_time_with_timezone,
         TIMESTAMP '2001-08-22 03:04:05.321' AS type_timestamp,
         TIMESTAMP '2001-08-22 03:04:05.321 UTC'
           AS type_timestamp_with_timezone,
@@ -152,7 +152,7 @@ test_that("all data types work", {
         INTERVAL '626704.321' SECOND AS type_interval_day_to_second,
         ARRAY[1,2,3] AS type_array_bigint,
         MAP(ARRAY['a'], ARRAY[0]) AS type_map_varchar_bigint
-    "),
+    ")),
     tibble::tibble(
       type_boolean = TRUE,
       type_tinyint = 1L,

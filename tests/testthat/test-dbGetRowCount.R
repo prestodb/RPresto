@@ -4,7 +4,7 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-context("dbGetRowCount")
+context(paste(Sys.getenv("PRESTO_TYPE", "Presto"), "dbGetRowCount"))
 
 test_that("dbGetRowCount works with live database", {
   conn <- setup_live_connection()

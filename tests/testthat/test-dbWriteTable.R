@@ -4,10 +4,10 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-context("dbWriteTable and db_write_table")
+context(paste(Sys.getenv("PRESTO_TYPE", "Presto"), "dbWriteTable and db_write_table"))
 
 test_that("dbWriteTable works with live connection", {
-  conn <- presto_default(output.timezone = "America/Los_Angeles")
+  conn <- setup_live_connection(output.timezone = "America/Los_Angeles")
   test_table_name <- "test_dbwritetable"
   if (dbExistsTable(conn, test_table_name)) {
     dbRemoveTable(conn, test_table_name)
@@ -73,7 +73,7 @@ test_that("dbWriteTable works with live connection", {
 })
 
 test_that("db_write_table works with live connection", {
-  conn <- presto_default(output.timezone = "America/Los_Angeles")
+  conn <- setup_live_connection(output.timezone = "America/Los_Angeles")
   test_table_name <- "test_dbwritetable"
   if (dbExistsTable(conn, test_table_name)) {
     dbRemoveTable(conn, test_table_name)

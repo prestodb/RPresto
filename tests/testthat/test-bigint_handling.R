@@ -4,7 +4,7 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-context("bigint handling")
+context(paste(Sys.getenv("PRESTO_TYPE", "Presto"), "bigint handling"))
 
 test_that("Non 32-bit integers give warning", {
   conn <- setup_live_connection()
