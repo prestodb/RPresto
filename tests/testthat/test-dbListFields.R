@@ -4,7 +4,7 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-context("dbListFields")
+context(paste(Sys.getenv("PRESTO_TYPE", "Presto"), "dbListFields"))
 
 test_that("dbListFields works with live database", {
   conn <- setup_live_connection()
@@ -20,7 +20,7 @@ test_that("dbListFields works with live database", {
     dbListFields(result),
     paste0(
       "Query.*failed: (line [0-9:]+ )?",
-      "Table .*__non_existent_table__ does not exist"
+      "Table .*__non_existent_table__.* does not exist"
     )
   )
   expect_true(dbClearResult(result))

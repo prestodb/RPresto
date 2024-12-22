@@ -4,7 +4,7 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-context("integration")
+context(paste(Sys.getenv("PRESTO_TYPE", "Presto"), "integration"))
 
 test_that("Connections handle port argument correctly", {
   test_port <- function(port) {

@@ -4,7 +4,7 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-context("dbExecute and dbGetRowsAffected")
+context(paste(Sys.getenv("PRESTO_TYPE", "Presto"), "dbExecute and dbGetRowsAffected"))
 
 test_that("dbExecute works with live database to create empty table", {
   conn <- setup_live_connection()

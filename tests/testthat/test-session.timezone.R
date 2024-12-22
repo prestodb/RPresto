@@ -4,7 +4,7 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-context("session.timezone")
+context(paste(Sys.getenv("PRESTO_TYPE", "Presto"), "session.timezone"))
 
 test_that("session.timezone works", {
   # We suppress warnings because R now uses timedatectl for timezone
@@ -25,6 +25,7 @@ test_that("session.timezone works", {
   # daylight saving. Tokyo did not observe daylight saving in 2014.
   timestamp_6am <- "2014-10-26 06:00:00"
   timestamp_1pm <- "2014-10-26 13:00:00"
+  timestamp_0am <- "2014-10-26 00:00:00"
   timestamp_1am <- "2014-10-26 01:00:00"
   timestamp_8pm <- "2014-10-26 20:00:00"
   tokyo_1pm <- as.POSIXct(timestamp_1pm)
@@ -46,6 +47,7 @@ test_that("session.timezone works", {
   istanbul_6am_unixtime <- as.numeric(istanbul_6am)
 
   istanbul_1am <- as.POSIXct(timestamp_1am, tz = "Europe/Istanbul")
+  istanbul_0am <- as.POSIXct(timestamp_0am, tz = "Europe/Istanbul")
 
   expect_equal(tokyo_1pm_timestamp, istanbul_1pm_timestamp)
   expect_equal(istanbul_1pm_unixtime - tokyo_1pm_unixtime, 7 * 60 * 60)
@@ -89,7 +91,7 @@ test_that("session.timezone works", {
     to_unixtime = istanbul_1pm_unixtime,
     unixtime_same = FALSE, # tokyo_1pm_unixtime vs istanbul_1pm_unixtime
     timestamp = istanbul_1pm,
-    dst_timestamp = istanbul_1am, # NOT midnight, due to DST
+    dst_timestamp = as.POSIXct(ifelse(conn@use.trino.headers, istanbul_0am, istanbul_1am), tz = "Europe/Istanbul"), # Presto respects DST while Trino doesn't
     tokyo_vs_istanbul = FALSE,
     date_format = tokyo_8pm_timestamp,
     date_format_before_standard_time = tokyo_6am_timestamp

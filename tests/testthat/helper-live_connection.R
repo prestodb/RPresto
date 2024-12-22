@@ -10,7 +10,7 @@ setup_live_connection <- function(schema = "default",
                                   extra.credentials = "",
                                   bigint = c("integer", "integer64", "numeric", "character"),
                                   ...,
-                                  type = "Presto") {
+                                  type = Sys.getenv("PRESTO_TYPE", "Presto")) {
   skip_on_cran()
   if (type == "Presto") {
     conn <- dbConnect(RPresto::Presto(),
@@ -53,7 +53,7 @@ setup_live_dplyr_connection <- function(schema = "default",
                                         extra.credentials = "",
                                         bigint = c("integer", "integer64", "numeric", "character"),
                                         ...,
-                                        type = "Presto") {
+                                        type = Sys.getenv("PRESTO_TYPE", "Presto")) {
   skip_on_cran()
 
   db <- src_presto(

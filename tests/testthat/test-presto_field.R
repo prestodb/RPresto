@@ -4,7 +4,7 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-context("presto_field")
+context(paste(Sys.getenv("PRESTO_TYPE", "Presto"), "presto_field"))
 
 # bool type
 # tinyint type
@@ -22,10 +22,10 @@ context("presto_field")
 # time with timezone type
 # interval (year to month) type
 # interval (day to second) type
-.test_primitive_types <- function(
-  conn, timezone = "America/Los_Angeles", type = "Presto"
-) {
-  # bool type
+test_that("Queries return the correct primitive types", {
+  conn <- setup_live_connection(session.timezone = test.timezone())
+  timezone <- "America/Los_Angeles"
+    # bool type
   expect_equal_data_frame(
     df.boolean <- dbGetQuery(conn, "select true as type_bool"),
     tibble::tibble(type_bool = TRUE)
@@ -125,9 +125,9 @@ context("presto_field")
       paste0(
         "select timestamp '", timestamp_date, " 01:02:03 ",
         ifelse(
-          type == "Presto",
-          timezone,
-          tz_to_offset(timezone, dt = as.Date(timestamp_date))
+          conn@use.trino.headers,
+          tz_to_offset(timezone, dt = as.Date(timestamp_date)),
+          timezone
         ),
         "' as type_timestamp_with_tz"
       )
@@ -161,7 +161,7 @@ context("presto_field")
       conn,
       paste0(
         "select time '01:02:03 ",
-        ifelse(type == "Presto", timezone, tz_to_offset(timezone)),
+        ifelse(conn@use.trino.headers, tz_to_offset(timezone), timezone),
         "' as type_time_with_tz"
       )
     ),
@@ -214,22 +214,11 @@ context("presto_field")
     df.interval_day_to_second$type_interval_day_to_second,
     "Duration"
   )
-}
-
-test_that("Queries return the correct primitive types", {
-  conn.presto <- setup_live_connection(
-    session.timezone = test.timezone(),
-    type = "Presto"
-  )
-  .test_primitive_types(conn.presto, type = "Presto")
-  conn.trino <- setup_live_connection(
-    session.timezone = test.timezone(),
-    type = "Trino"
-  )
-  .test_primitive_types(conn.trino, type = "Trino")
 })
 
-.test_primitive_arrays <- function(conn, timezone = "America/Los_Angeles", type = "Presto") {
+test_that("Queries return the correct primitive types in arrays", {
+  conn <- setup_live_connection(session.timezone = test.timezone())
+  timezone <- "America/Los_Angeles"
   # bool type
   expect_equal_data_frame(
     df.boolean <- dbGetQuery(conn, "select array[true, false] as type_bool"),
@@ -382,17 +371,17 @@ test_that("Queries return the correct primitive types", {
       select
         array[
           timestamp '", timestamp_date, " 01:02:03 ",
-          ifelse(
-            type == "Presto",
-            timezone,
-            tz_to_offset(timezone, dt = as.Date(timestamp_date))
-          ), "',
+             ifelse(
+               conn@use.trino.headers,
+               tz_to_offset(timezone, dt = as.Date(timestamp_date)),
+               timezone
+             ), "',
           timestamp '", timestamp_date, " 01:02:03 ",
-          ifelse(
-            type == "Presto",
-            timezone,
-            tz_to_offset(timezone, dt = as.Date(timestamp_date))
-          ), "'
+             ifelse(
+               conn@use.trino.headers,
+               tz_to_offset(timezone, dt = as.Date(timestamp_date)),
+               timezone
+             ), "'
         ] as type_timestamp_with_tz
       ")
     ),
@@ -438,8 +427,8 @@ test_that("Queries return the correct primitive types", {
       paste0("
       select
         array[
-          time '01:02:03 ", ifelse(type == "Presto", timezone, tz_to_offset(timezone)), "',
-          time '04:05:06 ", ifelse(type == "Presto", timezone, tz_to_offset(timezone)), "'
+          time '01:02:03 ", ifelse(conn@use.trino.headers, tz_to_offset(timezone), timezone), "',
+          time '04:05:06 ", ifelse(conn@use.trino.headers, tz_to_offset(timezone), timezone), "'
         ] as type_time_with_tz
       ")
     ),
@@ -521,22 +510,10 @@ test_that("Queries return the correct primitive types", {
     df.interval_day_to_second$type_interval_day_to_second,
     expect_s4_class, "Duration"
   )
-}
-
-test_that("Queries return the correct primitive types in arrays", {
-  conn.presto <- setup_live_connection(
-    session.timezone = test.timezone(),
-    type = "Presto"
-  )
-  .test_primitive_arrays(conn.presto, type = "Presto")
-  conn.trino <- setup_live_connection(
-    session.timezone = test.timezone(),
-    type = "Trino"
-  )
-  .test_primitive_arrays(conn.trino, type = "Trino")
 })
 
-.test_maps <- function(conn) {
+test_that("Queries return the correct map types", {
+  conn <- setup_live_connection(session.timezone = test.timezone())
   # single map value -> 1-element named typed vector
   expect_equal_data_frame(
     df.map_single_value <- dbGetQuery(
@@ -759,22 +736,10 @@ test_that("Queries return the correct primitive types in arrays", {
     df.array_of_map_multiple_values$type_map_multiple_values,
     ~ purrr::walk(., ~ expect_equal(length(.), 2))
   )
-}
-
-test_that("Queries return the correct map types", {
-  conn.presto <- setup_live_connection(
-    session.timezone = test.timezone(),
-    type = "Presto"
-  )
-  .test_maps(conn.presto)
-  conn.trino <- setup_live_connection(
-    session.timezone = test.timezone(),
-    type = "Trino"
-  )
-  .test_maps(conn.trino)
 })
 
-.test_rows <- function(conn) {
+test_that("Queries return the correct row types", {
+  conn <- setup_live_connection(session.timezone = test.timezone())
   # single row value is mapped to a single-value named list
   expect_equal_data_frame(
     df.row_single_value <- dbGetQuery(
@@ -835,22 +800,10 @@ test_that("Queries return the correct map types", {
       type_row_array_values = list(tibble::tibble(x = c(1, 2), y = c("a", "b")))
     )
   )
-}
-
-test_that("Queries return the correct row types", {
-  conn.presto <- setup_live_connection(
-    session.timezone = test.timezone(),
-    type = "Presto"
-  )
-  .test_rows(conn.presto)
-  conn.trino <- setup_live_connection(
-    session.timezone = test.timezone(),
-    type = "Trino"
-  )
-  .test_rows(conn.trino)
 })
 
-.test_map_of_rows <- function(conn) {
+test_that("Queries return the correct map of row types", {
+  conn <- setup_live_connection(session.timezone = test.timezone())
   # map of single row is a named list
   expect_equal_data_frame(
     df.map_single_row <- dbGetQuery(
@@ -881,22 +834,10 @@ test_that("Queries return the correct row types", {
       type_map_multiple_rows = list(tibble::tibble(x = c(1L, 2L)))
     )
   )
-}
-
-test_that("Queries return the correct map of row types", {
-  conn.presto <- setup_live_connection(
-    session.timezone = test.timezone(),
-    type = "Presto"
-  )
-  .test_map_of_rows(conn.presto)
-  conn.trino <- setup_live_connection(
-    session.timezone = test.timezone(),
-    type = "Trino"
-  )
-  .test_map_of_rows(conn.trino)
 })
 
-.test_bigint <- function(conn) {
+test_that("Queries return the correct handling of BIGINT", {
+  conn <- setup_live_connection()
   expect_equal_data_frame(
     df.bigint <- dbGetQuery(
       conn, "select cast(1 as bigint) as type_bigint"
@@ -951,16 +892,10 @@ test_that("Queries return the correct map of row types", {
     tibble::tibble(type_bigint_overflow = as.character(2^60))
   )
   expect_type(df.bigint_overflow.4$type_bigint_overflow, "character")
-}
-
-test_that("Queries return the correct handling of BIGINT", {
-  conn.presto <- setup_live_connection(type = "Presto")
-  .test_bigint(conn.presto)
-  conn.trino <- setup_live_connection(type = "Trino")
-  .test_bigint(conn.trino)
 })
 
-.test_infinity_nan <- function(conn) {
+test_that("Infinities and NaNs are handled properly", {
+  conn <- setup_live_connection()
   expect_equal_data_frame(
     df.nan <- dbGetQuery(
       conn,
@@ -975,16 +910,10 @@ test_that("Queries return the correct handling of BIGINT", {
     ),
     tibble::tibble(type_nan = c(-Inf, Inf, NaN))
   )
-}
-
-test_that("Infinities and NaNs are handled properly", {
-  conn.presto <- setup_live_connection(type = "Presto")
-  .test_infinity_nan(conn.presto)
-  conn.trino <- setup_live_connection(type = "Trino")
-  .test_infinity_nan(conn.trino)
 })
 
-.test_null <- function(conn) {
+test_that("NULL values are properly handled", {
+  conn <- setup_live_connection()
   expect_equal_data_frame(
     dbGetQuery(
       conn,
@@ -997,32 +926,31 @@ test_that("Infinities and NaNs are handled properly", {
     ),
     tibble::tibble(type_has_null = c("abc", NA_character_))
   )
-}
-
-test_that("NULL values are properly handled", {
-  conn.presto <- setup_live_connection(type = "Presto")
-  .test_null(conn.presto)
-  conn.trino <- setup_live_connection(type = "Trino")
-  .test_null(conn.trino)
 })
 
-.test_empty <- function(conn) {
+test_that("Empty output can be returned", {
+  conn <- setup_live_connection()
   expect_equal_data_frame(
     dbGetQuery(conn, "select * from (values(1)) as t(one) where 1 = 0"),
     tibble::tibble(one = integer(0))
   )
-}
-
-test_that("Empty output can be returned", {
-  conn.presto <- setup_live_connection(type = "Presto")
-  .test_empty(conn.presto)
-  conn.trino <- setup_live_connection(type = "Trino")
-  .test_empty(conn.trino)
 })
 
-.test_time_types <- function(
-  conn, timezone = "America/Los_Angeles", type = "Presto"
-) {
+test_that("output.timezone works", {
+  conn <- setup_live_connection(session.timezone = test.timezone())
+  # session.timezone and output.timezone should be the same by default
+  expect_equal(conn@session.timezone, test.timezone())
+  expect_equal(conn@output.timezone, test.timezone())
+  dbDisconnect(conn)
+  conn <- setup_live_connection(
+    session.timezone = test.timezone(),
+    output.timezone = test.output.timezone()
+  )
+  # session.timezone and output.timezone can be set differently
+  expect_equal(conn@session.timezone, test.timezone())
+  expect_equal(conn@output.timezone, test.output.timezone())
+
+  timezone <- "America/Los_Angeles"
   timestamp_date <- "2022-09-21"
   timestamp_time <- "01:02:03.456"
   timestamp_string <- paste(timestamp_date, timestamp_time, sep = " ")
@@ -1063,9 +991,9 @@ test_that("Empty output can be returned", {
         "type_timestamp_with_tz_string ",
         "from (select timestamp '", timestamp_string, " ",
         ifelse(
-          type == "Presto",
-          timezone,
-          tz_to_offset(timezone, dt = as.Date(timestamp_date))
+          conn@use.trino.headers,
+          tz_to_offset(timezone, dt = as.Date(timestamp_date)),
+          timezone
         ),
         "' as type_timestamp_with_tz)"
       )
@@ -1083,9 +1011,9 @@ test_that("Empty output can be returned", {
             digits = 3
           ), " ",
           ifelse(
-            type == "Presto",
-            timezone,
-            tz_to_offset(timezone, dt = as.Date(timestamp_date))
+            conn@use.trino.headers,
+            tz_to_offset(timezone, dt = as.Date(timestamp_date)),
+            timezone
           )
         )
     )
@@ -1095,33 +1023,4 @@ test_that("Empty output can be returned", {
     attr(df.timestamp_with_tz$type_timestamp_with_tz[[1]], "tz"),
     test.output.timezone()
   )
-}
-
-test_that("output.timezone works", {
-  conn.presto <- setup_live_connection(
-    session.timezone = test.timezone(),
-    type = "Presto"
-  )
-  # session.timezone and output.timezone should be the safe by default
-  expect_equal(conn.presto@session.timezone, test.timezone())
-  expect_equal(conn.presto@output.timezone, test.timezone())
-  dbDisconnect(conn.presto)
-  conn.presto <- setup_live_connection(
-    session.timezone = test.timezone(),
-    output.timezone = test.output.timezone(),
-    type = "Presto"
-  )
-  # session.timezone and output.timezone can be set differently
-  expect_equal(conn.presto@session.timezone, test.timezone())
-  expect_equal(conn.presto@output.timezone, test.output.timezone())
-  .test_time_types(conn.presto, type = "Presto")
-  conn.trino <- setup_live_connection(
-    session.timezone = test.timezone(),
-    output.timezone = test.output.timezone(),
-    type = "Trino"
-  )
-  # session.timezone and output.timezone can be set differently
-  expect_equal(conn.trino@session.timezone, test.timezone())
-  expect_equal(conn.trino@output.timezone, test.output.timezone())
-  .test_time_types(conn.trino, type = "Trino")
 })

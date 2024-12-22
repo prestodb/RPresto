@@ -4,10 +4,10 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
-context("dbAppendTable")
+context(paste(Sys.getenv("PRESTO_TYPE", "Presto"), "dbAppendTable"))
 
 test_that("dbAppendTable works with live connection", {
-  conn <- presto_default(output.timezone = "America/Los_Angeles")
+  conn <- setup_live_connection(output.timezone = "America/Los_Angeles")
   test_table_name <- "test_dbappendtable"
   if (dbExistsTable(conn, test_table_name)) {
     dbRemoveTable(conn, test_table_name)
