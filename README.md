@@ -64,7 +64,7 @@ There are two levels of APIs: `DBI` and `dplyr`.
 ### `DBI` APIs
 
 The easiest and most flexible way of executing a `SELECT` query is using
-a [`dbGetQuery()`](https://dbi.r-dbi.org/reference/dbgetquery) call. It
+a [`dbGetQuery()`](https://dbi.r-dbi.org/reference/dbGetQuery) call. It
 returns the query result in a [`tibble`](https://tibble.tidyverse.org/).
 
 ``` r
@@ -75,7 +75,7 @@ DBI::dbGetQuery(con, "SELECT CAST(3.14 AS DOUBLE) AS pi")
 #> 1  3.14
 ```
 
-[`dbWriteTable()`](https://dbi.r-dbi.org/reference/dbwritetable) can be
+[`dbWriteTable()`](https://dbi.r-dbi.org/reference/dbWriteTable) can be
 used to write a small data frame into a Presto table.
 
 ``` r
@@ -83,7 +83,7 @@ used to write a small data frame into a Presto table.
 DBI::dbWriteTable(con, "iris", iris)
 ```
 
-[`dbExistsTable()`](https://dbi.r-dbi.org/reference/dbexiststable)
+[`dbExistsTable()`](https://dbi.r-dbi.org/reference/dbExistsTable)
 checks if a table exists.
 
 ``` r
@@ -91,7 +91,7 @@ DBI::dbExistsTable(con, "iris")
 #> [1] TRUE
 ```
 
-[`dbReadTable()`](https://dbi.r-dbi.org/reference/dbreadtable) reads the
+[`dbReadTable()`](https://dbi.r-dbi.org/reference/dbReadTable) reads the
 entire table into R. It’s essentially a `SELECT *` query on the table.
 
 ``` r
@@ -109,10 +109,10 @@ DBI::dbReadTable(con, "iris")
 #>  8          5           3.4          1.5         0.2 setosa 
 #>  9          4.4         2.9          1.4         0.2 setosa 
 #> 10          4.9         3.1          1.5         0.1 setosa 
-#> # … with 140 more rows
+#> # ℹ 140 more rows
 ```
 
-[`dbRemoveTable()`](https://dbi.r-dbi.org/reference/dbremovetable) drops
+[`dbRemoveTable()`](https://dbi.r-dbi.org/reference/dbRemoveTable) drops
 the table from Presto.
 
 ``` r
@@ -120,7 +120,7 @@ DBI::dbRemoveTable(con, "iris")
 ```
 
 You can execute a statement and returns the number of rows affected
-using [`dbExecute()`](https://dbi.r-dbi.org/reference/dbexecute).
+using [`dbExecute()`](https://dbi.r-dbi.org/reference/dbExecute).
 
 ``` r
 # Create an empty table using CREATE TABLE
@@ -216,7 +216,7 @@ tbl.iris %>%
 RPresto’s handling of `BIGINT` (i.e. 64-bit integers) is similar to
 other DBI packages
 (e.g. [`bigrquery`](https://bigrquery.r-dbi.org/reference/bigquery.html),
-[`RPostgres`](https://rpostgres.r-dbi.org/reference/postgres)). We
+[`RPostgres`](https://rpostgres.r-dbi.org/reference/Postgres)). We
 provide a `bigint` argument that users can use in multiple interfaces to
 specify how they want `BIGINT` typed data to be translated into R.
 
