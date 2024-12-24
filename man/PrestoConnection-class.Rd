@@ -25,6 +25,10 @@
 \alias{dbListTables,PrestoConnection-method}
 \alias{.dbQuoteIdentifier_PrestoConnection_dbplyr_schema}
 \alias{dbQuoteIdentifier,PrestoConnection,dbplyr_schema-method}
+\alias{.dbQuoteIdentifier_PrestoConnection_dbplyr_table_path}
+\alias{dbQuoteIdentifier,PrestoConnection,dbplyr_table_path-method}
+\alias{.dbQuoteIdentifier_PrestoConnection_AsIs}
+\alias{dbQuoteIdentifier,PrestoConnection,AsIs-method}
 \alias{.dbQuoteLiteral}
 \alias{dbQuoteLiteral,PrestoConnection-method}
 \alias{.dbReadTable}
@@ -79,6 +83,10 @@
 \S4method{dbListTables}{PrestoConnection}(conn, pattern, ...)
 
 \S4method{dbQuoteIdentifier}{PrestoConnection,dbplyr_schema}(conn, x, ...)
+
+\S4method{dbQuoteIdentifier}{PrestoConnection,dbplyr_table_path}(conn, x, ...)
+
+\S4method{dbQuoteIdentifier}{PrestoConnection,AsIs}(conn, x, ...)
 
 \S4method{dbQuoteLiteral}{PrestoConnection}(conn, x, ...)
 
