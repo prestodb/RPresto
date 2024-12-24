@@ -23,28 +23,25 @@ test_that("dplyr::tbl works", {
   expect_equal(
     dplyr::arrange(
       iris_presto_materialized,
-      sepal_width,
-      sepal_length,
-      petal_width,
-      petal_length,
+      sepal.width,
+      sepal.length,
+      petal.width,
+      petal.length,
       species
     ),
     dplyr::arrange(
       dplyr::collect(iris_from_sql, n = Inf),
-      sepal_width,
-      sepal_length,
-      petal_width,
-      petal_length,
+      sepal.width,
+      sepal.length,
+      petal.width,
+      petal.length,
       species
     ),
   )
 })
 
 test_that("cross-schema tbl works", {
-  skip_if_not(presto_has_default())
-
   conn <- setup_live_connection()
-  conn2 <- setup_live_connection(schema = "testing")
 
   tbl_iris <- dplyr::tbl(conn, "iris")
   tbl_iris2 <- dplyr::tbl(conn, dbplyr::in_schema("testing", "iris"))

@@ -27,8 +27,6 @@ test_that("dbListFields works with live database", {
 })
 
 test_that("dbListFields works with identifier", {
-  skip_if_not(presto_has_default())
-
   conn <- setup_live_connection()
   expect_equal(
     DBI::dbListFields(conn, DBI::Id(table = "iris")),
