@@ -71,7 +71,7 @@ test_that("Nested CTEs work", {
   iris_presto.width <- dplyr::compute(
     dplyr::summarize(
       dplyr::group_by(iris_presto, species),
-      mean_sepal_length = mean(sepal_length, na.rm = TRUE)
+      mean_sepal.length = mean(sepal.length, na.rm = TRUE)
     ),
     name = "iris_width", cte = TRUE
   )
@@ -79,7 +79,7 @@ test_that("Nested CTEs work", {
   iris_presto.length <- dplyr::compute(
     dplyr::summarize(
       dplyr::group_by(iris_presto, species),
-      mean_sepal_width = mean(sepal_width, na.rm = TRUE)
+      mean_sepal.width = mean(sepal.width, na.rm = TRUE)
     ),
     name = "iris_length", cte = TRUE
   )
@@ -113,7 +113,7 @@ test_that("CTEs using joins work", {
     dplyr::summarize(
       dplyr::group_by(iris_presto, species),
       dplyr::across(
-        sepal_length:petal_width,
+        sepal.length:petal.width,
         ~ mean(., na.rm = TRUE),
         .names = "{.col}_avg"
       )
@@ -214,7 +214,7 @@ test_that("CTEs using union work", {
         ),
         species
       ),
-      mean_sepal_length = mean(sepal_length, na.rm = TRUE)
+      mean_sepal.length = mean(sepal.length, na.rm = TRUE)
     ),
     name = "iris_width_virginica", cte = TRUE
   )
@@ -228,7 +228,7 @@ test_that("CTEs using union work", {
         ),
         species
       ),
-      mean_sepal_length = mean(sepal_length, na.rm = TRUE)
+      mean_sepal.length = mean(sepal.length, na.rm = TRUE)
     ),
     name = "iris_width_setosa", cte = TRUE
   )

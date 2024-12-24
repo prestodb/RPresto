@@ -23,7 +23,7 @@ test_that("db_query_fields works with live database", {
       s[["db"]][["con"]],
       dplyr::ident(s[["iris_table_name"]])
     ),
-    c("sepal_length", "sepal_width", "petal_length", "petal_width", "species")
+    colnames(iris_df)
   )
 
   expect_error(

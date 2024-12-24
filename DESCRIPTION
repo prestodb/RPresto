@@ -38,7 +38,8 @@ Suggests:
     testthat,
     hms,
     knitr,
-    rmarkdown
+    rmarkdown,
+    withr
 License: BSD_3_clause + file LICENSE
 URL: https://github.com/prestodb/RPresto
 BugReports: https://github.com/prestodb/RPresto/issues
