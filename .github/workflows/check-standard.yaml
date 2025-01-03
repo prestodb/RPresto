@@ -5,6 +5,7 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
+  workflow_dispatch: {}
 
 name: R-CMD-check
 
@@ -27,6 +28,8 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
+      PRESTO_VERSION: "${{ matrix.config.presto_version || 'latest' }}"
+      TRINO_VERSION: "${{ matrix.config.trino_version || 'latest' }}"
 
     steps:
       - uses: actions/checkout@v2
@@ -44,6 +47,18 @@ jobs:
           extra-packages: any::rcmdcheck
           needs: check
 
+      # Install docker-compose and set up presto/trino servers
+      - name: Setup Presto and Trino servers
+        if: matrix.config.os == 'ubuntu-latest'
+        uses: ./.github/workflows/setup-presto-trino-servers
+
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
+
+      # Stop and remove Docker containers
+      - name: Stop and remove Docker containers
+        if: matrix.config.os == 'ubuntu-latest'
+        run: |
+          docker stop $(docker ps -q) || true
+          docker rm $(docker ps -aq) || true
