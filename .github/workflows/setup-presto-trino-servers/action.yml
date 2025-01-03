@@ -13,7 +13,7 @@ runs:
     # Start Docker Compose services
     - name: Start services with Docker Compose
       run: |
-        docker-compose up -d
+        docker-compose -f inst/docker-compose.yml up -d
       shell: bash
 
     # Ensure Presto and Trino servers are running
