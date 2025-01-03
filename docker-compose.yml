@@ -1,0 +1,18 @@
+services:
+  presto:
+    image: prestodb/presto:${PRESTO_VERSION:-latest}
+    container_name: presto
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./prestodb_presto/etc:/opt/presto-server/etc
+    restart: unless-stopped
+
+  trino:
+    image: trinodb/trino:${TRINO_VERSION:-latest}
+    container_name: trino
+    ports:
+      - "8090:8080"
+    volumes:
+      - ./trinodb_trino/etc:/usr/lib/trino/etc
+    restart: unless-stopped

@@ -26,6 +26,16 @@ jobs:
           extra-packages: any::covr
           needs: coverage
 
+      # Install docker-compose and set up presto/trino servers
+      - name: Setup Presto and Trino servers
+        uses: ./.github/workflows/setup-presto-trino-servers
+
       - name: Test coverage
         run: covr::codecov(quiet = FALSE)
         shell: Rscript {0}
+
+      # Stop and remove Docker containers
+      - name: Stop and remove Docker containers
+        run: |
+          docker stop $(docker ps -q) || true
+          docker rm $(docker ps -aq) || true

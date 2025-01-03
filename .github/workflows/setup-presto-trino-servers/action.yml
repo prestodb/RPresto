@@ -1,0 +1,34 @@
+name: 'Setup Presto and Trino Servers'
+description: 'Sets up Presto and Trino servers using Docker Compose'
+runs:
+  using: 'composite'
+  steps:
+    # Install Docker Compose on Ubuntu
+    - name: Install Docker Compose on Ubuntu
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y docker-compose
+      shell: bash
+
+    # Start Docker Compose services
+    - name: Start services with Docker Compose
+      run: |
+        docker-compose up -d
+      shell: bash
+
+    # Ensure Presto and Trino servers are running
+    - name: Wait for Presto and Trino to be ready
+      run: |
+        for i in {1..30}; do
+          if curl -s http://localhost:8080/v1/info && curl -s http://localhost:8090/v1/info; then
+            echo "Presto and Trino are up and running."
+            break
+          fi
+          echo "Waiting for Presto and Trino to be ready..."
+          sleep 5
+        done
+        if ! curl -s http://localhost:8080/v1/info || ! curl -s http://localhost:8090/v1/info; then
+          echo "Presto or Trino did not start in time. Exiting."
+          exit 1
+        fi
+      shell: bash
