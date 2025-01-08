@@ -9,6 +9,7 @@ NULL
 
 #' @rdname PrestoConnection-class
 #' @inheritParams DBI::dbWriteTable
+#' @param conn a `PrestoConnection` object, as returned by [DBI::dbConnect()].
 #' @param chunk.fields A character vector of names of the fields that should
 #'   be used to slice the value data frame into chunks for batch append. This is
 #'   necessary when the data frame is too big to be uploaded at once in one

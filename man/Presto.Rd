@@ -86,9 +86,9 @@ R's \code{double} type but might result in precision loss. Lastly,
 \value{
 \link{Presto} A \linkS4class{PrestoDriver} object
 
-\link{dbConnect} A \linkS4class{PrestoConnection} object
+\code{\link[DBI:dbConnect]{DBI::dbConnect()}} A \linkS4class{PrestoConnection} object
 
-\link{dbDisconnect} A \code{\link[=logical]{logical()}} value indicating success
+\code{\link[DBI:dbDisconnect]{DBI::dbDisconnect()}} A \code{\link[=logical]{logical()}} value indicating success
 }
 \description{
 Connect to a Presto database

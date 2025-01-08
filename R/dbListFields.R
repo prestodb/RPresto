@@ -9,6 +9,7 @@ NULL
 
 #' @rdname PrestoConnection-class
 #' @inheritParams DBI::dbListFields
+#' @param conn a `PrestoConnection` object, as returned by [DBI::dbConnect()].
 #' @usage NULL
 .dbListFields_PrestoConnection <- function(conn, name, ...) {
     name <- DBI::dbQuoteIdentifier(conn, name)

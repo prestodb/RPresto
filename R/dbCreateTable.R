@@ -9,6 +9,7 @@ NULL
 
 #' @rdname PrestoConnection-class
 #' @inheritParams DBI::dbCreateTable
+#' @param conn a `PrestoConnection` object, as returned by [DBI::dbConnect()].
 #' @param with An optional WITH clause for the CREATE TABLE statement.
 #' @usage NULL
 .dbCreateTable <- function(conn, name, fields, with = NULL, ..., row.names = NULL, temporary = FALSE) {

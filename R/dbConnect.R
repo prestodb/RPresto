@@ -68,7 +68,7 @@ check_tz <- function(timezone) {
 #'          R's `double` type but might result in precision loss. Lastly,
 #'          `"character"` casts into R's `character` type.
 #' @param ... currently ignored
-#' @return [dbConnect] A [PrestoConnection-class] object
+#' @return [DBI::dbConnect()] A [PrestoConnection-class] object
 #' @importMethodsFrom DBI dbConnect
 #' @importFrom methods new
 #' @export
@@ -137,7 +137,7 @@ setMethod(
 )
 
 #' A dummy PrestoConnection
-#' 
+#'
 #' @export
 #' @keywords internal
 #' @examples

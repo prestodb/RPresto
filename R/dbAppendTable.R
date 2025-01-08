@@ -9,6 +9,7 @@ NULL
 
 #' @rdname PrestoConnection-class
 #' @inheritParams DBI::dbAppendTable
+#' @param conn a `PrestoConnection` object, as returned by [DBI::dbConnect()].
 #' @usage NULL
 .dbAppendTable <- function(
   conn, name, value, ..., chunk.fields = NULL, row.names = NULL

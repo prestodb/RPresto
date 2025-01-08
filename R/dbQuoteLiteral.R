@@ -9,6 +9,7 @@ NULL
 
 #' @rdname PrestoConnection-class
 #' @inheritParams DBI::dbQuoteLiteral
+#' @param conn a `PrestoConnection` object, as returned by [DBI::dbConnect()].
 #' @usage NULL
 .dbQuoteLiteral <- function(conn, x, ...) {
   if (methods::is(x, "SQL")) {

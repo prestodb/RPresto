@@ -7,16 +7,15 @@
 dbCreateTableAs(conn, name, sql, overwrite = FALSE, with = NULL, ...)
 }
 \arguments{
-\item{conn}{A \linkS4class{DBIConnection} object, as returned by
-\code{\link[DBI:dbConnect]{dbConnect()}}.}
+\item{conn}{a \code{PrestoConnection} object, as returned by \code{\link[DBI:dbConnect]{DBI::dbConnect()}}.}
 
-\item{name}{The table name, passed on to \code{\link[DBI:dbQuoteIdentifier]{dbQuoteIdentifier()}}. Options are:
+\item{name}{The table name, passed on to \code{\link[DBI:dbQuoteIdentifier]{DBI::dbQuoteIdentifier()}}. Options are:
 \itemize{
 \item a character string with the unquoted DBMS table name,
 e.g. \code{"table_name"},
-\item a call to \code{\link[DBI:Id]{Id()}} with components to the fully qualified table name,
+\item a call to \code{\link[DBI:Id]{DBI::Id()}} with components to the fully qualified table name,
 e.g. \code{Id(schema = "my_schema", table = "table_name")}
-\item a call to \code{\link[DBI:SQL]{SQL()}} with the quoted and fully qualified table name
+\item a call to \code{\link[DBI:SQL]{DBI::SQL()}} with the quoted and fully qualified table name
 given verbatim, e.g. \code{SQL('"my_schema"."table_name"')}
 }}
 
@@ -27,7 +26,7 @@ overwritten. Default to FALSE.}
 
 \item{with}{An optional WITH clause for the CREATE TABLE statement.}
 
-\item{...}{Other parameters passed on to methods.}
+\item{...}{Other arguments used by individual methods.}
 }
 \description{
 Create a table in database using a statement

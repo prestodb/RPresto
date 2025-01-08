@@ -9,8 +9,8 @@ NULL
 
 #' Create a table in database using a statement
 #'
-#' @inheritParams DBI::dbReadTable
 #' @inheritParams sqlCreateTableAs
+#' @param conn a `PrestoConnection` object, as returned by [DBI::dbConnect()].
 #' @param sql a character string containing SQL statement.
 #' @param overwrite A boolean indicating if an existing table should be
 #'   overwritten. Default to FALSE.
