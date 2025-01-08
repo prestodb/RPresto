@@ -9,6 +9,7 @@ NULL
 
 #' @rdname PrestoConnection-class
 #' @inheritParams DBI::dbQuoteIdentifier
+#' @param conn a `PrestoConnection` object, as returned by [DBI::dbConnect()].
 #' @usage NULL
 .dbQuoteIdentifier_PrestoConnection_dbplyr_schema <- function(conn, x, ...) {
   x_id <- DBI::Id(

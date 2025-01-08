@@ -8,7 +8,7 @@
 NULL
 
 #' @param conn A [PrestoConnection-class] object
-#' @return [dbDisconnect] A [logical()] value indicating success
+#' @return [DBI::dbDisconnect()] A [logical()] value indicating success
 #' @importMethodsFrom DBI dbDisconnect
 #' @export
 #' @rdname Presto

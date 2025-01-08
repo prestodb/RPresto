@@ -10,12 +10,12 @@ NULL
 #' Compose query to create a simple table using a statement
 #'
 #' @param con A database connection.
-#' @param name The table name, passed on to [dbQuoteIdentifier()]. Options are:
+#' @param name The table name, passed on to [DBI::dbQuoteIdentifier()]. Options are:
 #'   - a character string with the unquoted DBMS table name,
 #'     e.g. `"table_name"`,
-#'   - a call to [Id()] with components to the fully qualified table name,
+#'   - a call to [DBI::Id()] with components to the fully qualified table name,
 #'     e.g. `Id(schema = "my_schema", table = "table_name")`
-#'   - a call to [SQL()] with the quoted and fully qualified table name
+#'   - a call to [DBI::SQL()] with the quoted and fully qualified table name
 #'     given verbatim, e.g. `SQL('"my_schema"."table_name"')`
 #' @param sql a character string containing SQL statement.
 #' @param with An optional WITH clause for the CREATE TABLE statement.

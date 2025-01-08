@@ -44,7 +44,7 @@ presto_default <- function(...) {
 #' `dbConnect(Presto(), ...)`. This function checks if that
 #' database is available, and if not, displays an informative message.
 #'
-#' @param ... Additional arguments passed on to [dbConnect()]
+#' @param ... Additional arguments passed on to [DBI::dbConnect()]
 #' @export
 #' @examples
 #' if (presto_has_default()) {

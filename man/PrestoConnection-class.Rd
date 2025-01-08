@@ -134,8 +134,7 @@
 \S4method{sqlCreateTableAs}{PrestoConnection}(con, name, sql, with = NULL, ...)
 }
 \arguments{
-\item{conn}{A \linkS4class{DBIConnection} object, as returned by
-\code{\link[DBI:dbConnect]{dbConnect()}}.}
+\item{conn}{a \code{PrestoConnection} object, as returned by \code{\link[DBI:dbConnect]{DBI::dbConnect()}}.}
 
 \item{name}{The table name, passed on to \code{\link[DBI:dbQuoteIdentifier]{dbQuoteIdentifier()}}. Options are:
 \itemize{

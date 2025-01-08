@@ -10,7 +10,7 @@ presto_default(...)
 presto_has_default(...)
 }
 \arguments{
-\item{...}{Additional arguments passed on to \code{\link[=dbConnect]{dbConnect()}}}
+\item{...}{Additional arguments passed on to \code{\link[DBI:dbConnect]{DBI::dbConnect()}}}
 }
 \description{
 \code{presto_default()} works similarly but returns a connection on success and
