@@ -7,16 +7,7 @@
 context("dbConnect")
 
 test_that("dbConnect constructs PrestoConnection correctly", {
-  with_mock(
-    `httr::POST` = mock_httr_replies(
-      mock_httr_response(
-        "http://localhost:8000/v1/statement",
-        status_code = 200,
-        state = "FINISHED",
-        request_body = "SELECT current_timezone() AS tz",
-        data = data.frame(tz = Sys.timezone(), stringsAsFactors = FALSE)
-      )
-    ),
+  with_mocked_bindings(
     {
       expect_error(dbConnect(RPresto::Presto()), label = "not enough arguments")
 
@@ -141,6 +132,15 @@ test_that("dbConnect constructs PrestoConnection correctly", {
         ),
         "should be one of"
       )
-    }
+    },
+    httr_POST = mock_httr_replies(
+      mock_httr_response(
+        "http://localhost:8000/v1/statement",
+        status_code = 200,
+        state = "FINISHED",
+        request_body = "SELECT current_timezone() AS tz",
+        data = data.frame(tz = Sys.timezone(), stringsAsFactors = FALSE)
+      )
+    )
   )
 })

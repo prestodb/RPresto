@@ -25,14 +25,7 @@ test_that("PrestoQuery methods work correctly", {
     ),
     class = "response"
   )
-  with_mock(
-    `httr::POST` = mock_httr_replies(
-      list(
-        url = "http://localhost:8000/v1/statement",
-        response = post.response,
-        request_body = "SELECT 1"
-      )
-    ),
+  with_mocked_bindings(
     {
       query <- PrestoQuery(conn, "SELECT 1")
       res <- query$execute()
@@ -49,7 +42,14 @@ test_that("PrestoQuery methods work correctly", {
       expect_false(query$postDataFetched(FALSE))
       query$state("__TEST")
       expect_equal(query$state(), "__TEST")
-    }
+    },
+    httr_POST = mock_httr_replies(
+      list(
+        url = "http://localhost:8000/v1/statement",
+        response = post.response,
+        request_body = "SELECT 1"
+      )
+    )
   )
 })
 
@@ -62,8 +62,7 @@ test_that("PrestoQuery methods work correctly with POST data", {
     data = data.frame(x = 1),
     request_body = "SELECT 1"
   )
-  with_mock(
-    `httr::POST` = mock_httr_replies(mock_response),
+  with_mocked_bindings(
     {
       query <- PrestoQuery(conn, "SELECT 1")
       res <- query$execute()
@@ -78,6 +77,7 @@ test_that("PrestoQuery methods work correctly with POST data", {
       expect_true(query$postDataFetched(TRUE))
       expect_true(query$postDataFetched())
       expect_true(query$hasCompleted())
-    }
+    },
+    httr_POST = mock_httr_replies(mock_response)
   )
 })

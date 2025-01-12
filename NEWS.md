@@ -1,5 +1,8 @@
 # RPresto 1.4.7.9000
 
+* Replaced deprecated `with_mock()` usage in unit testing with
+  `with_mocked_bindings()`. (#292)
+
 # RPresto 1.4.7
 
 * Fixed Trino support quirks (#254) and expanded unit tests to Trino

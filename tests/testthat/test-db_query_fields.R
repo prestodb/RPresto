@@ -37,8 +37,41 @@ test_that("db_query_fields works with live database", {
 
 test_that("db_query_fields works with mock", {
   s <- setup_mock_dplyr_connection()[["db"]]
-  with_mock(
-    `httr::POST` = mock_httr_replies(
+  with_mocked_bindings(
+    {
+      fields <- dplyr::db_query_fields(
+        s[["con"]],
+        dplyr::sql_subquery(
+          s[["con"]],
+          dplyr::sql("SELECT 1 AS a, 't' AS b"),
+          name = "a"
+        )
+      )
+      expect_equal(fields, c("a", "b"))
+
+      expect_equal(
+        dplyr::db_query_fields(
+          s[["con"]],
+          dplyr::ident("two_columns")
+        ),
+        c("a", "b")
+      )
+
+      expect_equal(
+        dplyr::db_query_fields(
+          s[["con"]],
+          dplyr::ident("empty_table")
+        ),
+        character(0)
+      )
+      expect_error(
+        dplyr::db_query_fields(
+          s[["con"]],
+          dplyr::ident("__non_existent_table__")
+        )
+      )
+    },
+    httr_POST = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/v1/statement",
         status_code = 200,
@@ -197,7 +230,7 @@ test_that("db_query_fields works with mock", {
         next_uri = "http://localhost:8000/query_4/1",
       )
     ),
-    `httr::GET` = mock_httr_replies(
+    httr_GET = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/query_1/1",
         status_code = 200,
@@ -224,45 +257,12 @@ test_that("db_query_fields works with mock", {
         state = "FINISHED",
       )
     ),
-    `httr::DELETE` = function(url, body, ...) {
+    httr_DELETE = function(url, body, ...) {
       mock_httr_response(
         url = "http://localhost:8000/v1/query/query_1",
         status_code = 200,
         state = ""
       )[["response"]]
-    },
-    {
-      fields <- dplyr::db_query_fields(
-        s[["con"]],
-        dplyr::sql_subquery(
-          s[["con"]],
-          dplyr::sql("SELECT 1 AS a, 't' AS b"),
-          name = "a"
-        )
-      )
-      expect_equal(fields, c("a", "b"))
-
-      expect_equal(
-        dplyr::db_query_fields(
-          s[["con"]],
-          dplyr::ident("two_columns")
-        ),
-        c("a", "b")
-      )
-
-      expect_equal(
-        dplyr::db_query_fields(
-          s[["con"]],
-          dplyr::ident("empty_table")
-        ),
-        character(0)
-      )
-      expect_error(
-        dplyr::db_query_fields(
-          s[["con"]],
-          dplyr::ident("__non_existent_table__")
-        )
-      )
     }
   )
 })

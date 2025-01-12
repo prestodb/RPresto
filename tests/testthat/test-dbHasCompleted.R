@@ -17,8 +17,8 @@ test_that("dbHasCompleted works with live database", {
 
 test_that("dbHasCompleted works with mock", {
   conn <- setup_mock_connection()
-  with_mock(
-    `httr::POST` = mock_httr_replies(
+  with_mocked_bindings(
+    httr_POST = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/v1/statement",
         status_code = 200,
@@ -27,7 +27,7 @@ test_that("dbHasCompleted works with mock", {
         next_uri = "http://localhost:8000/query_1/1"
       )
     ),
-    `httr::GET` = mock_httr_replies(
+    httr_GET = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/query_1/1",
         status_code = 200,
