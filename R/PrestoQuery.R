@@ -49,6 +49,19 @@ wait <- function() {
   return(content)
 }
 
+# Wrapper of httr::POST() and httr::GET() so that we can mock the POST
+# and GET responses within RPresto in unit tests
+# See https://testthat.r-lib.org/reference/local_mocked_bindings.html#namespaced-calls
+httr_POST <- function(...) {
+  httr::POST(...)
+}
+httr_GET <- function(...) {
+  httr::GET(...)
+}
+httr_handle_reset <- function(...) {
+  httr::handle_reset(...)
+}
+
 #' Class to encapsulate a Presto query
 #'
 #' This reference class (so that the object can be passed by reference and
@@ -207,7 +220,7 @@ PrestoQuery <- setRefClass("PrestoQuery",
       headers <- .request_headers(.conn)
       while (status == 503L || (retries > 0 && status >= 400L)) {
         wait()
-        post.response <- httr::POST(
+        post.response <- httr_POST(
           url,
           body = enc2utf8(.statement),
           config = headers
@@ -224,7 +237,7 @@ PrestoQuery <- setRefClass("PrestoQuery",
       headers <- .request_headers(.conn)
       get.response <- tryCatch(
         {
-          response <- httr::GET(.next.uri, config = headers)
+          response <- httr_GET(.next.uri, config = headers)
           if (httr::status_code(response) >= 400L) {
             # stop_for_status also fails for 300 <= status < 400
             # so we need the if condition
@@ -244,7 +257,7 @@ PrestoQuery <- setRefClass("PrestoQuery",
             '", retrying [', 4 - num.retry, "/3]\n"
           )
           wait()
-          httr::handle_reset(.next.uri)
+          httr_handle_reset(.next.uri)
           return(get(num.retry - 1))
         }
       )

@@ -52,8 +52,20 @@ test_that("dbSendQuery works with live database", {
 
 test_that("dbSendQuery works with mock - status code 404", {
   conn <- setup_mock_connection()
-  with_mock(
-    `httr::POST` = function(url, body, ...) {
+  with_mocked_bindings(
+    {
+      assign("request.count", 0, envir = environment(httr_POST))
+      result <- dbSendQuery(conn, "SELECT 1 AS n")
+      expect_true(dbIsValid(result))
+
+      broken_conn <- conn
+      broken_conn@host <- "http://broken_host"
+      expect_error(
+        dbSendQuery(broken_conn, "SELECT 1 AS n"),
+        "Received error response \\(HTTP 404\\).*"
+      )
+    },
+    httr_POST = function(url, body, ...) {
       response_404 <- mock_httr_response(
         url,
         status_code = 404,
@@ -76,26 +88,19 @@ test_that("dbSendQuery works with mock - status code 404", {
         request_body = "SELECT 1 AS n",
         next_uri = "http://localhost:8000/query_1/1"
       )[["response"]])
-    },
-    {
-      assign("request.count", 0, envir = environment(httr::POST))
-      result <- dbSendQuery(conn, "SELECT 1 AS n")
-      expect_true(dbIsValid(result))
-
-      broken_conn <- conn
-      broken_conn@host <- "http://broken_host"
-      expect_error(
-        dbSendQuery(broken_conn, "SELECT 1 AS n"),
-        "Received error response \\(HTTP 404\\).*"
-      )
     }
   )
 })
 
 test_that("dbSendQuery works with mock - status code 503", {
   conn <- setup_mock_connection()
-  with_mock(
-    `httr::POST` = function(url, body, ...) {
+  with_mocked_bindings(
+    {
+      assign("request.count", 0, envir = environment(httr_POST))
+      result <- dbSendQuery(conn, "SELECT 1 AS n")
+      expect_true(dbIsValid(result))
+    },
+    httr_POST = function(url, body, ...) {
       if (request.count == 0) {
         request.count <<- 1
         return(mock_httr_replies(
@@ -116,19 +121,17 @@ test_that("dbSendQuery works with mock - status code 503", {
           next_uri = "http://localhost:8000/query_1/1"
         )
       )(url, body = body, ...))
-    },
-    {
-      assign("request.count", 0, envir = environment(httr::POST))
-      result <- dbSendQuery(conn, "SELECT 1 AS n")
-      expect_true(dbIsValid(result))
     }
   )
 })
 
 test_that("dbSendQuery works with mock - status code 400", {
   conn <- setup_mock_connection()
-  with_mock(
-    `httr::POST` = mock_httr_replies(
+  with_mocked_bindings(
+    {
+      expect_error(dbSendQuery(conn, "SELECT 1"), '"Servers down"')
+    },
+    httr_POST = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/v1/statement",
         status_code = 400,
@@ -136,54 +139,58 @@ test_that("dbSendQuery works with mock - status code 400", {
         extra_content = list(error = list(message = "Servers down")),
         state = ""
       )
-    ),
-    {
-      expect_error(dbSendQuery(conn, "SELECT 1"), '"Servers down"')
-    }
+    )
   )
 })
 
 test_that("dbSendQuery works with mock - status code 200, FAILED", {
   conn <- setup_mock_connection()
-  with_mock(
-    `httr::POST` = mock_httr_replies(
+  with_mocked_bindings(
+    {
+      expect_error(dbSendQuery(conn, "SELECT 1"), "Query .* failed:")
+    },
+    httr_POST = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/v1/statement",
         status_code = 200,
         request_body = "SELECT 1",
         state = "FAILED"
       )
-    ),
-    {
-      expect_error(dbSendQuery(conn, "SELECT 1"), "Query .* failed:")
-    }
+    )
   )
 })
 
 test_that("dbSendQuery works with mock - status code 500", {
   conn <- setup_mock_connection()
-  with_mock(
-    `httr::POST` = mock_httr_replies(
+  with_mocked_bindings(
+    {
+      expect_error(
+        dbSendQuery(conn, "SELECT 1"),
+        "Received error response \\(HTTP 500\\):.*"
+      )
+    },
+    httr_POST = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/v1/statement",
         status_code = 500,
         request_body = "SELECT 1",
         state = ""
       )
-    ),
-    {
-      expect_error(
-        dbSendQuery(conn, "SELECT 1"),
-        "Received error response \\(HTTP 500\\):.*"
-      )
-    }
+    )
   )
 })
 
 test_that("dbSendQuery works with mock - regular", {
   conn <- setup_mock_connection()
-  with_mock(
-    `httr::POST` = mock_httr_replies(
+  with_mocked_bindings(
+    {
+      result <- dbSendQuery(conn, "SELECT 1")
+      expect_is(result, "PrestoResult")
+      expect_equal(result@statement, "SELECT 1")
+      expect_equal(result@query$fetchedRowCount(), 0)
+      expect_false(result@query$hasCompleted())
+    },
+    httr_POST = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/v1/statement",
         status_code = 200,
@@ -191,38 +198,13 @@ test_that("dbSendQuery works with mock - regular", {
         state = "RUNNING",
         next_uri = "http://localhost:8000/query_1/1"
       )
-    ),
-    {
-      result <- dbSendQuery(conn, "SELECT 1")
-      expect_is(result, "PrestoResult")
-      expect_equal(result@statement, "SELECT 1")
-      expect_equal(result@query$fetchedRowCount(), 0)
-      expect_false(result@query$hasCompleted())
-    }
+    )
   )
 })
 
 test_that("dbSendQuery works with mock - POST data", {
   conn <- setup_mock_connection()
-  with_mock(
-    `httr::POST` = mock_httr_replies(
-      mock_httr_response(
-        "http://localhost:8000/v1/statement",
-        status_code = 200,
-        request_body = "SELECT 1 AS x",
-        state = "RUNNING",
-        data = data.frame(x = 1),
-        next_uri = "http://localhost:8000/query_1/1"
-      )
-    ),
-    `httr::GET` = mock_httr_replies(
-      mock_httr_response(
-        "http://localhost:8000/query_1/1",
-        status_code = 200,
-        state = "FINISHED",
-        data = data.frame()
-      )
-    ),
+  with_mocked_bindings(
     {
       result <- dbSendQuery(conn, "SELECT 1 AS x")
       expect_is(result, "PrestoResult")
@@ -242,6 +224,24 @@ test_that("dbSendQuery works with mock - POST data", {
       expect_true(result@query$hasCompleted())
       expect_equal(result@query$fetchedRowCount(), 1)
       expect_true(dbHasCompleted(result))
-    }
+    },
+    httr_POST = mock_httr_replies(
+      mock_httr_response(
+        "http://localhost:8000/v1/statement",
+        status_code = 200,
+        request_body = "SELECT 1 AS x",
+        state = "RUNNING",
+        data = data.frame(x = 1),
+        next_uri = "http://localhost:8000/query_1/1"
+      )
+    ),
+    httr_GET = mock_httr_replies(
+      mock_httr_response(
+        "http://localhost:8000/query_1/1",
+        status_code = 200,
+        state = "FINISHED",
+        data = data.frame()
+      )
+    )
   )
 })

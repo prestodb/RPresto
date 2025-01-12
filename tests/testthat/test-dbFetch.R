@@ -31,82 +31,7 @@ test_that("dbFetch works with live database", {
 
 test_that("dbFetch works with mock", {
   conn <- setup_mock_connection()
-  with_mock(
-    `httr::POST` = mock_httr_replies(
-      mock_httr_response(
-        "http://localhost:8000/v1/statement",
-        status_code = 200,
-        state = "QUEUED",
-        request_body =
-          "^SELECT n FROM \\(VALUES \\(1\\), \\(2\\)\\) AS t \\(n\\)$",
-        next_uri = "http://localhost:8000/query_1/1",
-        query_id = "query_1"
-      ),
-      mock_httr_response(
-        "http://localhost:8000/v1/statement",
-        status_code = 200,
-        state = "RUNNING",
-        request_body = "SELECT 2",
-        next_uri = "http://localhost:8000/query_2/1"
-      ),
-      mock_httr_response(
-        "http://localhost:8000/v1/statement",
-        status_code = 200,
-        state = "RUNNING",
-        request_body = "SELECT 3",
-        next_uri = "http://localhost:8000/query_3/1"
-      ),
-      mock_httr_response(
-        "http://localhost:8000/v1/statement",
-        status_code = 200,
-        state = "FINISHED",
-        request_body = "SELECT 4 LIMIT 0",
-        next_uri = "http://localhost:8000/query_4/1"
-      )
-    ),
-    `httr::GET` = mock_httr_replies(
-      mock_httr_response(
-        "http://localhost:8000/query_1/1",
-        status_code = 200,
-        data = tibble::tibble(n = 1),
-        state = "FINISHED",
-        next_uri = "http://localhost:8000/query_1/2"
-      ),
-      mock_httr_response(
-        "http://localhost:8000/query_1/2",
-        status_code = 200,
-        data = tibble::tibble(n = 2),
-        state = "FINISHED"
-      ),
-      mock_httr_response(
-        "http://localhost:8000/query_2/1",
-        status_code = 400,
-        data = "Broken URL",
-        state = "FAILED"
-      ),
-      mock_httr_response(
-        "http://localhost:8000/query_3/1",
-        status_code = 200,
-        data = "Failed URL",
-        state = "FAILED"
-      ),
-      mock_httr_response(
-        "http://localhost:8000/query_4/1",
-        status_code = 200,
-        data = tibble::tibble("_col0" = 4)[FALSE, , drop = FALSE],
-        state = "FINISHED"
-      )
-    ),
-    `httr::DELETE` = mock_httr_replies(
-      mock_httr_response(
-        url = "http://localhost:8000/v1/query/query_1",
-        status_code = 200,
-        state = ""
-      )
-    ),
-    `httr::handle_reset` = function(...) {
-      return()
-    },
+  with_mocked_bindings(
     {
       result <- dbSendQuery(conn, "SELECT n FROM (VALUES (1), (2)) AS t (n)")
       expect_error(
@@ -152,10 +77,104 @@ test_that("dbFetch works with mock", {
       rv <- dbFetch(result, -1)
       ev <- tibble::tibble("_col0" = numeric(0))
       expect_equal_data_frame(rv, ev)
+    },
+    httr_POST = mock_httr_replies(
+      mock_httr_response(
+        "http://localhost:8000/v1/statement",
+        status_code = 200,
+        state = "QUEUED",
+        request_body =
+          "^SELECT n FROM \\(VALUES \\(1\\), \\(2\\)\\) AS t \\(n\\)$",
+        next_uri = "http://localhost:8000/query_1/1",
+        query_id = "query_1"
+      ),
+      mock_httr_response(
+        "http://localhost:8000/v1/statement",
+        status_code = 200,
+        state = "RUNNING",
+        request_body = "SELECT 2",
+        next_uri = "http://localhost:8000/query_2/1"
+      ),
+      mock_httr_response(
+        "http://localhost:8000/v1/statement",
+        status_code = 200,
+        state = "RUNNING",
+        request_body = "SELECT 3",
+        next_uri = "http://localhost:8000/query_3/1"
+      ),
+      mock_httr_response(
+        "http://localhost:8000/v1/statement",
+        status_code = 200,
+        state = "FINISHED",
+        request_body = "SELECT 4 LIMIT 0",
+        next_uri = "http://localhost:8000/query_4/1"
+      )
+    ),
+    httr_GET = mock_httr_replies(
+      mock_httr_response(
+        "http://localhost:8000/query_1/1",
+        status_code = 200,
+        data = tibble::tibble(n = 1),
+        state = "FINISHED",
+        next_uri = "http://localhost:8000/query_1/2"
+      ),
+      mock_httr_response(
+        "http://localhost:8000/query_1/2",
+        status_code = 200,
+        data = tibble::tibble(n = 2),
+        state = "FINISHED"
+      ),
+      mock_httr_response(
+        "http://localhost:8000/query_2/1",
+        status_code = 400,
+        data = "Broken URL",
+        state = "FAILED"
+      ),
+      mock_httr_response(
+        "http://localhost:8000/query_3/1",
+        status_code = 200,
+        data = "Failed URL",
+        state = "FAILED"
+      ),
+      mock_httr_response(
+        "http://localhost:8000/query_4/1",
+        status_code = 200,
+        data = tibble::tibble("_col0" = 4)[FALSE, , drop = FALSE],
+        state = "FINISHED"
+      )
+    ),
+    httr_DELETE = mock_httr_replies(
+      mock_httr_response(
+        url = "http://localhost:8000/v1/query/query_1",
+        status_code = 200,
+        state = ""
+      )
+    ),
+    httr_handle_reset = function(...) {
+      return()
     }
   )
-  with_mock(
-    `httr::POST` = mock_httr_replies(
+  with_mocked_bindings(
+    {
+      result <- dbSendQuery(conn, "SELECT 3")
+      expect_error(
+        suppressMessages(dbFetch(result)),
+        paste0(
+          "Cannot fetch .*, error: ",
+          "There was a problem with the request and we have exhausted our ",
+          "retry limit"
+        )
+      )
+
+      assign("request.count", 0, envir = environment(httr_GET))
+      result <- dbSendQuery(conn, "SELECT 4")
+      expect_message(
+        v <- dbFetch(result),
+        "First request is an error"
+      )
+      expect_equal(v, tibble::tibble(n = 4))
+    },
+    httr_POST = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/v1/statement",
         status_code = 200,
@@ -171,7 +190,7 @@ test_that("dbFetch works with mock", {
         next_uri = "http://localhost:8000/query_4/1"
       )
     ),
-    `httr::GET` = function(url, ...) {
+    httr_GET = function(url, ...) {
       if (url == "http://localhost:8000/query_3/1") {
         stop("Error")
       }
@@ -188,27 +207,8 @@ test_that("dbFetch works with mock", {
         )
       )(url, ...))
     },
-    `httr::handle_reset` = function(...) {
+    httr_handle_reset = function(...) {
       return()
-    },
-    {
-      result <- dbSendQuery(conn, "SELECT 3")
-      expect_error(
-        suppressMessages(dbFetch(result)),
-        paste0(
-          "Cannot fetch .*, error: ",
-          "There was a problem with the request and we have exhausted our ",
-          "retry limit"
-        )
-      )
-
-      assign("request.count", 0, envir = environment(httr::GET))
-      result <- dbSendQuery(conn, "SELECT 4")
-      expect_message(
-        v <- dbFetch(result),
-        "First request is an error"
-      )
-      expect_equal(v, tibble::tibble(n = 4))
     }
   )
 })
@@ -216,8 +216,8 @@ test_that("dbFetch works with mock", {
 with_locale(test.locale(), test_that)("dbFetch rbind works correctly", {
   conn <- setup_mock_connection()
 
-  with_mock(
-    `httr::POST` = mock_httr_replies(
+  with_mocked_bindings(
+    httr_POST = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/v1/statement",
         status_code = 200,
@@ -226,7 +226,7 @@ with_locale(test.locale(), test_that)("dbFetch rbind works correctly", {
         next_uri = "http://localhost:8000/query_1/1"
       )
     ),
-    `httr::GET` = mock_httr_replies(
+    httr_GET = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/query_1/1",
         status_code = 200,
@@ -272,8 +272,44 @@ with_locale(test.locale(), test_that)("dbFetch rbind works with zero row chunks"
     -match(c("raw", "list_unnamed", "list_named"), colnames(full.data)),
     drop = FALSE
   ]
-  with_mock(
-    `httr::POST` = mock_httr_replies(
+  with_mocked_bindings(
+    {
+      result <- dbSendQuery(
+        conn,
+        "SELECT integer, double, logical FROM all_types"
+      )
+
+      expect_equal_data_frame(
+        dbFetch(result, -1),
+        data,
+        label = "multiple columns"
+      )
+
+      result <- dbSendQuery(conn, "SELECT double FROM all_types")
+
+      expect_equal_data_frame(
+        dbFetch(result, -1),
+        data[, "double", drop = FALSE],
+        label = "single column"
+      )
+
+      result <- dbSendQuery(conn, "SELECT * FROM all_types")
+      full.data$POSIXct <-
+        lubridate::with_tz(full.data$POSIXct, test.timezone())
+      expect_equal_data_frame(
+        dbFetch(result, -1),
+        full.data,
+        label = "zero chunk first"
+      )
+
+      result <- dbSendQuery(conn, "SELECT * FROM all_types_with_queue")
+      expect_equal_data_frame(
+        dbFetch(result, -1),
+        full.data,
+        label = "with empty chunks"
+      )
+    },
+    httr_POST = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/v1/statement",
         status_code = 200,
@@ -303,7 +339,7 @@ with_locale(test.locale(), test_that)("dbFetch rbind works with zero row chunks"
         next_uri = "http://localhost:8000/query_4/1"
       )
     ),
-    `httr::GET` = mock_httr_replies(
+    httr_GET = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/query_1/1",
         status_code = 200,
@@ -408,42 +444,6 @@ with_locale(test.locale(), test_that)("dbFetch rbind works with zero row chunks"
         status_code = 200,
         state = "FINISHED"
       )
-    ),
-    {
-      result <- dbSendQuery(
-        conn,
-        "SELECT integer, double, logical FROM all_types"
-      )
-
-      expect_equal_data_frame(
-        dbFetch(result, -1),
-        data,
-        label = "multiple columns"
-      )
-
-      result <- dbSendQuery(conn, "SELECT double FROM all_types")
-
-      expect_equal_data_frame(
-        dbFetch(result, -1),
-        data[, "double", drop = FALSE],
-        label = "single column"
-      )
-
-      result <- dbSendQuery(conn, "SELECT * FROM all_types")
-      full.data$POSIXct <-
-        lubridate::with_tz(full.data$POSIXct, test.timezone())
-      expect_equal_data_frame(
-        dbFetch(result, -1),
-        full.data,
-        label = "zero chunk first"
-      )
-
-      result <- dbSendQuery(conn, "SELECT * FROM all_types_with_queue")
-      expect_equal_data_frame(
-        dbFetch(result, -1),
-        full.data,
-        label = "with empty chunks"
-      )
-    }
+    )
   )
 })

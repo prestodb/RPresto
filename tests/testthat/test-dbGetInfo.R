@@ -44,32 +44,7 @@ test_that("dbGetInfo works with mock", {
       schema = "test"
     )
   )
-  with_mock(
-    `httr::POST` = mock_httr_replies(
-      mock_httr_response(
-        "http://localhost:8000/v1/statement",
-        status_code = 200,
-        state = "QUEUED",
-        request_body = "SELECT n FROM two_rows",
-        next_uri = "http://localhost:8000/query_1/1",
-        query_id = "query_1"
-      )
-    ),
-    `httr::GET` = mock_httr_replies(
-      mock_httr_response(
-        "http://localhost:8000/query_1/1",
-        status_code = 200,
-        data = data.frame(n = 1, stringsAsFactors = FALSE),
-        state = "FINISHED",
-        next_uri = "http://localhost:8000/query_1/2"
-      ),
-      mock_httr_response(
-        "http://localhost:8000/query_1/2",
-        status_code = 200,
-        data = data.frame(n = 2, stringsAsFactors = FALSE),
-        state = "FINISHED"
-      )
-    ),
+  with_mocked_bindings(
     {
       result <- dbSendQuery(conn, "SELECT n FROM two_rows")
       expect_equal(
@@ -104,6 +79,31 @@ test_that("dbGetInfo works with mock", {
           stats = list(state = "FINISHED")
         )
       )
-    }
+    },
+    httr_POST = mock_httr_replies(
+      mock_httr_response(
+        "http://localhost:8000/v1/statement",
+        status_code = 200,
+        state = "QUEUED",
+        request_body = "SELECT n FROM two_rows",
+        next_uri = "http://localhost:8000/query_1/1",
+        query_id = "query_1"
+      )
+    ),
+    httr_GET = mock_httr_replies(
+      mock_httr_response(
+        "http://localhost:8000/query_1/1",
+        status_code = 200,
+        data = data.frame(n = 1, stringsAsFactors = FALSE),
+        state = "FINISHED",
+        next_uri = "http://localhost:8000/query_1/2"
+      ),
+      mock_httr_response(
+        "http://localhost:8000/query_1/2",
+        status_code = 200,
+        data = data.frame(n = 2, stringsAsFactors = FALSE),
+        state = "FINISHED"
+      )
+    )
   )
 })

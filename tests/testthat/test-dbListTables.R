@@ -20,8 +20,12 @@ test_that("dbListTables works with live database", {
 test_that("dbListTables works with mock", {
   conn <- setup_mock_connection()
 
-  with_mock(
-    `httr::POST` = mock_httr_replies(
+  with_mocked_bindings(
+    {
+      expect_equal(dbListTables(conn), letters)
+      expect_equal(dbListTables(conn, pattern = "_no_table_"), character(0))
+    },
+    httr_POST = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/v1/statement",
         status_code = 200,
@@ -37,7 +41,7 @@ test_that("dbListTables works with mock", {
         next_uri = "http://localhost:8000/query_2/1"
       )
     ),
-    `httr::GET` = mock_httr_replies(
+    httr_GET = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/query_1/1",
         status_code = 200,
@@ -50,10 +54,6 @@ test_that("dbListTables works with mock", {
         data = data.frame(Table = "a", stringsAsFactors = FALSE)[FALSE, ],
         state = "FINISHED"
       )
-    ),
-    {
-      expect_equal(dbListTables(conn), letters)
-      expect_equal(dbListTables(conn, pattern = "_no_table_"), character(0))
-    }
+    )
   )
 })

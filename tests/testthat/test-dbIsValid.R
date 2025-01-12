@@ -44,8 +44,18 @@ test_that("dbIsValid works with live database", {
 
 test_that("dbIsValid works with mock - successful queries", {
   conn <- setup_mock_connection()
-  with_mock(
-    `httr::POST` = mock_httr_replies(
+  with_mocked_bindings(
+    {
+      result <- dbSendQuery(conn, "SELECT n FROM two_rows")
+      expect_true(dbIsValid(result))
+      expect_equal(dbFetch(result), tibble::tibble(n = 1))
+      expect_true(dbIsValid(result))
+      expect_equal(dbFetch(result), tibble::tibble(n = 2))
+      expect_true(dbIsValid(result))
+      expect_equal(dbFetch(result), tibble::tibble())
+      expect_true(dbIsValid(result))
+    },
+    httr_POST = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/v1/statement",
         status_code = 200,
@@ -54,7 +64,7 @@ test_that("dbIsValid works with mock - successful queries", {
         next_uri = "http://localhost:8000/query_1/1"
       )
     ),
-    `httr::GET` = mock_httr_replies(
+    httr_GET = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/query_1/1",
         status_code = 200,
@@ -68,24 +78,52 @@ test_that("dbIsValid works with mock - successful queries", {
         data = data.frame(n = 2, stringsAsFactors = FALSE),
         state = "FINISHED"
       )
-    ),
-    {
-      result <- dbSendQuery(conn, "SELECT n FROM two_rows")
-      expect_true(dbIsValid(result))
-      expect_equal(dbFetch(result), tibble::tibble(n = 1))
-      expect_true(dbIsValid(result))
-      expect_equal(dbFetch(result), tibble::tibble(n = 2))
-      expect_true(dbIsValid(result))
-      expect_equal(dbFetch(result), tibble::tibble())
-      expect_true(dbIsValid(result))
-    }
+    )
   )
 })
 
 test_that("dbIsValid works with mock - retries and failures", {
   conn <- setup_mock_connection()
-  with_mock(
-    `httr::POST` = mock_httr_replies(
+  with_mocked_bindings(
+    {
+      result <- dbSendQuery(conn, "SELECT 1")
+      expect_true(dbIsValid(result))
+      expect_error(
+        suppressMessages(dbFetch(result)),
+        "There was a problem with the request"
+      )
+      expect_false(dbIsValid(result))
+
+      assign("request.count", 0, envir = environment(httr_GET))
+      result <- dbSendQuery(conn, "SELECT 2 AS n")
+      expect_true(dbIsValid(result))
+      expect_message(
+        v <- dbFetch(result),
+        "First request is an error"
+      )
+      expect_equal(v, tibble::tibble(n = 2))
+      expect_true(dbIsValid(result))
+      expect_true(dbHasCompleted(result))
+
+      assign("request.count", 0, envir = environment(httr_GET))
+      result <- dbSendQuery(conn, 'SELECT "text" AS z')
+      expect_true(dbIsValid(result))
+      expect_message(
+        v <- dbFetch(result),
+        "GET call failed with error: .*\\((HTTP )*404\\).*, retrying.*"
+      )
+      expect_equal(v, tibble::tibble(z = "text"))
+      expect_true(dbIsValid(result))
+      expect_true(dbHasCompleted(result))
+
+      result <- dbSendQuery(conn, "SELECT x FROM respond_with_404")
+      expect_true(dbIsValid(result))
+      expect_error(
+        dbFetch(result),
+        "There was a problem with the request"
+      )
+    },
+    httr_POST = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/v1/statement",
         status_code = 200,
@@ -115,7 +153,7 @@ test_that("dbIsValid works with mock - retries and failures", {
         next_uri = "http://localhost:8000/query_4/1"
       )
     ),
-    `httr::GET` = function(url, ...) {
+    httr_GET = function(url, ...) {
       if (url == "http://localhost:8000/query_1/1") {
         stop("Error")
       }
@@ -156,54 +194,32 @@ test_that("dbIsValid works with mock - retries and failures", {
       }
       stop("Unhandled url in httr::GET mock: ", url)
     },
-    `httr::handle_reset` = function(...) {
+    httr_handle_reset = function(...) {
       return()
-    },
-    {
-      result <- dbSendQuery(conn, "SELECT 1")
-      expect_true(dbIsValid(result))
-      expect_error(
-        suppressMessages(dbFetch(result)),
-        "There was a problem with the request"
-      )
-      expect_false(dbIsValid(result))
-
-      assign("request.count", 0, envir = environment(httr::GET))
-      result <- dbSendQuery(conn, "SELECT 2 AS n")
-      expect_true(dbIsValid(result))
-      expect_message(
-        v <- dbFetch(result),
-        "First request is an error"
-      )
-      expect_equal(v, tibble::tibble(n = 2))
-      expect_true(dbIsValid(result))
-      expect_true(dbHasCompleted(result))
-
-      assign("request.count", 0, envir = environment(httr::GET))
-      result <- dbSendQuery(conn, 'SELECT "text" AS z')
-      expect_true(dbIsValid(result))
-      expect_message(
-        v <- dbFetch(result),
-        "GET call failed with error: .*\\((HTTP )*404\\).*, retrying.*"
-      )
-      expect_equal(v, tibble::tibble(z = "text"))
-      expect_true(dbIsValid(result))
-      expect_true(dbHasCompleted(result))
-
-      result <- dbSendQuery(conn, "SELECT x FROM respond_with_404")
-      expect_true(dbIsValid(result))
-      expect_error(
-        dbFetch(result),
-        "There was a problem with the request"
-      )
     }
   )
 })
 
 test_that("dbIsValid works with mock - dbClearResult", {
   conn <- setup_mock_connection()
-  with_mock(
-    `httr::POST` = mock_httr_replies(
+  with_mocked_bindings(
+    {
+      result <- dbSendQuery(conn, "SELECT 1")
+      expect_true(dbIsValid(result))
+      expect_true(dbClearResult(result))
+      expect_false(dbIsValid(result))
+      expect_true(dbClearResult(result))
+      expect_false(dbIsValid(result))
+
+      result <- dbSendQuery(conn, "SELECT 2")
+      expect_false(dbClearResult(result), label = "DELETE fails")
+      expect_true(dbIsValid(result))
+
+      result <- dbSendQuery(conn, "SELECT 3")
+      expect_true(dbClearResult(result), label = "complete query")
+      expect_true(dbIsValid(result))
+    },
+    httr_POST = mock_httr_replies(
       mock_httr_response(
         url = "http://localhost:8000/v1/statement",
         status_code = 200,
@@ -228,7 +244,7 @@ test_that("dbIsValid works with mock - dbClearResult", {
         query_id = "query_3"
       )
     ),
-    `httr::DELETE` = mock_httr_replies(
+    httr_DELETE = mock_httr_replies(
       mock_httr_response(
         url = "http://localhost:8000/v1/query/query_1",
         status_code = 200,
@@ -239,22 +255,6 @@ test_that("dbIsValid works with mock - dbClearResult", {
         status_code = 500,
         state = ""
       )
-    ),
-    {
-      result <- dbSendQuery(conn, "SELECT 1")
-      expect_true(dbIsValid(result))
-      expect_true(dbClearResult(result))
-      expect_false(dbIsValid(result))
-      expect_true(dbClearResult(result))
-      expect_false(dbIsValid(result))
-
-      result <- dbSendQuery(conn, "SELECT 2")
-      expect_false(dbClearResult(result), label = "DELETE fails")
-      expect_true(dbIsValid(result))
-
-      result <- dbSendQuery(conn, "SELECT 3")
-      expect_true(dbClearResult(result), label = "complete query")
-      expect_true(dbIsValid(result))
-    }
+    )
   )
 })

@@ -20,8 +20,12 @@ test_that("db_explain works with live database", {
 
 test_that("db_explain works with mock", {
   s <- setup_mock_dplyr_connection()[["db"]]
-  with_mock(
-    `httr::POST` = mock_httr_replies(
+  with_mocked_bindings(
+    {
+      result <- dplyr::db_explain(s[["con"]], dplyr::sql("SHOW TABLES"))
+      expect_equal(result, "explanation")
+    },
+    httr_POST = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/v1/statement",
         status_code = 200,
@@ -30,17 +34,13 @@ test_that("db_explain works with mock", {
         next_uri = "http://localhost:8000/query_1/1"
       )
     ),
-    `httr::GET` = mock_httr_replies(
+    httr_GET = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/query_1/1",
         status_code = 200,
         data = data.frame(e = "explanation", stringsAsFactors = FALSE),
         state = "FINISHED"
       )
-    ),
-    {
-      result <- dplyr::db_explain(s[["con"]], dplyr::sql("SHOW TABLES"))
-      expect_equal(result, "explanation")
-    }
+    )
   )
 })

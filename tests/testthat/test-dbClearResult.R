@@ -14,8 +14,19 @@ test_that("dbClearResult works with live database", {
 
 test_that("dbClearResult works with mock", {
   conn <- setup_mock_connection()
-  with_mock(
-    `httr::POST` = mock_httr_replies(
+  with_mocked_bindings(
+    {
+      result <- dbSendQuery(conn, "SELECT 1")
+      expect_true(dbClearResult(result), label = "regular query")
+      expect_true(dbClearResult(result), label = "idempotency")
+
+      result <- dbSendQuery(conn, "SELECT 2")
+      expect_false(dbClearResult(result), label = "DELETE fails")
+
+      result <- dbSendQuery(conn, "SELECT 3")
+      expect_true(dbClearResult(result), label = "complete query")
+    },
+    httr_POST = mock_httr_replies(
       mock_httr_response(
         url = "http://localhost:8000/v1/statement",
         status_code = 200,
@@ -40,7 +51,7 @@ test_that("dbClearResult works with mock", {
         query_id = "query_3"
       )
     ),
-    `httr::DELETE` = mock_httr_replies(
+    httr_DELETE = mock_httr_replies(
       mock_httr_response(
         url = "http://localhost:8000/v1/query/query_1",
         status_code = 200,
@@ -51,17 +62,6 @@ test_that("dbClearResult works with mock", {
         status_code = 500,
         state = ""
       )
-    ),
-    {
-      result <- dbSendQuery(conn, "SELECT 1")
-      expect_true(dbClearResult(result), label = "regular query")
-      expect_true(dbClearResult(result), label = "idempotency")
-
-      result <- dbSendQuery(conn, "SELECT 2")
-      expect_false(dbClearResult(result), label = "DELETE fails")
-
-      result <- dbSendQuery(conn, "SELECT 3")
-      expect_true(dbClearResult(result), label = "complete query")
-    }
+    )
   )
 })

@@ -38,8 +38,18 @@ with_locale(test.locale(), test_that)("dbGetQuery works with live database", {
 
 with_locale(test.locale(), test_that)("dbGetQuery works with mock", {
   conn <- setup_mock_connection()
-  with_mock(
-    `httr::POST` = mock_httr_replies(
+  with_mocked_bindings(
+    {
+      expect_equal_data_frame(
+        dbGetQuery(conn, "SELECT n FROM two_rows"),
+        tibble::tibble(n = c(1, 2))
+      )
+      expect_equal_data_frame(
+        dbGetQuery(conn, "SELECT t FROM encoding_test"),
+        tibble::tibble(t = c("çğıöşü", "ÇĞİÖŞÜ"))
+      )
+    },
+    httr_POST = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/v1/statement",
         status_code = 200,
@@ -55,7 +65,7 @@ with_locale(test.locale(), test_that)("dbGetQuery works with mock", {
         next_uri = "http://localhost:8000/query_2/1"
       )
     ),
-    `httr::GET` = mock_httr_replies(
+    httr_GET = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/query_1/1",
         status_code = 200,
@@ -82,25 +92,26 @@ with_locale(test.locale(), test_that)("dbGetQuery works with mock", {
         data = data.frame(t = "ÇĞİÖŞÜ"),
         state = "FINISHED"
       )
-    ),
-    {
-      expect_equal_data_frame(
-        dbGetQuery(conn, "SELECT n FROM two_rows"),
-        tibble::tibble(n = c(1, 2))
-      )
-      expect_equal_data_frame(
-        dbGetQuery(conn, "SELECT t FROM encoding_test"),
-        tibble::tibble(t = c("çğıöşü", "ÇĞİÖŞÜ"))
-      )
-    }
+    )
   )
 })
 
 test_that("dbGetQuery works with data in POST response", {
   conn <- setup_mock_connection()
 
-  with_mock(
-    `httr::POST` = mock_httr_replies(
+  with_mocked_bindings(
+    {
+      expect_equal_data_frame(
+        dbGetQuery(conn, "SELECT 1 AS x"),
+        tibble::tibble(x = 1)
+      )
+
+      expect_equal_data_frame(
+        dbGetQuery(conn, "SELECT n FROM two_rows"),
+        tibble::tibble(n = c(3, 4))
+      )
+    },
+    httr_POST = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/v1/statement",
         status_code = 200,
@@ -117,33 +128,28 @@ test_that("dbGetQuery works with data in POST response", {
         next_uri = "http://localhost:8000/query_1/1"
       )
     ),
-    `httr::GET` = mock_httr_replies(
+    httr_GET = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/query_1/1",
         status_code = 200,
         data = data.frame(n = 4, stringsAsFactors = FALSE),
         state = "FINISHED"
       )
-    ),
-    {
-      expect_equal_data_frame(
-        dbGetQuery(conn, "SELECT 1 AS x"),
-        tibble::tibble(x = 1)
-      )
-
-      expect_equal_data_frame(
-        dbGetQuery(conn, "SELECT n FROM two_rows"),
-        tibble::tibble(n = c(3, 4))
-      )
-    }
+    )
   )
 })
 
 test_that("Inconsistent data in chunks fail", {
   conn <- setup_mock_connection()
 
-  with_mock(
-    `httr::POST` = mock_httr_replies(
+  with_mocked_bindings(
+    {
+      expect_error(
+        dbGetQuery(conn, "SELECT a, b FROM broken_chunks"),
+        "Chunk column names are different across chunks"
+      )
+    },
+    httr_POST = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/v1/statement",
         status_code = 200,
@@ -153,7 +159,7 @@ test_that("Inconsistent data in chunks fail", {
         query_id = "query_1"
       )
     ),
-    `httr::GET` = mock_httr_replies(
+    httr_GET = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/query_1/1",
         status_code = 200,
@@ -181,18 +187,12 @@ test_that("Inconsistent data in chunks fail", {
         data = data.frame(a = 3, b = FALSE)
       )
     ),
-    `httr::DELETE` = mock_httr_replies(
+    httr_DELETE = mock_httr_replies(
       mock_httr_response(
         url = "http://localhost:8000/v1/query/query_1",
         status_code = 200,
         state = ""
       )
-    ),
-    {
-      expect_error(
-        dbGetQuery(conn, "SELECT a, b FROM broken_chunks"),
-        "Chunk column names are different across chunks"
-      )
-    }
+    )
   )
 })

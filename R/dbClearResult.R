@@ -7,6 +7,10 @@
 #' @include PrestoResult.R
 NULL
 
+httr_DELETE <- function(...) {
+  httr::DELETE(...)
+}
+
 #' @rdname PrestoResult-class
 #' @importMethodsFrom DBI dbClearResult
 #' @export
@@ -32,7 +36,7 @@ setMethod(
       res@connection@host, ":", res@connection@port,
       "/v1/query/", res@query$id()
     )
-    delete.result <- httr::DELETE(delete.uri, config = headers)
+    delete.result <- httr_DELETE(delete.uri, config = headers)
     s <- httr::status_code(delete.result)
     if (s >= 200 && s < 300) {
       res@query$state("__KILLED")

@@ -44,8 +44,15 @@ test_that("dbListFields works with identifier", {
 
 test_that("dbListFields works with mock - PrestoConnection", {
   conn <- setup_mock_connection()
-  with_mock(
-    `httr::POST` = mock_httr_replies(
+  with_mocked_bindings(
+    {
+      expect_equal(dbListFields(conn, "two_columns"), c("column1", "column2"))
+      expect_error(
+        dbListFields(conn, "__non_existent_table__"),
+        "Query .* failed"
+      )
+    },
+    httr_POST = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/v1/statement",
         status_code = 200,
@@ -62,7 +69,7 @@ test_that("dbListFields works with mock - PrestoConnection", {
         query_id = "query_2"
       )
     ),
-    `httr::GET` = mock_httr_replies(
+    httr_GET = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/query_1/1",
         status_code = 200,
@@ -77,27 +84,45 @@ test_that("dbListFields works with mock - PrestoConnection", {
         state = "FAILED",
       )
     ),
-    `httr::DELETE` = mock_httr_replies(
+    httr_DELETE = mock_httr_replies(
       mock_httr_response(
         url = "http://localhost:8000/v1/query/query_2",
         status_code = 200,
         state = ""
       )
-    ),
-    {
-      expect_equal(dbListFields(conn, "two_columns"), c("column1", "column2"))
-      expect_error(
-        dbListFields(conn, "__non_existent_table__"),
-        "Query .* failed"
-      )
-    }
+    )
   )
 })
 
 test_that("dbListFields works with mock - PrestoResult", {
   conn <- setup_mock_connection()
-  with_mock(
-    `httr::POST` = mock_httr_replies(
+  with_mocked_bindings(
+    {
+      result <- dbSendQuery(conn, "SELECT * FROM two_columns")
+      expect_true(dbIsValid(result))
+      expect_equal(dbListFields(result), c("column1", "column2"))
+
+      result <- dbSendQuery(conn, "SELECT * FROM __non_existent_table__")
+      expect_true(dbIsValid(result))
+      expect_error(
+        dbListFields(result),
+        "Query.*failed: Table __non_existent_table__ does not exist"
+      )
+
+      result <- dbSendQuery(conn, "SELECT * FROM empty_table")
+      expect_equal(dbListFields(result), character(0))
+
+      result <- dbSendQuery(conn, "SELECT * FROM empty_table")
+      expect_true(dbClearResult(result))
+      expect_error(
+        dbListFields(result),
+        "The result object is not valid"
+      )
+
+      result <- dbSendQuery(conn, "SELECT * FROM three_columns")
+      expect_equal(dbListFields(result), c("a", "b", "c"))
+    },
+    httr_POST = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/v1/statement",
         status_code = 200,
@@ -150,7 +175,7 @@ test_that("dbListFields works with mock - PrestoResult", {
         query_id = "query_6"
       )
     ),
-    `httr::GET` = mock_httr_replies(
+    httr_GET = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/query_1/1",
         status_code = 200,
@@ -199,7 +224,7 @@ test_that("dbListFields works with mock - PrestoResult", {
         state = "FINISHED",
       )
     ),
-    `httr::DELETE` = mock_httr_replies(
+    httr_DELETE = mock_httr_replies(
       mock_httr_response(
         url = "http://localhost:8000/v1/query_3",
         status_code = 200,
@@ -215,39 +240,29 @@ test_that("dbListFields works with mock - PrestoResult", {
         status_code = 200,
         state = ""
       )
-    ),
-    {
-      result <- dbSendQuery(conn, "SELECT * FROM two_columns")
-      expect_true(dbIsValid(result))
-      expect_equal(dbListFields(result), c("column1", "column2"))
-
-      result <- dbSendQuery(conn, "SELECT * FROM __non_existent_table__")
-      expect_true(dbIsValid(result))
-      expect_error(
-        dbListFields(result),
-        "Query.*failed: Table __non_existent_table__ does not exist"
-      )
-
-      result <- dbSendQuery(conn, "SELECT * FROM empty_table")
-      expect_equal(dbListFields(result), character(0))
-
-      result <- dbSendQuery(conn, "SELECT * FROM empty_table")
-      expect_true(dbClearResult(result))
-      expect_error(
-        dbListFields(result),
-        "The result object is not valid"
-      )
-
-      result <- dbSendQuery(conn, "SELECT * FROM three_columns")
-      expect_equal(dbListFields(result), c("a", "b", "c"))
-    }
+    )
   )
 })
 
 test_that("dbListFields works with mock - PrestoResult - POST data", {
   conn <- setup_mock_connection()
-  with_mock(
-    `httr::POST` = mock_httr_replies(
+  with_mocked_bindings(
+    {
+      result <- dbSendQuery(conn, "SELECT * FROM two_columns")
+      expect_true(dbIsValid(result))
+      expect_equal(dbListFields(result), c("column1", "column2"))
+      expect_equal(dbFetch(result), tibble::tibble(column1 = 3, column2 = 4))
+      expect_true(dbHasCompleted(result))
+
+      result <- dbSendQuery(conn, "SELECT * FROM two_rows")
+      expect_true(dbIsValid(result))
+      expect_equal(dbListFields(result), c("column1", "column2"))
+      expect_equal(dbFetch(result), tibble::tibble(column1 = 5, column2 = 6))
+      expect_false(dbHasCompleted(result))
+      expect_equal(dbFetch(result), tibble::tibble(column1 = 7, column2 = 8))
+      expect_true(dbHasCompleted(result))
+    },
+    httr_POST = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/v1/statement",
         status_code = 200,
@@ -264,36 +279,39 @@ test_that("dbListFields works with mock - PrestoResult - POST data", {
         next_uri = "http://localhost:8000/query_2/1"
       )
     ),
-    `httr::GET` = mock_httr_replies(
+    httr_GET = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/query_2/1",
         status_code = 200,
         data = data.frame(column1 = 7, column2 = 8),
         state = "FINISHED",
       )
-    ),
-    {
-      result <- dbSendQuery(conn, "SELECT * FROM two_columns")
-      expect_true(dbIsValid(result))
-      expect_equal(dbListFields(result), c("column1", "column2"))
-      expect_equal(dbFetch(result), tibble::tibble(column1 = 3, column2 = 4))
-      expect_true(dbHasCompleted(result))
-
-      result <- dbSendQuery(conn, "SELECT * FROM two_rows")
-      expect_true(dbIsValid(result))
-      expect_equal(dbListFields(result), c("column1", "column2"))
-      expect_equal(dbFetch(result), tibble::tibble(column1 = 5, column2 = 6))
-      expect_false(dbHasCompleted(result))
-      expect_equal(dbFetch(result), tibble::tibble(column1 = 7, column2 = 8))
-      expect_true(dbHasCompleted(result))
-    }
+    )
   )
 })
 
 test_that("dbListFields works with mock - PrestoResult - POST columns", {
   conn <- setup_mock_connection()
-  with_mock(
-    `httr::POST` = mock_httr_replies(
+  with_mocked_bindings(
+    {
+      result <- dbSendQuery(conn, "SELECT * FROM two_columns")
+      expect_true(dbIsValid(result))
+      expect_equal(dbListFields(result), c("column1", "column2"))
+      expect_equal(dbFetch(result), tibble::tibble(column1 = 9, column2 = 10))
+      expect_true(dbHasCompleted(result))
+
+      result <- dbSendQuery(conn, "SELECT * FROM other_two_columns")
+      expect_true(dbIsValid(result))
+      expect_equal(dbListFields(result), c("column3", "column4"))
+      expect_equal(
+        dbFetch(result),
+        tibble::tibble(column3 = 1, column4 = 2)[FALSE, , drop = FALSE]
+      )
+      expect_false(dbHasCompleted(result))
+      expect_equal(dbFetch(result), tibble::tibble(column3 = 13, column4 = 14))
+      expect_true(dbHasCompleted(result))
+    },
+    httr_POST = mock_httr_replies(
       list(
         url = "http://localhost:8000/v1/statement",
         response = structure(
@@ -345,7 +363,7 @@ test_that("dbListFields works with mock - PrestoResult - POST columns", {
         request_body = "SELECT \\* FROM other_two_columns"
       )
     ),
-    `httr::GET` = mock_httr_replies(
+    httr_GET = mock_httr_replies(
       mock_httr_response(
         "http://localhost:8000/query_1/1",
         status_code = 200,
@@ -382,24 +400,6 @@ test_that("dbListFields works with mock - PrestoResult - POST columns", {
         data = data.frame(column3 = 13, column4 = 14),
         state = "FINISHED",
       )
-    ),
-    {
-      result <- dbSendQuery(conn, "SELECT * FROM two_columns")
-      expect_true(dbIsValid(result))
-      expect_equal(dbListFields(result), c("column1", "column2"))
-      expect_equal(dbFetch(result), tibble::tibble(column1 = 9, column2 = 10))
-      expect_true(dbHasCompleted(result))
-
-      result <- dbSendQuery(conn, "SELECT * FROM other_two_columns")
-      expect_true(dbIsValid(result))
-      expect_equal(dbListFields(result), c("column3", "column4"))
-      expect_equal(
-        dbFetch(result),
-        tibble::tibble(column3 = 1, column4 = 2)[FALSE, , drop = FALSE]
-      )
-      expect_false(dbHasCompleted(result))
-      expect_equal(dbFetch(result), tibble::tibble(column3 = 13, column4 = 14))
-      expect_true(dbHasCompleted(result))
-    }
+    )
   )
 })
