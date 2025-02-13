@@ -19,6 +19,7 @@
 #' @slot .ctes List of common table expressions (CTEs), i.e. SELECT statements
 #'         with names. They can be used in a WITH statement.
 #' @keywords internal
+#' @importFrom stringdist stringdist
 PrestoSession <- setRefClass("PrestoSession",
   fields = c(
     ".parameters",
@@ -67,8 +68,20 @@ PrestoSession <- setRefClass("PrestoSession",
       }
       if (hasCTE(name)) {
         if (identical(replace, TRUE)) {
-          .ctes[[match(name, getCTENames())]] <<- sql
-          message("CTE ", name, " is replaced.")
+          cte_idx <- match(name, getCTENames())
+          old_sql <- .ctes[[cte_idx]]
+          old_sql_no_ws <- gsub("\\s", "", old_sql)
+          sql_no_ws <- gsub("\\s", "", sql)
+          .ctes[[cte_idx]] <<- sql
+          lcs_dist <- stringdist::stringdist(
+            old_sql_no_ws, sql_no_ws, method = "lcs"
+          )
+          max_length <- max(nchar(old_sql_no_ws), nchar(sql_no_ws))
+          percentage_similarity <- (1 - (lcs_dist / max_length)) * 100
+          message(
+            "CTE ", name, " is replaced (",
+            sprintf("%.0f%%", percentage_similarity), " similarity)."
+          )
         } else {
           stop(
             "CTE ", name, " already exists and repalce is set to FALSE.",

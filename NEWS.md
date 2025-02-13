@@ -2,6 +2,7 @@
 
 * Replaced deprecated `with_mock()` usage in unit testing with
   `with_mocked_bindings()`. (#292)
+* Add a feature to report text similarity when a CTE is overwritten. (#294)
 
 # RPresto 1.4.7
 

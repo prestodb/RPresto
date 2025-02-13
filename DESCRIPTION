@@ -33,7 +33,8 @@ Imports:
     lifecycle,
     lubridate,
     progress,
-    vctrs
+    vctrs,
+    stringdist
 Suggests:
     testthat,
     hms,
