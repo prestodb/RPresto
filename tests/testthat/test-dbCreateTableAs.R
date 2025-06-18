@@ -48,6 +48,22 @@ test_equal_tables <- function(conn, test_table_name, test_origin_table) {
     get_nrow(conn, test_table_name),
     get_nrow(conn, test_origin_table)
   )
+  # test a different schema works
+  DBI::dbExecute(con, paste0("CREATE SCHEMA IF NOT EXISTS testing"))
+  test_table_name <- in_schema("testing","test_sqlcreatetableas")
+  expect_equal(
+    sqlCreateTableAs(
+      conn, test_table_name,
+      sql = "SELECT * FROM iris"
+    ),
+    DBI::SQL(
+      paste0(
+        "CREATE TABLE ", dbQuoteIdentifier(conn, test_table_name), "\n",
+        "AS\n",
+        "SELECT * FROM iris"
+      )
+    )
+  )
 }
 
 test_that("dbCreateTableAS works with live database", {
