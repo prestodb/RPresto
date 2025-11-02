@@ -28,6 +28,7 @@ Imports:
     dplyr (>= 0.7.0),
     dbplyr (>= 2.3.3),
     tibble,
+    tidyselect,
     bit64,
     rlang,
     lifecycle,
@@ -89,6 +90,7 @@ Collate:
     'fetch.R'
     'presto.field.R'
     'presto.field_utilities.R'
+    'presto_unnest.R'
     'request_headers.R'
     'sqlCreateTable.R'
     'sqlCreateTableAs.R'
