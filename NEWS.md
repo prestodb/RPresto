@@ -1,5 +1,8 @@
 # RPresto 1.4.7.9000
 
+* Add `presto_unnest()` function to unnest array columns in Presto tables using
+  `CROSS JOIN UNNEST` syntax. This function is similar to `tidyr::unnest()` but
+  works with Presto database tables. (#267)
 * Replaced deprecated `with_mock()` usage in unit testing with
   `with_mocked_bindings()`. (#292)
 * Add a feature to report text similarity when a CTE is overwritten. (#294)

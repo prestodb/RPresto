@@ -69,6 +69,12 @@ get_tables_from_sql.lazy_union_query <- function(query) {
   c(tables_from_x, tables_from_y)
 }
 
+#' @export
+get_tables_from_sql.lazy_unnest_query <- function(query) {
+  # Recursively get tables from parent query
+  get_tables_from_sql(query$x)
+}
+
 is_cte_used <- function(sql) {
   startsWith(tolower(sql), "with")
 }
