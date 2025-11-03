@@ -13,6 +13,10 @@ NULL
   cte_tables = c(),
   quiet = getOption("rpresto.quiet")
 ) {
+  # Set per-query cache for bigint overflow warnings
+  old_opt <- options(rpresto.bigint_overflow.warned_env = new.env())
+  on.exit(options(rpresto.bigint_overflow.warned_env = NULL), add = TRUE)
+
   result <- dbSendQuery(
     conn, statement_with_cte %||% statement, quiet = quiet, ...
   )

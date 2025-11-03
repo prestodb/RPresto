@@ -1,3 +1,6 @@
+# Package-level default cache for bigint overflow warnings
+.rpresto_default_warned_env <- new.env(parent = emptyenv())
+
 # Copyright (c) Meta Platforms, Inc. and affiliates.
 # All rights reserved.
 #
@@ -160,6 +163,31 @@ convert_bigint <- function(df, bigint) {
     return(df)
   }
 
+  if (bigint == "integer") {
+    # Use a per-query cache if provided via option; otherwise fallback
+    warned <- getOption(
+      "rpresto.bigint_overflow.warned_env",
+      .rpresto_default_warned_env
+    )
+    # Column-aware overflow warnings for top-level integer64 columns
+    nms <- names(df)
+    if (!is.null(nms)) {
+      for (col_name in nms) {
+        col <- df[[col_name]]
+        if (bit64::is.integer64(col)) {
+          df[[col_name]] <- coerce_integer64_to_int_with_warning(
+            col, col_name, warned
+          )
+        } else {
+          # Recurse into nested structures while preserving the
+          # top-level column name
+          df[[col_name]] <- rapply_int64_with_colname(col, col_name, warned)
+        }
+      }
+    }
+    return(df)
+  }
+
   as_bigint <- switch(bigint,
     integer = as.integer,
     numeric = as.numeric,
@@ -178,4 +206,65 @@ rapply_int64 <- function(x, f) {
   } else {
     x
   }
+}
+
+# Recursively apply integer64->integer conversion while preserving top-level column name for warnings
+rapply_int64_with_colname <- function(x, col_name, warned) {
+  if (is.list(x)) {
+    # Recurse element-wise, appending child names when available
+    # (e.g., data.frame columns)
+    nms <- names(x)
+    for (i in seq_along(x)) {
+      child_is_named <- !is.null(nms) && !is.na(nms[i]) && nzchar(nms[i])
+      child_name <- if (child_is_named) nms[i] else ""
+      child_path <- if (nzchar(child_name)) {
+        paste0(col_name, ".", child_name)
+      } else {
+        col_name
+      }
+      x[[i]] <- rapply_int64_with_colname(x[[i]], child_path, warned)
+    }
+    return(x)
+  } else if (bit64::is.integer64(x)) {
+    return(coerce_integer64_to_int_with_warning(x, col_name, warned))
+  } else {
+    return(x)
+  }
+}
+
+# Internal helper: convert integer64 to integer with column-aware overflow warning
+coerce_integer64_to_int_with_warning <- function(x, col_name, warned = NULL) {
+  warn_enabled <- isTRUE(
+    getOption("rpresto.bigint_overflow.warning", TRUE)
+  )
+
+  if (!warn_enabled) {
+    return(suppressWarnings(as.integer(x)))
+  }
+
+  INT_MIN64 <- bit64::as.integer64("-2147483648")
+  INT_MAX64 <- bit64::as.integer64("2147483647")
+
+  is_na <- bit64::is.na.integer64(x)
+  oob <- (x < INT_MIN64 | x > INT_MAX64) & !is_na
+  n_oob <- sum(oob, na.rm = TRUE)
+
+  if (n_oob > 0L) {
+    # Suppress duplicate warnings for the same column path within one coercion
+    if (!is.null(warned)) {
+      already <- isTRUE(get0(col_name, envir = warned, inherits = FALSE))
+      if (already) {
+        return(suppressWarnings(as.integer(x)))
+      }
+      assign(col_name, TRUE, envir = warned)
+    }
+    msg <- sprintf(
+      "BIGINT to integer overflow in column '%s' (n=%d); coerced to NA",
+      col_name,
+      n_oob
+    )
+    warning(msg, call. = FALSE)
+  }
+
+  return(suppressWarnings(as.integer(x)))
 }
