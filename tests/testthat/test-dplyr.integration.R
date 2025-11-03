@@ -56,7 +56,8 @@ test_that("dplyr integration works", {
     dplyr::select(bigint)
   expect_warning(
     dplyr::collect(iris_presto_bigint),
-    "NAs produced by integer overflow"
+    regexp = "integer overflow",
+    fixed = FALSE
   )
   expect_equal_data_frame(
     dplyr::collect(iris_presto_bigint, bigint = "character"),

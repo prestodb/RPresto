@@ -851,7 +851,8 @@ test_that("Queries return the correct handling of BIGINT", {
       conn,
       "select cast(pow(2, 60) as bigint) as type_bigint_overflow"
     ),
-    "NAs produced by integer overflow"
+    regexp = "integer overflow",
+    fixed = FALSE
   )
   expect_type(df.bigint_overflow.1$type_bigint_overflow, "integer")
   expect_equal_data_frame(

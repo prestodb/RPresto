@@ -6,6 +6,9 @@
 * Replaced deprecated `with_mock()` usage in unit testing with
   `with_mocked_bindings()`. (#292)
 * Add a feature to report text similarity when a CTE is overwritten. (#294)
+* BIGINT to integer coercion now emits column-aware overflow warnings, including
+  full nested paths. This can be controlled via
+  `options(rpresto.bigint_overflow.warning = TRUE|FALSE)`. (#198)
 
 # RPresto 1.4.7
 

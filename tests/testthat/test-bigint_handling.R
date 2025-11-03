@@ -11,11 +11,13 @@ test_that("Non 32-bit integers give warning", {
 
   expect_warning(
     dbGetQuery(conn, "SELECT CAST('2147483648' AS BIGINT)"),
-    "NAs produced by integer overflow"
+    regexp = "integer overflow",
+    fixed = FALSE
   )
   expect_warning(
     dbGetQuery(conn, "SELECT CAST('-2147483649' AS BIGINT)"),
-    "NAs produced by integer overflow"
+    regexp = "integer overflow",
+    fixed = FALSE
   )
 })
 

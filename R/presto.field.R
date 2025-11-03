@@ -478,6 +478,6 @@ extract.data <-
     data <- response.content$data
     data <- organize.data.by.schema(data, schema)
     data <- tibble::as_tibble(data)
-    data <- convert_bigint(data, bigint)
+  data <- convert_bigint(data, bigint)
     return(data)
   }
