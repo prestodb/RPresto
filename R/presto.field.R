@@ -73,7 +73,14 @@ create.presto.field <- function(name, type, key_type = NA_character_,
   return(prf)
 }
 
-init.presto.field.from.json <- function(column.list, session.timezone, output.timezone, timestamp, is_parent_map = FALSE, is_parent_array = FALSE) {
+init.presto.field.from.json <- function(
+  column.list,
+  session.timezone,
+  output.timezone,
+  timestamp,
+  is_parent_map = FALSE,
+  is_parent_array = FALSE
+) {
   stopifnot(is.list(column.list))
 
   name <- purrr::pluck(column.list, "name")
@@ -111,32 +118,54 @@ init.presto.field.from.json <- function(column.list, session.timezone, output.ti
       )
     )
     fields <- purrr::map(
-      fields_json, init.presto.field.from.json, session.timezone, output.timezone, timestamp,
-      is_parent_map = TRUE, is_parent_array = is_array
+      fields_json,
+      init.presto.field.from.json,
+      session.timezone = session.timezone,
+      output.timezone = output.timezone,
+      timestamp = timestamp,
+      is_parent_map = TRUE,
+      is_parent_array = is_array
     )
   }
   # ROW type is a complex type that has sub-fields
   if (type == "row") {
     fields_count <- length(
       purrr::pluck(type_signature, "literalArguments") %||%
-      purrr::pluck(type_signature, "arguments")
+        purrr::pluck(type_signature, "arguments")
     )
     fields_json <- vector(mode = "list", length = fields_count)
     for (i in seq(fields_count)) {
       fields_json[[i]]$name <-
         purrr::pluck(type_signature, "literalArguments", i) %||%
-        purrr::pluck(type_signature, "arguments", i, "value", "fieldName", "name")
-      field_type <- purrr::pluck(type_signature, "arguments", i, "value", "typeSignature")
+        purrr::pluck(
+          type_signature, "arguments", i, "value", "fieldName", "name"
+        )
+      field_type <- purrr::pluck(
+        type_signature, "arguments", i, "value", "typeSignature"
+      )
       if (!is.character(field_type)) {
-        field_type <- purrr::pluck(type_signature, "arguments", i, "value", "typeSignature", "rawType")
+        field_type <- purrr::pluck(
+          type_signature,
+          "arguments",
+          i,
+          "value",
+          "typeSignature",
+          "rawType"
+        )
       }
       fields_json[[i]]$type <- field_type
       fields_json[[i]]$typeSignature <-
         purrr::pluck(type_signature, "typeArguments", i) %||%
-        purrr::pluck(type_signature, "arguments", i, "value", "typeSignature")
+        purrr::pluck(
+          type_signature, "arguments", i, "value", "typeSignature"
+        )
     }
     fields <- purrr::map(
-      fields_json, init.presto.field.from.json, session.timezone, output.timezone, timestamp,
+      fields_json,
+      init.presto.field.from.json,
+      session.timezone = session.timezone,
+      output.timezone = output.timezone,
+      timestamp = timestamp
     )
   }
 
@@ -185,7 +214,11 @@ get.process.func <- function(prf) {
   } else if (prf$type_ == "PRESTO_TIMESTAMP_WITH_TZ") {
     function(x) {
       unlist_with_attr(
-        purrr::map(x, parse.timestamp_with_tz, output_timezone = prf$output_timezone_)
+        purrr::map(
+          x,
+          parse.timestamp_with_tz,
+          output_timezone = prf$output_timezone_
+        )
       )
     }
   } else if (prf$type_ == "PRESTO_TIME") {
@@ -247,7 +280,7 @@ create.empty.tibble <- function(schema) {
   rv <- list()
   for (prf in schema) {
     # primitive types
-    if (!prf$is_array_ & !prf$is_map_ & !prf$is_row_) {
+    if (!prf$is_array_ && !prf$is_map_ && !prf$is_row_) {
       rv[[prf$name_]] <-
         if (prf$type_ == "PRESTO_INTEGER") {
           integer(0)
@@ -351,8 +384,6 @@ organize_map_type_data <- function(data, prf, keep_names) {
 
 # data contains all rows of data in a list
 organize_row_type_data <- function(data, prf, keep_names) {
-  field.count <- length(prf$fields_)
-  field.names <- purrr::map_chr(prf$fields_, ~ .$name_)
   if (!prf$is_array_) {
     # single row -> named list
     if (!prf$is_parent_map_) {
@@ -478,6 +509,6 @@ extract.data <-
     data <- response.content$data
     data <- organize.data.by.schema(data, schema)
     data <- tibble::as_tibble(data)
-  data <- convert_bigint(data, bigint)
+    data <- convert_bigint(data, bigint)
     return(data)
   }
