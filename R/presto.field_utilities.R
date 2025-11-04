@@ -208,7 +208,8 @@ rapply_int64 <- function(x, f) {
   }
 }
 
-# Recursively apply integer64->integer conversion while preserving top-level column name for warnings
+# Recursively apply integer64->integer conversion while preserving
+# top-level column name for warnings
 rapply_int64_with_colname <- function(x, col_name, warned) {
   if (is.list(x)) {
     # Recurse element-wise, appending child names when available
@@ -232,7 +233,8 @@ rapply_int64_with_colname <- function(x, col_name, warned) {
   }
 }
 
-# Internal helper: convert integer64 to integer with column-aware overflow warning
+# Internal helper: convert integer64 to integer with column-aware
+# overflow warning
 coerce_integer64_to_int_with_warning <- function(x, col_name, warned = NULL) {
   warn_enabled <- isTRUE(
     getOption("rpresto.bigint_overflow.warning", TRUE)
