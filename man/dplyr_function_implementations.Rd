@@ -27,8 +27,7 @@
 \arguments{
 \item{x}{A lazy data frame backed by a database query.}
 
-\item{cte}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
-An experimental feature to save the query to a common table expression.
+\item{cte}{A logical value to save the query to a common table expression.
 Default to FALSE. See \code{vignette("common-table-expressions")}}
 }
 \description{

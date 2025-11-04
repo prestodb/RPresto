@@ -171,8 +171,7 @@ db_collect.PrestoConnection <- function(con, sql, n = -1, warn_incomplete = TRUE
 }
 
 #' @rdname dbplyr-db
-#' @param use_presto_cte `r lifecycle::badge("experimental")`
-#'   A logical value indicating if to use common table expressions stored in
+#' @param use_presto_cte A logical value indicating if to use common table expressions stored in
 #'   PrestoConnection when possible. Default to TRUE. See
 #'   `vignette("common-table-expressions")`.
 #' @importFrom dbplyr db_sql_render

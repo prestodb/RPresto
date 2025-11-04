@@ -308,8 +308,7 @@ copy_to.PrestoConnection <- function(
 #' @importFrom rlang !!!
 #' @export
 #' @param x A lazy data frame backed by a database query.
-#' @param cte `r lifecycle::badge("experimental")`
-#'   An experimental feature to save the query to a common table expression.
+#' @param cte A logical value to save the query to a common table expression.
 #'   Default to FALSE. See `vignette("common-table-expressions")`
 #' @rdname dplyr_function_implementations
 compute.tbl_presto <- function(x, name, temporary = FALSE, ..., cte = FALSE) {

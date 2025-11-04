@@ -49,8 +49,7 @@ check_tz <- function(timezone) {
 #'          server timezone (use `show(<PrestoConnection>)` to see).
 #' @param parameters A [list()] of extra parameters to be passed in
 #'          the \sQuote{X-Presto-Session} header
-#' @param ctes  `r lifecycle::badge("experimental")`
-#'          A list of common table expressions (CTEs) that can be used in the
+#' @param ctes  A list of common table expressions (CTEs) that can be used in the
 #'          WITH clause. See `vignette("common-table-expressions")`.
 #' @param request.config An optional config list, as returned by
 #'          `httr::config()`, to be sent with every HTTP request.

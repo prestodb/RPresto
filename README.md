@@ -7,8 +7,6 @@
 
 [![CRAN
 status](https://www.r-pkg.org/badges/version/RPresto)](https://CRAN.R-project.org/package=RPresto)
-[![Lifecycle:
-experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![test-coverage](https://github.com/prestodb/RPresto/actions/workflows/test-coverage.yaml/badge.svg)](https://github.com/prestodb/RPresto/actions/workflows/test-coverage.yaml)
 [![check-standard](https://github.com/prestodb/RPresto/actions/workflows/check-standard.yaml/badge.svg)](https://github.com/prestodb/RPresto/actions/workflows/check-standard.yaml)
 <!-- badges: end -->
@@ -69,7 +67,7 @@ returns the query result in a [`tibble`](https://tibble.tidyverse.org/).
 
 ``` r
 DBI::dbGetQuery(con, "SELECT CAST(3.14 AS DOUBLE) AS pi")
-#> # A tibble: 1 × 1
+#> # A tibble: 1 x 1
 #>      pi
 #>   <dbl>
 #> 1  3.14
@@ -96,7 +94,7 @@ entire table into R. It’s essentially a `SELECT *` query on the table.
 
 ``` r
 DBI::dbReadTable(con, "iris")
-#> # A tibble: 150 × 5
+#> # A tibble: 150 x 5
 #>    sepal.length sepal.width petal.length petal.width species
 #>           <dbl>       <dbl>        <dbl>       <dbl> <chr>  
 #>  1          5.1         3.5          1.4         0.2 setosa 
@@ -109,7 +107,7 @@ DBI::dbReadTable(con, "iris")
 #>  8          5           3.4          1.5         0.2 setosa 
 #>  9          4.4         2.9          1.4         0.2 setosa 
 #> 10          4.9         3.1          1.5         0.1 setosa 
-#> # ℹ 140 more rows
+#> # i 140 more rows
 ```
 
 [`dbRemoveTable()`](https://dbi.r-dbi.org/reference/dbRemoveTable) drops
@@ -146,7 +144,7 @@ Since 2 rows are inserted into the table, it returns 2.
 ``` r
 # Check the previous INSERT statment works
 DBI::dbReadTable(con, "testing_table")
-#> # A tibble: 2 × 2
+#> # A tibble: 2 x 2
 #>   field1 field2
 #>    <int> <chr> 
 #> 1      1 abc   
@@ -203,7 +201,7 @@ tbl.iris %>%
   ) %>%
   arrange(species) %>%
   collect()
-#> # A tibble: 3 × 2
+#> # A tibble: 3 x 2
 #>   species    mean_sepal_length
 #>   <chr>                  <dbl>
 #> 1 setosa                  5.01
@@ -251,7 +249,7 @@ either built on top of `dbGetQuery()` or only take effect when used with
 ``` r
 # BIGINT within the 32-bit integer range is simply translated into integer
 DBI::dbGetQuery(con, "SELECT CAST(1 AS BIGINT) AS small_bigint")
-#> # A tibble: 1 × 1
+#> # A tibble: 1 x 1
 #>   small_bigint
 #>          <int>
 #> 1            1
@@ -259,8 +257,9 @@ DBI::dbGetQuery(con, "SELECT CAST(1 AS BIGINT) AS small_bigint")
 # BIGINT outside of the 32-bit integer range generates a warning and returns NA
 # when bigint is not specified
 DBI::dbGetQuery(con, "SELECT CAST(POW(2, 31) AS BIGINT) AS overflow_bigint")
-#> Warning in as.integer.integer64(x): NAs produced by integer overflow
-#> # A tibble: 1 × 1
+#> Warning: BIGINT to integer overflow in column 'overflow_bigint' (n=1); coerced
+#> to NA
+#> # A tibble: 1 x 1
 #>   overflow_bigint
 #>             <int>
 #> 1              NA
@@ -270,7 +269,7 @@ DBI::dbGetQuery(
   con, "SELECT CAST(POW(2, 31) AS BIGINT) AS bigint_numeric",
   bigint = "numeric"
 )
-#> # A tibble: 1 × 1
+#> # A tibble: 1 x 1
 #>   bigint_numeric
 #>            <dbl>
 #> 1     2147483648
@@ -278,7 +277,7 @@ DBI::dbGetQuery(
   con, "SELECT CAST(POW(2, 31) AS BIGINT) AS bigint_integer64",
   bigint = "integer64"
 )
-#> # A tibble: 1 × 1
+#> # A tibble: 1 x 1
 #>   bigint_integer64
 #>            <int64>
 #> 1       2147483648
@@ -308,7 +307,7 @@ con.bigint <- DBI::dbConnect(
 DBI::dbGetQuery(
   con.bigint, "SELECT CAST(POW(2, 31) AS BIGINT) AS bigint_integer64"
 )
-#> # A tibble: 1 × 1
+#> # A tibble: 1 x 1
 #>   bigint_integer64
 #>            <int64>
 #> 1       2147483648
@@ -325,15 +324,15 @@ tbl.bigint <- dplyr::tbl(
 
 # Default collect() generates a warning and returns NA
 dplyr::collect(tbl.bigint)
-#> Warning in as.integer.integer64(x): NAs produced by integer overflow
-#> # A tibble: 1 × 1
+#> Warning: BIGINT to integer overflow in column 'bigint' (n=1); coerced to NA
+#> # A tibble: 1 x 1
 #>   bigint
 #>    <int>
 #> 1     NA
 
 # Passing bigint to collect() specifies BIGINT treatment
 dplyr::collect(tbl.bigint, bigint = "integer64")
-#> # A tibble: 1 × 1
+#> # A tibble: 1 x 1
 #>       bigint
 #>      <int64>
 #> 1 2147483648
