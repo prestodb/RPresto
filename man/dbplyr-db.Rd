@@ -77,8 +77,7 @@ for compatibility with generics.}
 
 \item{sql}{A SQL statement.}
 
-\item{use_presto_cte}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
-A logical value indicating if to use common table expressions stored in
+\item{use_presto_cte}{A logical value indicating if to use common table expressions stored in
 PrestoConnection when possible. Default to TRUE. See
 \code{vignette("common-table-expressions")}.}
 }
