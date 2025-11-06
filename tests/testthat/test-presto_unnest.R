@@ -13,6 +13,14 @@ test_that("unnest works with arrays", {
   conn <- setup_live_connection()
 
   test_table <- "unnest_arr_test"
+  # Drop table if it exists from a previous test run
+  tryCatch(
+    DBI::dbExecute(conn, sprintf(
+      "DROP TABLE IF EXISTS %s",
+      DBI::dbQuoteIdentifier(conn, test_table)
+    )),
+    error = function(e) NULL
+  )
   DBI::dbExecute(conn, sprintf(
     "CREATE TABLE %s (id BIGINT, arr ARRAY(BIGINT))",
     DBI::dbQuoteIdentifier(conn, test_table)
@@ -25,8 +33,10 @@ test_that("unnest works with arrays", {
   ))
 
   tbl_in <- dplyr::tbl(conn, test_table)
-  out <- tbl_in %>%
-    presto_unnest(arr, values_to = "elem") %>%
+  tbl_out <- tbl_in %>%
+    presto_unnest(arr, values_to = "elem")
+  expect_equal(dplyr::pull(dplyr::tally(tbl_out), n), 4L)
+  out <- tbl_out %>%
     dplyr::collect()
 
   expect_equal(nrow(out), 4L)
@@ -51,14 +61,14 @@ test_that("unnest supports WITH ORDINALITY", {
   ))
 
   tbl_in <- dplyr::tbl(conn, test_table)
-  out <- tbl_in %>%
+  tbl_out <- tbl_in %>%
     presto_unnest(
       arr,
       values_to = "val",
       with_ordinality = TRUE,
       ordinality_to = "idx"
-    ) %>%
-    dplyr::collect()
+    )
+  out <- dplyr::collect(tbl_out)
 
   expect_equal(nrow(out), 3L)
   expect_equal(names(out), c("id", "arr", "val", "idx"))
@@ -86,9 +96,9 @@ test_that("unnest works on subqueries", {
     dplyr::filter(id == 1L) %>%
     dplyr::select(id, arr)
 
-  out <- subq %>%
-    presto_unnest(arr, values_to = "elem") %>%
-    dplyr::collect()
+  tbl_out <- subq %>%
+    presto_unnest(arr, values_to = "elem")
+  out <- dplyr::collect(tbl_out)
 
   expect_equal(nrow(out), 3L)
   expect_equal(names(out), c("id", "arr", "elem"))
@@ -116,12 +126,112 @@ test_that("unnest works when source is a CTE", {
     dplyr::rename(arr2 = arr) %>%
     dplyr::compute(name = "unnest_arr_cte", cte = TRUE)
 
-  out <- cte_rel %>%
-    presto_unnest(arr2, values_to = "elem") %>%
-    dplyr::collect()
+  tbl_out <- cte_rel %>%
+    presto_unnest(arr2, values_to = "elem")
+  out <- dplyr::collect(tbl_out)
 
   expect_equal(names(out), c("id", "arr2", "elem"))
   expect_equal(sort(out$elem), c(1L, 2L, 3L, 4L, 5L))
+})
+
+test_that("unnest works with group_by", {
+  conn <- setup_live_connection()
+
+  test_table <- "unnest_grps_test"
+  tryCatch(
+    DBI::dbExecute(conn, sprintf(
+      "DROP TABLE IF EXISTS %s",
+      DBI::dbQuoteIdentifier(conn, test_table)
+    )),
+    error = function(e) NULL
+  )
+  DBI::dbExecute(conn, sprintf(
+    "CREATE TABLE %s (id BIGINT, arr ARRAY(BIGINT))",
+    DBI::dbQuoteIdentifier(conn, test_table)
+  ))
+  on.exit(DBI::dbRemoveTable(conn, test_table), add = TRUE)
+
+  DBI::dbExecute(conn, sprintf(
+    "INSERT INTO %s VALUES (1, ARRAY[10, 20]), (2, ARRAY[5])",
+    DBI::dbQuoteIdentifier(conn, test_table)
+  ))
+
+  tbl_in <- dplyr::tbl(conn, test_table)
+  tbl_out <- tbl_in %>%
+    dplyr::group_by(id) %>%
+    presto_unnest(arr, values_to = "elem") %>%
+    dplyr::summarize(count = dplyr::n())
+  out <- dplyr::collect(tbl_out)
+
+  expect_equal(nrow(out), 2L)
+  expect_equal(names(out), c("id", "count"))
+  expect_equal(sort(out$count), c(1L, 2L))
+})
+
+test_that("unnest works with arrange", {
+  conn <- setup_live_connection()
+
+  test_table <- "unnest_sort_test"
+  tryCatch(
+    DBI::dbExecute(conn, sprintf(
+      "DROP TABLE IF EXISTS %s",
+      DBI::dbQuoteIdentifier(conn, test_table)
+    )),
+    error = function(e) NULL
+  )
+  DBI::dbExecute(conn, sprintf(
+    "CREATE TABLE %s (id BIGINT, arr ARRAY(BIGINT))",
+    DBI::dbQuoteIdentifier(conn, test_table)
+  ))
+  on.exit(DBI::dbRemoveTable(conn, test_table), add = TRUE)
+
+  DBI::dbExecute(conn, sprintf(
+    "INSERT INTO %s VALUES (2, ARRAY[5]), (1, ARRAY[10, 20])",
+    DBI::dbQuoteIdentifier(conn, test_table)
+  ))
+
+  tbl_in <- dplyr::tbl(conn, test_table)
+  tbl_out <- tbl_in %>%
+    presto_unnest(arr, values_to = "elem") %>%
+    dplyr::arrange(id, elem)
+  out <- dplyr::collect(tbl_out)
+
+  expect_equal(nrow(out), 3L)
+  expect_equal(out$id, c(1L, 1L, 2L))
+  expect_equal(out$elem, c(10L, 20L, 5L))
+})
+
+test_that("unnest works with window functions", {
+  conn <- setup_live_connection()
+
+  test_table <- "unnest_frame_test"
+  tryCatch(
+    DBI::dbExecute(conn, sprintf(
+      "DROP TABLE IF EXISTS %s",
+      DBI::dbQuoteIdentifier(conn, test_table)
+    )),
+    error = function(e) NULL
+  )
+  DBI::dbExecute(conn, sprintf(
+    "CREATE TABLE %s (id BIGINT, arr ARRAY(BIGINT))",
+    DBI::dbQuoteIdentifier(conn, test_table)
+  ))
+  on.exit(DBI::dbRemoveTable(conn, test_table), add = TRUE)
+
+  DBI::dbExecute(conn, sprintf(
+    "INSERT INTO %s VALUES (1, ARRAY[10, 20]), (2, ARRAY[5])",
+    DBI::dbQuoteIdentifier(conn, test_table)
+  ))
+
+  tbl_in <- dplyr::tbl(conn, test_table)
+  tbl_out <- tbl_in %>%
+    dplyr::mutate(row_num = dplyr::row_number()) %>%
+    presto_unnest(arr, values_to = "elem")
+  out <- dplyr::collect(tbl_out)
+
+  expect_equal(nrow(out), 3L)
+  expect_equal(names(out), c("id", "arr", "row_num", "elem"))
+  expect_true(all(out$row_num %in% c(1L, 2L)))
 })
 
 
