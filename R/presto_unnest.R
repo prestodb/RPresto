@@ -7,177 +7,7 @@
 #' @include PrestoConnection.R
 NULL
 
-#' Create a lazy_unnest_query object
-#'
-#' @param x Parent lazy_query object
-#' @param col Column name to unnest (character)
-#' @param values_to Name of output column for unnested values
-#' @param with_ordinality Whether to include ordinality column
-#' @param ordinality_to Name of ordinality column
-#' @keywords internal
-new_lazy_unnest_query <- function(x, col, values_to = NULL, 
-                                  with_ordinality = FALSE, 
-                                  ordinality_to = NULL) {
-  structure(
-    list(
-      x = x,
-      col = col,
-      values_to = values_to %||% col,  # Default to column name
-      with_ordinality = with_ordinality,
-      ordinality_to = ordinality_to
-    ),
-    class = c("lazy_unnest_query", "lazy_query")
-  )
-}
-
-#' Build SQL for lazy_unnest_query
-#'
-#' @param op lazy_unnest_query object
-#' @param con Database connection
-#' @param ... Additional arguments
-#' @importFrom dbplyr sql_build sql_render
-#' @keywords internal
-#' @export
-sql_build.lazy_unnest_query <- function(op, con, ...) {
-  # Build the parent query
-  # Call sql_build on the parent lazy_query
-  # We use dbplyr::sql_build which dispatches correctly
-  x <- dbplyr::sql_build(op$x, con, ...)
-  
-  # Check if we got a valid result
-  if (is.null(x)) {
-    stop("Parent query sql_build returned NULL", call. = FALSE)
-  }
-  
-  # Return query object structure
-  # This represents the query before SQL rendering
-  # Include both classes so sql_render can dispatch correctly
-  # whether called directly or via lazy_query
-  structure(
-    list(
-      from = x,
-      col = op$col,
-      values_to = op$values_to,
-      with_ordinality = op$with_ordinality,
-      ordinality_to = op$ordinality_to
-    ),
-    class = c("unnest_query_build", "lazy_query")
-  )
-}
-
-#' Check if a select_query is a simple table reference (no filters, groupings, etc.)
-#'
-#' @param query A select_query object
-#' @return Logical indicating if the query is a simple table reference
-#' @keywords internal
-is_simple_table_reference <- function(query) {
-  inherits(query, "select_query") &&
-    !is.null(query$from) &&
-    !inherits(query$from, c("select_query", "join_query", "set_op_query", "union_query")) &&
-    is.null(query$where) && is.null(query$group_by) &&
-    is.null(query$having) && is.null(query$order_by) &&
-    is.null(query$limit) &&
-    (is.null(query$select) || identical(query$select, dbplyr::sql("*")))
-}
-
-#' Get column names for lazy_unnest_query
-#'
-#' @param op lazy_unnest_query object
-#' @param ... Additional arguments
-#' @importFrom dbplyr op_vars
-#' @keywords internal
-#' @export
-op_vars.lazy_unnest_query <- function(op, ...) {
-  # Get columns from parent query
-  parent_vars <- dbplyr::op_vars(op$x)
-  
-  # Add the unnested column name
-  vars <- c(parent_vars, op$values_to)
-  
-  # If with_ordinality, add the ordinality column
-  if (op$with_ordinality && !is.null(op$ordinality_to)) {
-    vars <- c(vars, op$ordinality_to)
-  }
-  
-  return(vars)
-}
-
-#' Render SQL for lazy_unnest_query
-#'
-#' @param query Query object (either lazy_unnest_query or result of sql_build)
-#' @param con Database connection (PrestoConnection)
-#' @param ... Additional arguments
-#' @importFrom dbplyr sql_build sql_render
-#' @keywords internal
-#' @export
-sql_render.lazy_unnest_query <- function(query, con, ...) {
-  # If query is still a lazy_unnest_query, build it first
-  # This can happen when dbplyr calls sql_render directly on a lazy_query
-  if (inherits(query, "lazy_unnest_query")) {
-    # Don't pass ... to sql_build as it may contain render-specific parameters
-    query <- dbplyr::sql_build(query, con)
-  }
-  
-  # At this point, query should be an unnest_query_build object
-  if (is.null(query$from)) {
-    stop("Parent query is NULL in sql_render.lazy_unnest_query. Query structure: ", 
-         paste(names(query), collapse = ", "), call. = FALSE)
-  }
-  
-  # Check if query$from is a simple table reference (SELECT * FROM table without modifications)
-  # If so, use the table reference directly to avoid redundant subquery wrapper
-  if (is_simple_table_reference(query$from)) {
-    # Use table reference directly without SELECT wrapper
-    from_sql <- dbplyr::sql_render(query$from$from, con, ...)
-    use_subquery <- FALSE
-  } else {
-    # For complex queries, wrap in subquery
-    from_sql <- dbplyr::sql_render(query$from, con, ...)
-    use_subquery <- TRUE
-  }
-  
-  # Quote the column name - use ident directly, dbplyr will handle quoting
-  col_quoted <- dbplyr::ident(query$col)
-  
-  # Build the UNNEST clause
-  if (query$with_ordinality) {
-    if (is.null(query$ordinality_to)) {
-      stop("ordinality_to must be provided when with_ordinality = TRUE", 
-           call. = FALSE)
-    }
-    # CROSS JOIN UNNEST(array_col) WITH ORDINALITY AS t(value, ordinality)
-    # In Presto, WITH ORDINALITY syntax is: UNNEST(arr) WITH ORDINALITY AS t(value, ordinality)
-    unnest_clause <- dbplyr::build_sql(
-      "CROSS JOIN UNNEST(", col_quoted, ") WITH ORDINALITY AS t(",
-      dbplyr::ident(query$values_to), 
-      ", ", dbplyr::ident(query$ordinality_to), ")",
-      con = con
-    )
-  } else {
-    # CROSS JOIN UNNEST(array_col) AS t(value)
-    # In Presto, UNNEST with alias syntax is: UNNEST(arr) AS t(column_name)
-    # We need a table alias (t) and column name
-    unnest_clause <- dbplyr::build_sql(
-      "CROSS JOIN UNNEST(", col_quoted, ") AS t(",
-      dbplyr::ident(query$values_to), ")",
-      con = con
-    )
-  }
-  
-  # Build final SELECT * FROM (subquery) CROSS JOIN UNNEST...
-  # Or SELECT * FROM table CROSS JOIN UNNEST... for simple queries
-  if (use_subquery) {
-    dbplyr::build_sql(
-      "SELECT * FROM (", dbplyr::sql(from_sql), ") ", unnest_clause,
-      con = con
-    )
-  } else {
-    dbplyr::build_sql(
-      "SELECT * FROM ", dbplyr::sql(from_sql), " ", unnest_clause,
-      con = con
-    )
-  }
-}
+# Public API ---------------------------------------------------------------
 
 #' Unnest array columns in Presto tables
 #'
@@ -227,16 +57,11 @@ presto_unnest.tbl_presto <- function(data, cols, ...,
                                      values_to = NULL,
                                      with_ordinality = FALSE,
                                      ordinality_to = NULL) {
-  # Get available column names from the data - this is our source of truth
   available_cols <- colnames(data)
-  
-  # Extract column selections using tidyselect
-  # Since we control this method completely, cols will only contain actual column selections
   cols_quo <- rlang::enquo(cols)
   col_names_raw <- tryCatch({
     tidyselect::eval_select(cols_quo, data)
   }, error = function(e) {
-    # If evaluation failed, try extracting from expression directly
     cols_expr <- rlang::quo_get_expr(cols_quo)
     if (rlang::is_symbol(cols_expr)) {
       col_name <- as.character(cols_expr)
@@ -248,8 +73,6 @@ presto_unnest.tbl_presto <- function(data, cols, ...,
     stop("Could not determine column to unnest", call. = FALSE)
   })
   
-  # Validate that selected columns actually exist in the data
-  # This provides a clear error message if invalid columns are selected
   valid_col_names <- intersect(names(col_names_raw), available_cols)
   
   if (length(valid_col_names) == 0) {
@@ -261,25 +84,149 @@ presto_unnest.tbl_presto <- function(data, cols, ...,
   
   col_name <- valid_col_names[1]
   
-  # Determine output column name
   if (is.null(values_to)) {
-    values_to <- col_name  # Default to same name as input column
+    values_to <- col_name
   }
   
-  # Validate ordinality parameters
   if (with_ordinality && is.null(ordinality_to)) {
     stop("ordinality_to must be provided when with_ordinality = TRUE", 
          call. = FALSE)
   }
   
-  # Create new lazy query and return updated tbl_presto
-  data$lazy_query <- new_lazy_unnest_query(
-    x = data$lazy_query,
-    col = col_name,
-    values_to = values_to,
-    with_ordinality = with_ordinality,
-    ordinality_to = ordinality_to
+  data$lazy_query <- structure(
+    list(
+      x = data$lazy_query,
+      col = col_name,
+      values_to = values_to,
+      with_ordinality = with_ordinality,
+      ordinality_to = ordinality_to
+    ),
+    class = c("lazy_unnest_query", "lazy_query")
   )
   
   return(data)
+}
+
+# lazy_unnest_query methods ------------------------------------------------
+
+#' Get column names for lazy_unnest_query
+#'
+#' @param op lazy_unnest_query object
+#' @param ... Additional arguments
+#' @importFrom dbplyr op_vars
+#' @keywords internal
+#' @export
+op_vars.lazy_unnest_query <- function(op, ...) {
+  parent_vars <- dbplyr::op_vars(op$x)
+  vars <- c(parent_vars, op$values_to)
+  
+  if (op$with_ordinality && !is.null(op$ordinality_to)) {
+    vars <- c(vars, op$ordinality_to)
+  }
+  
+  return(vars)
+}
+
+#' Get grouping variables for lazy_unnest_query
+#'
+#' @param op lazy_unnest_query object
+#' @param ... Additional arguments
+#' @importFrom dbplyr op_grps
+#' @keywords internal
+#' @export
+op_grps.lazy_unnest_query <- function(op, ...) {
+  dbplyr::op_grps(op$x, ...)
+}
+
+#' Get sorting variables for lazy_unnest_query
+#'
+#' @param op lazy_unnest_query object
+#' @param ... Additional arguments
+#' @importFrom dbplyr op_sort
+#' @keywords internal
+#' @export
+op_sort.lazy_unnest_query <- function(op, ...) {
+  dbplyr::op_sort(op$x, ...)
+}
+
+#' Get window frame for lazy_unnest_query
+#'
+#' @param op lazy_unnest_query object
+#' @param ... Additional arguments
+#' @importFrom dbplyr op_frame
+#' @keywords internal
+#' @export
+op_frame.lazy_unnest_query <- function(op, ...) {
+  dbplyr::op_frame(op$x, ...)
+}
+
+#' Build SQL for lazy_unnest_query
+#'
+#' @param op lazy_unnest_query object
+#' @param con Database connection
+#' @param ... Additional arguments
+#' @importFrom dbplyr sql_build sql_render sql_optimise
+#' @keywords internal
+#' @export
+sql_build.lazy_unnest_query <- function(op, con, ...) {
+  x <- dbplyr::sql_build(op$x, con, ...)
+  
+  if (is.null(x)) {
+    stop("Parent query sql_build returned NULL", call. = FALSE)
+  }
+  
+  structure(
+    list(
+      from = x,
+      col = op$col,
+      values_to = op$values_to,
+      with_ordinality = op$with_ordinality,
+      ordinality_to = op$ordinality_to
+    ),
+    class = c("unnest_query", "query")
+  )
+}
+
+# unnest_query methods -----------------------------------------------------
+
+#' Render SQL for unnest_query objects
+#'
+#' @param query unnest_query object
+#' @param con Database connection (PrestoConnection)
+#' @param ... Additional arguments
+#' @importFrom dbplyr sql_render
+#' @keywords internal
+#' @export
+sql_render.unnest_query <- function(query, con, ...) {
+  if (is.null(query$from)) {
+    stop("Parent query is NULL in sql_render.unnest_query. Query structure: ", 
+         paste(names(query), collapse = ", "), call. = FALSE)
+  }
+  
+  from_sql <- dbplyr::sql_render(query$from, con, ...)
+  col_quoted <- dbplyr::ident(query$col)
+  
+  if (query$with_ordinality) {
+    if (is.null(query$ordinality_to)) {
+      stop("ordinality_to must be provided when with_ordinality = TRUE", 
+           call. = FALSE)
+    }
+    unnest_clause <- dbplyr::build_sql(
+      "CROSS JOIN UNNEST(", col_quoted, ") WITH ORDINALITY AS t(",
+      dbplyr::ident(query$values_to), 
+      ", ", dbplyr::ident(query$ordinality_to), ")",
+      con = con
+    )
+  } else {
+    unnest_clause <- dbplyr::build_sql(
+      "CROSS JOIN UNNEST(", col_quoted, ") AS t(",
+      dbplyr::ident(query$values_to), ")",
+      con = con
+    )
+  }
+  
+  dbplyr::build_sql(
+    "SELECT * FROM (", dbplyr::sql(from_sql), ") ", unnest_clause,
+    con = con
+  )
 }

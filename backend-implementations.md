@@ -116,5 +116,11 @@ Important methods:
 | sql_translation | PrestoConnection | Implemented | dbplyr-sql.R |
 | sql_query_save | PrestoConnection | Implemented | dbplyr-sql.R |
 
+## Presto-specific functions
+
+| Function | Primary class | Status | File |
+| -------- | ------------- | ------ | ---- |
+| presto_unnest | tbl_presto | Created | presto_unnest.R |
+
 [1]: https://dplyr.tidyverse.org/reference/backend_dbplyr.html
 [2]: https://dbplyr.tidyverse.org/reference/db-io.html
