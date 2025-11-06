@@ -1,5 +1,10 @@
 # RPresto 1.4.7.9000
 
+* Implement `db_save_query()` for PrestoConnection with smart overwriting. When
+  overwriting an existing table, the function renames the original table,
+  creates the new table, and drops the old table on success. If creation fails,
+  the original table is restored. This prevents data loss if the write operation
+  fails. (#271)
 * Add `presto_unnest()` function to unnest array columns in Presto tables using
   `CROSS JOIN UNNEST` syntax. This function is similar to `tidyr::unnest()` but
   works with Presto database tables. (#267)

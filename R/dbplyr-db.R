@@ -160,13 +160,87 @@ db_compute.PrestoConnection <- function(con, table, sql, temporary = TRUE, uniqu
   table
 }
 
+#' @rdname dbplyr-db
+#' @param sql A SQL statement.
+#' @param name The table name, passed on to
+#'   [DBI::dbQuoteIdentifier()]. Options are: a character string with the
+#'   unquoted DBMS table name, a call to [DBI::Id()] with components to the
+#'   fully qualified table name, or a call to [DBI::SQL()] with the quoted and
+#'   fully qualified table name given verbatim.
+#' @param temporary If a temporary table should be created. Default to TRUE in
+#'   the [dplyr::db_save_query()] generic. The default value generates an error
+#'   in Presto. Using `temporary = FALSE` to save the query in a permanent
+#'   table.
+#' @param overwrite If an existing table should be overwritten. Default to
+#'   FALSE. When TRUE, uses smart overwriting: renames the existing table,
+#'   creates the new table, and drops the old table on success. If creation
+#'   fails, the original table is restored.
+#' @param with An optional WITH clause for the CREATE TABLE statement.
+#' @importFrom dplyr db_save_query
+#' @export
+db_save_query.PrestoConnection <- function(
+  con, sql, name, temporary = TRUE, overwrite = FALSE, ..., with = NULL
+) {
+  if (!identical(temporary, FALSE)) {
+    stop(
+      "Temporary table is not supported in Presto. ",
+      "Use temporary = FALSE to save the query in a permanent table.",
+      call. = FALSE
+    )
+  }
+  stopifnot(
+    length(overwrite) == 1, is.logical(overwrite), !is.na(overwrite)
+  )
+
+  query <- sql_query_save(
+    con, sql, name, temporary = temporary, with = with, ...
+  )
+  if (DBI::dbExistsTable(con, name)) {
+    if (identical(overwrite, TRUE)) {
+      rn <- paste0(
+        "temp_", paste(sample(letters, 10, replace = TRUE), collapse = "")
+      )
+      message("Renaming existing table ", name, " to ", rn, ".")
+      dbRenameTable(con, name, rn)
+      tryCatch(
+        {
+          DBI::dbExecute(con, query)
+        },
+        error = function(e) {
+          message("Reverting original table ", name, " from ", rn, ".")
+          dbRenameTable(con, rn, name)
+          stop(
+            "Overwriting table ", name, ' failed with error: "',
+            conditionMessage(e), '".',
+            call. = FALSE
+          )
+        }
+      )
+      message("Dropping renamed table ", rn, ".")
+      if (DBI::dbRemoveTable(con, rn)) {
+        message("The table ", name, " is overwritten.")
+      }
+    } else {
+      stop(
+        "The table ", name, " exists but overwrite is set to FALSE.",
+        call. = FALSE
+      )
+    }
+  } else {
+    DBI::dbExecute(con, query)
+  }
+  name
+}
+
 #' S3 implementation of `db_collect` for Presto.
 #'
 #' @importFrom dbplyr db_collect
 #' @export
 #' @rdname dplyr_function_implementations
 #' @keywords internal
-db_collect.PrestoConnection <- function(con, sql, n = -1, warn_incomplete = TRUE, ...) {
+db_collect.PrestoConnection <- function(
+  con, sql, n = -1, warn_incomplete = TRUE, ...
+) {
   dbGetQuery(con, sql, ...)
 }
 
@@ -176,7 +250,9 @@ db_collect.PrestoConnection <- function(con, sql, n = -1, warn_incomplete = TRUE
 #'   `vignette("common-table-expressions")`.
 #' @importFrom dbplyr db_sql_render
 #' @export
-db_sql_render.PrestoConnection <- function(con, sql, ..., use_presto_cte = TRUE) {
+db_sql_render.PrestoConnection <- function(
+  con, sql, ..., use_presto_cte = TRUE
+) {
   rendered_sql <- dbplyr::sql_render(sql, con = con, ...)
   # Try CTE if sql is tbl_lazy and use_presto_cte = TRUE; return if not
   if (!is.null(sql$lazy_query) && identical(use_presto_cte, TRUE)) {
