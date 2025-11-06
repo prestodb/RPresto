@@ -6,6 +6,7 @@
 \alias{db_write_table.PrestoConnection}
 \alias{db_copy_to.PrestoConnection}
 \alias{db_compute.PrestoConnection}
+\alias{db_save_query.PrestoConnection}
 \alias{db_sql_render.PrestoConnection}
 \title{dbplyr database methods}
 \usage{
@@ -51,6 +52,16 @@
   ...
 )
 
+\method{db_save_query}{PrestoConnection}(
+  con,
+  sql,
+  name,
+  temporary = TRUE,
+  overwrite = FALSE,
+  ...,
+  with = NULL
+)
+
 \method{db_sql_render}{PrestoConnection}(con, sql, ..., use_presto_cte = TRUE)
 }
 \arguments{
@@ -63,10 +74,15 @@ dbDataType.}
 
 \item{values}{A \code{data.frame}.}
 
-\item{temporary}{If a temporary table should be used. Not supported. Only
-FALSE is accepted.}
+\item{temporary}{If a temporary table should be created. Default to TRUE in
+the \code{\link[dplyr:backend_dbplyr]{dplyr::db_save_query()}} generic. The default value generates an error
+in Presto. Using \code{temporary = FALSE} to save the query in a permanent
+table.}
 
-\item{overwrite}{If an existing table should be overwritten.}
+\item{overwrite}{If an existing table should be overwritten. Default to
+FALSE. When TRUE, uses smart overwriting: renames the existing table,
+creates the new table, and drops the old table on success. If creation
+fails, the original table is restored.}
 
 \item{...}{Extra arguments to be passed to individual methods.}
 
@@ -76,6 +92,12 @@ FALSE is accepted.}
 for compatibility with generics.}
 
 \item{sql}{A SQL statement.}
+
+\item{name}{The table name, passed on to
+\code{\link[DBI:dbQuoteIdentifier]{DBI::dbQuoteIdentifier()}}. Options are: a character string with the
+unquoted DBMS table name, a call to \code{\link[DBI:Id]{DBI::Id()}} with components to the
+fully qualified table name, or a call to \code{\link[DBI:SQL]{DBI::SQL()}} with the quoted and
+fully qualified table name given verbatim.}
 
 \item{use_presto_cte}{A logical value indicating if to use common table expressions stored in
 PrestoConnection when possible. Default to TRUE. See
