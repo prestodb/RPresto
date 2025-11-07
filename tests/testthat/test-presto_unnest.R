@@ -234,4 +234,85 @@ test_that("unnest works with window functions", {
   expect_true(all(out$row_num %in% c(1L, 2L)))
 })
 
+test_that("unnest followed by group_by and summarize works correctly", {
+  conn <- setup_live_connection()
+
+  test_table <- "unnest_then_group_test"
+  tryCatch(
+    DBI::dbExecute(conn, sprintf(
+      "DROP TABLE IF EXISTS %s",
+      DBI::dbQuoteIdentifier(conn, test_table)
+    )),
+    error = function(e) NULL
+  )
+  DBI::dbExecute(conn, sprintf(
+    "CREATE TABLE %s (id BIGINT, arr ARRAY(BIGINT))",
+    DBI::dbQuoteIdentifier(conn, test_table)
+  ))
+  on.exit(DBI::dbRemoveTable(conn, test_table), add = TRUE)
+
+  DBI::dbExecute(conn, sprintf(
+    "INSERT INTO %s VALUES (1, ARRAY[10, 20]), (2, ARRAY[5])",
+    DBI::dbQuoteIdentifier(conn, test_table)
+  ))
+
+  tbl_in <- dplyr::tbl(conn, test_table)
+  # This is the problematic sequence: unnest THEN group_by THEN summarize
+  tbl_out <- tbl_in %>%
+    presto_unnest(arr, values_to = "elem") %>%
+    dplyr::group_by(id) %>%
+    dplyr::summarize(count = dplyr::n())
+  out <- dplyr::collect(tbl_out)
+
+  # Expected: 2 rows (one for each id), with counts 2 and 1
+  expect_equal(nrow(out), 2L)
+  expect_equal(names(out), c("id", "count"))
+  expect_equal(sort(out$count), c(1L, 2L))
+  # Verify id=1 has count=2 (two elements in array), id=2 has count=1
+  expect_equal(out$count[out$id == 1L], 2L)
+  expect_equal(out$count[out$id == 2L], 1L)
+})
+
+test_that("unnest followed by group_by and summarize works with CTE", {
+  conn <- setup_live_connection()
+
+  test_table <- "unnest_then_group_cte_test"
+  tryCatch(
+    DBI::dbExecute(conn, sprintf(
+      "DROP TABLE IF EXISTS %s",
+      DBI::dbQuoteIdentifier(conn, test_table)
+    )),
+    error = function(e) NULL
+  )
+  DBI::dbExecute(conn, sprintf(
+    "CREATE TABLE %s (id BIGINT, arr ARRAY(BIGINT))",
+    DBI::dbQuoteIdentifier(conn, test_table)
+  ))
+  on.exit(DBI::dbRemoveTable(conn, test_table), add = TRUE)
+
+  DBI::dbExecute(conn, sprintf(
+    "INSERT INTO %s VALUES (1, ARRAY[10, 20]), (2, ARRAY[5])",
+    DBI::dbQuoteIdentifier(conn, test_table)
+  ))
+
+  tbl_in <- dplyr::tbl(conn, test_table)
+  # This sequence works: unnest, save to CTE, THEN group_by and summarize
+  cte_rel <- tbl_in %>%
+    presto_unnest(arr, values_to = "elem") %>%
+    dplyr::compute(name = "unnest_cte", cte = TRUE)
+
+  tbl_out <- cte_rel %>%
+    dplyr::group_by(id) %>%
+    dplyr::summarize(count = dplyr::n())
+  out <- dplyr::collect(tbl_out)
+
+  # Expected: 2 rows (one for each id), with counts 2 and 1
+  expect_equal(nrow(out), 2L)
+  expect_equal(names(out), c("id", "count"))
+  expect_equal(sort(out$count), c(1L, 2L))
+  # Verify id=1 has count=2 (two elements in array), id=2 has count=1
+  expect_equal(out$count[out$id == 1L], 2L)
+  expect_equal(out$count[out$id == 2L], 1L)
+})
+
 
