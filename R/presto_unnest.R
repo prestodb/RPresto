@@ -135,6 +135,9 @@ op_vars.lazy_unnest_query <- function(op, ...) {
 #' @keywords internal
 #' @export
 op_grps.lazy_unnest_query <- function(op, ...) {
+  if (!is.null(op$group_vars) && length(op$group_vars) > 0) {
+    return(op$group_vars)
+  }
   dbplyr::op_grps(op$x, ...)
 }
 
