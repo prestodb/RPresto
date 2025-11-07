@@ -31,7 +31,8 @@ presto_unnest(
 \item{...}{Additional arguments (currently unused)}
 
 \item{values_to}{Name of column to store unnested values. If \code{NULL}, uses
-the original column name.}
+the original column name with \code{"_elem"} appended (e.g., \code{arr} becomes
+\code{arr_elem}).}
 
 \item{with_ordinality}{If \code{TRUE}, includes an ordinality column with the
 position of each element in the array.}
@@ -56,6 +57,12 @@ DBI::dbExecute(con, "CREATE TABLE test (id BIGINT, arr ARRAY(BIGINT))")
 DBI::dbExecute(con, "INSERT INTO test VALUES (1, ARRAY[10, 20, 30])")
 
 # Unnest the array column
+tbl(con, "test") \%>\%
+  presto_unnest(arr) \%>\%
+  collect()
+# Without values_to, the unnested column is named "arr_elem"
+
+# Or specify a custom name
 tbl(con, "test") \%>\%
   presto_unnest(arr, values_to = "elem") \%>\%
   collect()

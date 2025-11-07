@@ -45,6 +45,41 @@ test_that("unnest works with arrays", {
   expect_equal(sort(out$elem), c(5L, 10L, 20L, 30L))
 })
 
+test_that("unnest without values_to uses column name with _elem suffix", {
+  conn <- setup_live_connection()
+
+  test_table <- "unnest_no_values_to_test"
+  tryCatch(
+    DBI::dbExecute(conn, sprintf(
+      "DROP TABLE IF EXISTS %s",
+      DBI::dbQuoteIdentifier(conn, test_table)
+    )),
+    error = function(e) NULL
+  )
+  DBI::dbExecute(conn, sprintf(
+    "CREATE TABLE %s (id BIGINT, arr ARRAY(BIGINT))",
+    DBI::dbQuoteIdentifier(conn, test_table)
+  ))
+  on.exit(DBI::dbRemoveTable(conn, test_table), add = TRUE)
+
+  DBI::dbExecute(conn, sprintf(
+    "INSERT INTO %s VALUES (1, ARRAY[10, 20]), (2, ARRAY[5])",
+    DBI::dbQuoteIdentifier(conn, test_table)
+  ))
+
+  tbl_in <- dplyr::tbl(conn, test_table)
+  # Test without values_to - should use arr_elem as default
+  tbl_out <- tbl_in %>%
+    presto_unnest(arr)
+  out <- tbl_out %>%
+    dplyr::collect()
+
+  # Should have id, arr (original), and arr_elem (unnested)
+  expect_equal(nrow(out), 3L)
+  expect_equal(names(out), c("id", "arr", "arr_elem"))
+  expect_equal(sort(out$arr_elem), c(5L, 10L, 20L))
+})
+
 test_that("unnest supports WITH ORDINALITY", {
   conn <- setup_live_connection()
 

@@ -18,7 +18,8 @@ NULL
 #' @param cols Column(s) to unnest. Currently only supports a single column.
 #' @param ... Additional arguments (currently unused)
 #' @param values_to Name of column to store unnested values. If `NULL`, uses
-#'   the original column name.
+#'   the original column name with `"_elem"` appended (e.g., `arr` becomes
+#'   `arr_elem`).
 #' @param with_ordinality If `TRUE`, includes an ordinality column with the
 #'   position of each element in the array.
 #' @param ordinality_to Name of ordinality column when `with_ordinality = TRUE`.
@@ -40,6 +41,12 @@ NULL
 #' DBI::dbExecute(con, "INSERT INTO test VALUES (1, ARRAY[10, 20, 30])")
 #' 
 #' # Unnest the array column
+#' tbl(con, "test") %>%
+#'   presto_unnest(arr) %>%
+#'   collect()
+#' # Without values_to, the unnested column is named "arr_elem"
+#' 
+#' # Or specify a custom name
 #' tbl(con, "test") %>%
 #'   presto_unnest(arr, values_to = "elem") %>%
 #'   collect()
@@ -85,7 +92,7 @@ presto_unnest.tbl_presto <- function(data, cols, ...,
   col_name <- valid_col_names[1]
   
   if (is.null(values_to)) {
-    values_to <- col_name
+    values_to <- paste0(col_name, "_elem")
   }
   
   if (with_ordinality && is.null(ordinality_to)) {
