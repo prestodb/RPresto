@@ -1,5 +1,8 @@
 # RPresto 1.4.7.9000
 
+* Add `dbAppendTableAs()` and `sqlAppendTableAs()` functions to append data to
+  existing tables using SQL queries. These functions support both SQL strings
+  and `tbl_presto` objects as input. (#307)
 * Implement `db_save_query()` for PrestoConnection with smart overwriting. When
   overwriting an existing table, the function renames the original table,
   creates the new table, and drops the old table on success. If creation fails,
