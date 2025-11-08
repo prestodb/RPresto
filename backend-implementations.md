@@ -41,6 +41,8 @@ Important methods:
 | sqlCreateTable | PrestoConnection | Implemented | sqlCreateTable.R |
 | dbCreateTableAs | PrestoConnection | Created | dbCreateTableAs.R |
 | sqlCreateTableAs | PrestoConnection | Created | sqlCreateTableAs.R |
+| dbAppendTableAs | PrestoConnection | Created | dbAppendTableAs.R |
+| sqlAppendTableAs | PrestoConnection | Created | sqlAppendTableAs.R |
 | dbWriteTable | PrestoConnection | Implemented | dbWriteTable.R |
 | dbRemoveTable | PrestoConnection | Implemented | dbRemoveTable.R |
 | dbReadTable | PrestoConnection | Implemented | dbReadTable.R |
