@@ -20,11 +20,6 @@ NULL
 #' @rdname PrestoConnection-class
 #' @importMethodsFrom DBI dbListFields
 #' @export
-setMethod("dbListFields", signature("PrestoConnection"), .dbListFields_PrestoConnection)
-
-#' @rdname PrestoConnection-class
-#' @importMethodsFrom DBI dbListFields
-#' @export
 setMethod("dbListFields", signature("PrestoConnection", "character"), .dbListFields_PrestoConnection)
 
 setOldClass("dbplyr_schema")

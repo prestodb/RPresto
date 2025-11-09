@@ -1,5 +1,12 @@
 # RPresto 1.4.7.9000
 
+* Add `presto_type()` function for `tbl_presto` objects to get column type
+  information including Presto types for complex and nested types. This function
+  works with remote tables after dplyr operations and CTEs.
+* Add `dbColumnType()` function for `PrestoConnection` to get column type
+  information for tables, including Presto types for complex and nested types.
+  This complements the existing `dbColumnInfo()` method for `PrestoResult`
+  objects. (#295)
 * Add `dbAppendTableAs()` and `sqlAppendTableAs()` functions to append data to
   existing tables using SQL queries. These functions support both SQL strings
   and `tbl_presto` objects as input. (#307)
