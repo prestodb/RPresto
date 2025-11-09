@@ -15,7 +15,6 @@ NULL
 #'   - type: R type (character)
 #'   - .presto_type: Presto type as string (character)
 #' @importMethodsFrom DBI dbColumnInfo
-#' @export
 .dbColumnInfo_PrestoResult <- function(res, ...) {
   # Use the shared helper function from dbColumnType.R
   return(.get_column_info_from_result(res))

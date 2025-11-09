@@ -47,7 +47,7 @@ Important methods:
 | dbRemoveTable | PrestoConnection | Implemented | dbRemoveTable.R |
 | dbReadTable | PrestoConnection | Implemented | dbReadTable.R |
 | dbRenameTable | PrestoConnection | Created | dbRenameTable.R |
-| dbAppendtable | PrestoConnection | Implemented | dbAppendTable.R |
+| dbAppendTable | PrestoConnection | Implemented | dbAppendTable.R |
 | dbListFields | PrestoConnection | Implemented | dbListFields.R |
 | dbColumnType | PrestoConnection | Created | dbColumnType.R |
 | dbBegin | PrestoConnection | Not implemented | |
