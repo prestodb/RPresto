@@ -49,6 +49,7 @@ Important methods:
 | dbRenameTable | PrestoConnection | Created | dbRenameTable.R |
 | dbAppendtable | PrestoConnection | Implemented | dbAppendTable.R |
 | dbListFields | PrestoConnection | Implemented | dbListFields.R |
+| dbColumnType | PrestoConnection | Created | dbColumnType.R |
 | dbBegin | PrestoConnection | Not implemented | |
 | dbCommit | PrestoConnection | Not implemented | |
 | dbRollback | PrestoConnection | Not implemented | |
@@ -65,7 +66,8 @@ Important methods:
 | dbGetRowsAffected | PrestoResult | Implemented | dbGetRowsAffected.R |
 | dbListFields | PrestoResult | Implemented | dbListFields.R |
 | dbBind | PrestoResult | Not implemented | |
-| dbColumnInfo | PrestoResult | Not implemented | |
+| dbColumnInfo | PrestoResult | Implemented | dbColumnInfo.R |
+| dbColumnType | PrestoResult | Created | dbColumnType.R |
 
 ## `dplyr` remote database backend
 
@@ -123,6 +125,7 @@ Important methods:
 | Function | Primary class | Status | File |
 | -------- | ------------- | ------ | ---- |
 | presto_unnest | tbl_presto | Created | presto_unnest.R |
+| presto_type | tbl_presto | Created | presto_type.R |
 
 [1]: https://dplyr.tidyverse.org/reference/backend_dbplyr.html
 [2]: https://dbplyr.tidyverse.org/reference/db-io.html
