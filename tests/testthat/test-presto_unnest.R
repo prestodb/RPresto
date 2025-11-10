@@ -350,4 +350,62 @@ test_that("unnest followed by group_by and summarize works with CTE", {
   expect_equal(out$count[out$id == 2L], 1L)
 })
 
+test_that("operation -> CTE -> presto_unnest -> CTE works correctly", {
+  conn <- setup_live_connection()
+
+  test_table <- "unnest_op_cte_unnest_cte_test"
+  tryCatch(
+    DBI::dbExecute(conn, sprintf(
+      "DROP TABLE IF EXISTS %s",
+      DBI::dbQuoteIdentifier(conn, test_table)
+    )),
+    error = function(e) NULL
+  )
+  DBI::dbExecute(conn, sprintf(
+    "CREATE TABLE %s (id BIGINT, arr ARRAY(BIGINT))",
+    DBI::dbQuoteIdentifier(conn, test_table)
+  ))
+  on.exit(DBI::dbRemoveTable(conn, test_table), add = TRUE)
+
+  DBI::dbExecute(conn, sprintf(
+    "INSERT INTO %s VALUES (1, ARRAY[10, 20]), (2, ARRAY[5])",
+    DBI::dbQuoteIdentifier(conn, test_table)
+  ))
+
+  tbl_in <- dplyr::tbl(conn, test_table)
+  # Step 1: Apply operation (filter) -> CTE
+  cte1 <- tbl_in %>%
+    dplyr::filter(id == 1L) %>%
+    dplyr::compute(name = "filtered_cte", cte = TRUE)
+  on.exit(
+    {
+      if (conn@session$hasCTE("filtered_cte")) {
+        conn@session$removeCTE("filtered_cte")
+      }
+    },
+    add = TRUE
+  )
+
+  # Step 2: presto_unnest on CTE -> CTE
+  cte2 <- cte1 %>%
+    presto_unnest(arr, values_to = "elem") %>%
+    dplyr::compute(name = "unnest_cte", cte = TRUE)
+  on.exit(
+    {
+      if (conn@session$hasCTE("unnest_cte")) {
+        conn@session$removeCTE("unnest_cte")
+      }
+    },
+    add = TRUE
+  )
+
+  # Step 3: Verify the final CTE works correctly
+  out <- dplyr::collect(cte2)
+
+  expect_equal(nrow(out), 2L)
+  expect_equal(names(out), c("id", "arr", "elem"))
+  expect_equal(sort(out$elem), c(10L, 20L))
+  expect_equal(unique(out$id), 1L)
+})
+
 

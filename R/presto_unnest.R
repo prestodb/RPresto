@@ -11,6 +11,9 @@ NULL
 
 #' Unnest array columns in Presto tables
 #'
+#' @description
+#' `r lifecycle::badge("experimental")`
+#'
 #' Expands array columns into rows using Presto's `CROSS JOIN UNNEST` syntax.
 #' This is similar to `tidyr::unnest()` but works with Presto database tables.
 #'
@@ -27,6 +30,7 @@ NULL
 #'
 #' @return A `tbl_presto` object with the array column unnested into rows.
 #'
+#' @importFrom lifecycle badge
 #' @importFrom rlang enquo
 #' @importFrom stats setNames
 #' @importFrom tidyselect eval_select
@@ -235,8 +239,20 @@ sql_render.unnest_query <- function(query, con, ...) {
     )
   }
   
-  dbplyr::build_sql(
-    "SELECT * FROM (", dbplyr::sql(from_sql), ") ", unnest_clause,
-    con = con
-  )
+  # Only wrap in parentheses if the parent is a complex subquery
+  # If it's just a table/CTE name (not a SELECT statement), don't wrap
+  from_sql_str <- as.character(from_sql)
+  if (startsWith(toupper(trimws(from_sql_str)), "SELECT")) {
+    # Complex subquery - wrap in parentheses
+    dbplyr::build_sql(
+      "SELECT * FROM (", dbplyr::sql(from_sql), ") ", unnest_clause,
+      con = con
+    )
+  } else {
+    # Simple table/CTE name - don't wrap
+    dbplyr::build_sql(
+      "SELECT * FROM ", dbplyr::sql(from_sql), " ", unnest_clause,
+      con = con
+    )
+  }
 }
