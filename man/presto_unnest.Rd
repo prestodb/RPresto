@@ -44,6 +44,8 @@ Must be provided if \code{with_ordinality = TRUE}.}
 A \code{tbl_presto} object with the array column unnested into rows.
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}}
+
 Expands array columns into rows using Presto's \verb{CROSS JOIN UNNEST} syntax.
 This is similar to \code{tidyr::unnest()} but works with Presto database tables.
 }
