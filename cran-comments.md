@@ -1,9 +1,17 @@
 # Test environments
 
-- OS X 10.14.6 Mojave, R 3.6.1
-- CentOS 7.3, R 3.6.1
+- macOS-latest, R release
+- Windows-latest, R release
+- Ubuntu-latest, R devel
+- Ubuntu-latest, R release
+- Ubuntu-latest, R oldrel-1
 - win-builder (devel and release)
 
 # R CMD check results
 
-There were no ERRORs, WARNINGs or NOTEs.
+R CMD check results will be added after running checks locally and on win-builder.
+
+There were no ERRORs, WARNINGs or NOTEs on:
+- macOS-latest (R release)
+- Windows-latest (R release)
+- Ubuntu-latest (R devel, release, oldrel-1)
