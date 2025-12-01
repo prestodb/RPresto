@@ -1,4 +1,4 @@
-# RPresto 1.4.7.9000
+# RPresto 1.4.8
 
 * Add `presto_type()` function for `tbl_presto` objects to get column type
   information including Presto types for complex and nested types. This function
