@@ -1,6 +1,6 @@
 Package: RPresto
 Title: DBI Connector to Presto
-Version: 1.4.8
+Version: 1.4.8.9000
 Authors@R: c(
     person('Onur Ismail', 'Filiz', , 'onur@fb.com', role='aut'),
     person('Sergey', 'Goder', , 'sgoder@fb.com', role='aut'),
