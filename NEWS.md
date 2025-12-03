@@ -1,3 +1,5 @@
+# RPresto 1.4.8.9000
+
 # RPresto 1.4.8
 
 * Add `presto_type()` function for `tbl_presto` objects to get column type
