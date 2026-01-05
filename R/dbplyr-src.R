@@ -315,6 +315,26 @@ compute.tbl_presto <- function(x, name, temporary = FALSE, ..., cte = FALSE) {
   name <- .compute_tbl_presto(
     x = x, name = name, temporary = temporary, ..., cte = cte
   )
+  
+  # Only wait for table existence for non-CTE cases
+  if (!cte) {
+    con <- dbplyr::remote_con(x)
+    max_attempts <- 5
+    attempt <- 0
+    while (attempt < max_attempts && !DBI::dbExistsTable(con, name)) {
+      attempt <- attempt + 1
+      if (attempt < max_attempts) {
+        Sys.sleep(2)
+      }
+    }
+    if (!DBI::dbExistsTable(con, name)) {
+      warning(
+        "Table '", name, "' not found after ", max_attempts, 
+        " attempts. Proceeding anyway, but this may fail."
+      )
+    }
+  }
+  
   dplyr::tbl(src = dbplyr::remote_src(x), from = name, vars = colnames(x)) %>%
     dplyr::group_by(!!!rlang::syms(dbplyr::op_grps(x))) %>%
     dbplyr::window_order(!!!dbplyr::op_sort(x))

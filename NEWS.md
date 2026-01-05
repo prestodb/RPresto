@@ -1,5 +1,12 @@
 # RPresto 1.4.8.9000
 
+* `compute()` now waits for materialized tables to exist before returning the
+  remote table object. This addresses race conditions where some Presto backends
+  may take a few seconds for newly created tables to become visible. The function
+  retries up to 5 times with 2-second delays before proceeding. If the table
+  still doesn't exist after max retries, a warning is issued but the function
+  continues for backward compatibility. (#332)
+
 # RPresto 1.4.8
 
 * Add `presto_type()` function for `tbl_presto` objects to get column type
