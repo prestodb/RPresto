@@ -273,7 +273,9 @@ copy_to.PrestoConnection <- function(
 }
 
 .compute_tbl_presto <- function(x, name, temporary = FALSE, ..., cte = FALSE) {
-  name <- unname(name)
+  if (is_bare_character(x) || dbplyr::is.ident(x) || dbplyr::is.sql(x)) {
+    name <- unname(name)
+  }
   if (identical(cte, TRUE)) {
     if (inherits(x$lazy_query, "lazy_base_remote_query")) {
       stop(
